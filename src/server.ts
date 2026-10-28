@@ -144,7 +144,7 @@ function withAgentEvidence(obj: Json): Json {
  * sandbox (a test key with no policy). Never "test key" for a live quote (the hosted `describe_quote_path`). */
 export function describeQuotePath(quote: Json): string {
   if (quote.authorization_required) {
-    return 'approval required: a person must approve it (request_fax_approval) before it is sent';
+    return 'approval is required: a person must approve it (request_fax_approval) before it is sent';
   }
   const ev = quote.policy_evaluation && typeof quote.policy_evaluation === 'object' ? (quote.policy_evaluation as Json) : null;
   if (ev && ev.decision === 'allow') {
