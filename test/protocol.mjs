@@ -68,6 +68,13 @@ const tools = messages.find((m) => m.id === 2)?.result?.tools;
 if (!Array.isArray(tools)) fail('no tools/list result');
 const names = tools.map((t) => t.name);
 if (names.length !== 17) fail(`expected 17 tools, got ${names.length}: ${names.join(', ')}`);
+for (const t of tools) {
+  const out = t.outputSchema;
+  if (!out || out.type !== 'object') fail(`${t.name}: no outputSchema`);
+  for (const k of ['ok', 'message']) if (!out.required?.includes(k)) fail(`${t.name}: outputSchema lacks ${k}`);
+  if (!out.properties?.untrusted) fail(`${t.name}: outputSchema lacks untrusted`);
+  if (out.additionalProperties !== false) fail(`${t.name}: outputSchema allows unknown keys`);
+}
 for (const expected of EXPECTED_TOOLS) if (!names.includes(expected)) fail(`missing tool: ${expected}`);
 for (const tool of tools) {
   if (!tool.description) fail(`tool ${tool.name} has no description`);

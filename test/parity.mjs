@@ -83,5 +83,15 @@ for (const name of Object.keys(h)) {
   for (const k of ['readOnlyHint', 'destructiveHint', 'idempotentHint', 'openWorldHint']) {
     if (a.annotations?.[k] !== b.annotations?.[k]) fail(`${name}: annotation ${k} differs`);
   }
+  // the output schema, once the hosted server publishes one: the same top-level keys and required list
+  if (a.outputSchema) {
+    const ao = Object.keys(a.outputSchema.properties ?? {}).sort().join();
+    const bo = Object.keys(b.outputSchema?.properties ?? {}).sort().join();
+    if (ao !== bo) fail(`${name}: outputSchema properties differ (${ao} vs ${bo})`);
+    const ar = [...(a.outputSchema.required ?? [])].sort().join();
+    const br = [...(b.outputSchema?.required ?? [])].sort().join();
+    if (ar !== br) fail(`${name}: outputSchema required differs (${ar} vs ${br})`);
+  }
 }
-console.log(`parity OK: ${hosted.length} tools match the hosted snapshot (names, descriptions, properties, required, types, defaults, annotations)`);
+const withOut = hosted.filter((t) => t.outputSchema).length;
+console.log(`parity OK: ${hosted.length} tools match the hosted snapshot (names, descriptions, properties, required, types, defaults, annotations${withOut ? ', output schemas' : ''})`);
