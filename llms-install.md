@@ -20,7 +20,27 @@ without a key, but every tool except `guide` will answer with a message asking f
 
 ## Installation
 
-No install step is needed. The server runs on demand with `npx`.
+Two paths. The hosted server is the primary one: it needs no install and is always the current tool set.
+The stdio package runs the same tools on the user's machine and keeps the key in the client's environment.
+
+**The package is not on npm yet.** `npx -y faxforagents-mcp` fails at the registry until it is published.
+Until then run it from GitHub (`npx --yes github:faxforagents/mcp`, which builds on first run and needs
+`git` and Node 20) or from a local clone (`git clone https://github.com/faxforagents/mcp && cd mcp && npm
+ci && npm run build`, then `command: node`, `args: ["<clone>/dist/index.js"]`). When the npm package
+exists, `npx -y faxforagents-mcp` replaces the GitHub form in every block below.
+
+### Hosted (primary)
+
+Streamable HTTP at `https://mcp.faxforagents.com/mcp/` (keep the trailing slash), authenticated with
+`Authorization: Bearer ffa_test_...` or `X-API-Key: ffa_test_...` on every request.
+
+```bash
+claude mcp add --transport http faxforagents https://mcp.faxforagents.com/mcp/ --header "Authorization: Bearer ffa_test_YOUR_KEY_HERE"
+```
+
+Cursor, Codex, n8n and other HTTP clients: the same URL and header in their MCP configuration.
+
+### Stdio
 
 The only configuration is one environment variable.
 
@@ -37,7 +57,7 @@ Add this to `cline_mcp_settings.json` (Cline, MCP Servers, Configure).
   "mcpServers": {
     "faxforagents": {
       "command": "npx",
-      "args": ["-y", "faxforagents-mcp"],
+      "args": ["--yes", "github:faxforagents/mcp"],
       "env": {
         "FAXFORAGENTS_API_KEY": "ffa_test_YOUR_KEY_HERE"
       },
@@ -58,24 +78,18 @@ Windows `%APPDATA%\Claude\`, Linux `~/.config/Claude/`).
 ### Claude Code
 
 ```bash
-claude mcp add faxforagents -e FAXFORAGENTS_API_KEY=ffa_test_YOUR_KEY_HERE -- npx -y faxforagents-mcp
+claude mcp add faxforagents -e FAXFORAGENTS_API_KEY=ffa_test_YOUR_KEY_HERE -- npx --yes github:faxforagents/mcp
 ```
 
 ### Cursor, Zed, Codex and other stdio clients
 
-The same command (`npx -y faxforagents-mcp`) and the same `FAXFORAGENTS_API_KEY` variable in that
-client's MCP configuration file.
-
-### HTTP-only clients
-
-A hosted Streamable HTTP endpoint exists at `https://mcp.faxforagents.com/mcp/` (keep the trailing
-slash). Authenticate with `Authorization: Bearer ffa_test_...` or `X-API-Key: ffa_test_...`. Prefer
-the stdio setup above when possible, so the API key never leaves the user's machine.
+The same command (`npx --yes github:faxforagents/mcp`) and the same `FAXFORAGENTS_API_KEY` variable in
+that client's MCP configuration file.
 
 ## Verify the installation
 
 1. Restart the MCP client, or reload its MCP servers.
-2. Confirm the `faxforagents` server shows as connected and lists 16 tools.
+2. Confirm the `faxforagents` server shows as connected and lists 17 tools.
 3. Call `get_fax_capabilities`. It reports the provider (`sandbox` for a test key), the routes and the
    scopes of the key.
 4. Ask something like "Send a one page test fax to +15550000001". The agent should call
@@ -100,7 +114,8 @@ the stdio setup above when possible, so the API key never leaves the user's mach
 | `evaluate_fax_policy` | Dry run of the delegated policies | `policy:read` |
 | `get_delivery_evidence` | The carrier's evidence as a reference | `fax:read` |
 | `list_inbox` | Received faxes, metadata only | `inbox:read` |
-| `read_inbound_fax` | One received fax, its text as data | `inbox:read` |
+| `read_inbound_fax` | One received fax, its text and latest extraction as data | `inbox:read` |
+| `extract_fax_data` | OCR a received fax or a document, extract schema fields with citations | `document:extract` |
 | `request_human_help` | Open a help request for a person | `approval:request` |
 
 ## Troubleshooting
@@ -112,5 +127,5 @@ the stdio setup above when possible, so the API key never leaves the user's mach
 - `send_approved_fax` answers `approval_required`. A live send needs a human approval or a policy.
   Call `request_fax_approval` and wait for a person, or use a test key for the sandbox.
 - A fax is `unknown` or `partial`. Do not send again. Tell the person and let a human reconcile.
-- `npx` cannot find the package. Check Node 20 or later and network access to the npm registry. The
-  package name is exactly `faxforagents-mcp`.
+- `npx` cannot find the package. `faxforagents-mcp` is not on the npm registry yet: use the GitHub form
+  (`npx --yes github:faxforagents/mcp`, needs `git`) or a local clone, or the hosted URL.

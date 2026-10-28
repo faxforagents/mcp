@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Protocol smoke test. Drives the built server over stdio as an MCP client would and asserts the
- * handshake, the 16 tools, the no-key path and the introspection triple. Runs WITHOUT a key on purpose:
+ * handshake, the 17 tools, the no-key path and the introspection triple. Runs WITHOUT a key on purpose:
  * that path is what every new user and every indexer hits first, and it has to degrade to a message.
  * Provenance: livetennisapi-mcp test/protocol.mjs (2026-10-28).
  */
@@ -24,6 +24,7 @@ const EXPECTED_TOOLS = [
   'get_delivery_evidence',
   'list_inbox',
   'read_inbound_fax',
+  'extract_fax_data',
   'request_human_help',
 ];
 
@@ -66,7 +67,7 @@ for (const cap of ['tools', 'resources', 'prompts']) {
 const tools = messages.find((m) => m.id === 2)?.result?.tools;
 if (!Array.isArray(tools)) fail('no tools/list result');
 const names = tools.map((t) => t.name);
-if (names.length !== 16) fail(`expected 16 tools, got ${names.length}: ${names.join(', ')}`);
+if (names.length !== 17) fail(`expected 17 tools, got ${names.length}: ${names.join(', ')}`);
 for (const expected of EXPECTED_TOOLS) if (!names.includes(expected)) fail(`missing tool: ${expected}`);
 for (const tool of tools) {
   if (!tool.description) fail(`tool ${tool.name} has no description`);

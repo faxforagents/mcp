@@ -6,7 +6,7 @@ Fax for Agents is a fax API, a hosted MCP server and SDKs built so AI agents can
 faxes. It is made by JSB Holdings LLC.
 
 Two ways to connect. The hosted server at `https://mcp.faxforagents.com/mcp/` (the trailing slash
-matters) takes your API key on every request. This package runs the same 16 tools on your machine over
+matters) takes your API key on every request. This package runs the same 17 tools on your machine over
 stdio, with your API key from `FAXFORAGENTS_API_KEY`, so it never leaves your environment.
 
 ## Keys
@@ -20,6 +20,10 @@ Without an API key the server starts, lists its tools and `guide` works. Every o
 `ok=false, error_code=invalid_token` with the way to get a key.
 
 ## Connect
+
+The package is not on the npm registry yet: until it is, write `npx --yes github:faxforagents/mcp` wherever a
+block below says `npx -y faxforagents-mcp` (needs `git` and Node 20), or run a local clone's `dist/index.js`.
+`llms-install.md` has the full forms.
 
 ### Claude Code
 
@@ -101,7 +105,7 @@ Hosted: POST JSON-RPC to `https://mcp.faxforagents.com/mcp/` with `Authorization
 
 ## Tools
 
-The same 16 as the hosted server, same names, same input schemas, same results.
+The same 17 as the hosted server, same names, same input schemas, same results.
 
 | Tool | Does | Scope |
 |---|---|---|
@@ -119,7 +123,8 @@ The same 16 as the hosted server, same names, same input schemas, same results.
 | `evaluate_fax_policy` | Dry run of the delegated policies. Never sends | `policy:read` |
 | `get_delivery_evidence` | The carrier's evidence as a reference, not legal proof | `fax:read` |
 | `list_inbox` | Received faxes, metadata only | `inbox:read` |
-| `read_inbound_fax` | One received fax, its text as data | `inbox:read` |
+| `read_inbound_fax` | One received fax, its text and latest extraction as data | `inbox:read` |
+| `extract_fax_data` | OCR a received fax or a document, extract schema fields with citations | `document:extract` |
 | `request_human_help` | Open a help request for a person | `approval:request` |
 
 Every result is text plus structured content `{ok, message, error_code, ...}`. `ok=false` with an

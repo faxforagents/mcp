@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Parity with the hosted server: the stdio package exposes the same 16 tools, with the same
+ * Parity with the hosted server: the stdio package exposes the same 17 tools, with the same
  * descriptions, the same input properties, the same required lists, the same defaults and the same
  * annotations as https://mcp.faxforagents.com/mcp/ answered on 2026-10-28 (test/hosted-tools.json).
  * Refresh the snapshot with `node test/parity.mjs --refresh` (initialize and tools/list need no key).
