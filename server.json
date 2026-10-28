@@ -1,0 +1,43 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.faxforagents/faxforagents-mcp",
+  "description": "Send and receive faxes from an AI agent: documents, exact quotes, human approvals, delegated policies, delivery evidence, the inbox. Sandbox test keys cost nothing.",
+  "repository": {
+    "url": "https://github.com/faxforagents/mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "websiteUrl": "https://faxforagents.com",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "faxforagents-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "FAXFORAGENTS_API_KEY",
+          "description": "Your Fax for Agents API key (ffa_test_... for the sandbox, ffa_live_... for the carrier). Created at https://app.faxforagents.com. The server starts without it and every tool then explains how to get one.",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.faxforagents.com/mcp/",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "Bearer ffa_test_... or ffa_live_..., your Fax for Agents API key. initialize and tools/list work without it; calling a tool needs it.",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}

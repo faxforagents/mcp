@@ -1,0 +1,69 @@
+name: publish
+
+# Publishes to npm and lists the server in the MCP Registry when a GitHub Release is published.
+# Provenance: livetennisapi-oss/livetennisapi-mcp/.github/workflows/publish.yml (2026-10-28), actions pinned by SHA.
+#
+# npm Trusted Publishing (OIDC): no NPM_TOKEN exists. Configured on npm at Package, Settings, Trusted
+# Publisher: Owner faxforagents, Repo mcp, Workflow publish.yml, Environment npm. npm needs the package
+# to exist before OIDC can be configured, so 0.1.0 is published once with a short-lived granular token
+# that is revoked right after (PUBLISH.md of the org).
+#
+# The MCP Registry is authenticated with the same GitHub OIDC token (mcp-publisher login github-oidc).
+# Ownership is proven by the mcpName field of the published package.json matching server.json's name.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/faxforagents-mcp
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
+
+      - name: Assert the tag matches package.json and server.json
+        if: github.event_name == 'release'
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./package.json').version")"
+          SRV="$(node -p "require('./server.json').version")"
+          if [ "$TAG" != "$PKG" ] || [ "$TAG" != "$SRV" ]; then
+            echo "::error::release tag ($TAG) does not match package.json ($PKG) or server.json ($SRV)"
+            exit 1
+          fi
+          echo "tag and versions agree: $PKG"
+
+      # npm >= 11.5.1 is required for OIDC trusted publishing.
+      - run: npm install -g npm@latest
+
+      - name: Publish to npm (skip if already published)
+        run: |
+          PKG=$(node -p "require('./package.json').version")
+          if [ "$(npm view faxforagents-mcp@$PKG version 2>/dev/null)" = "$PKG" ]; then
+            echo "faxforagents-mcp@$PKG is already on npm, skipping"
+          else
+            npm publish --provenance --access public
+          fi
+
+      - name: Publish to the MCP Registry
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/').tar.gz" \
+            | tar xz mcp-publisher
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish

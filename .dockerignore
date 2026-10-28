@@ -1,0 +1,6 @@
+dist
+dist-mcpb
+node_modules
+.git
+test
+.github

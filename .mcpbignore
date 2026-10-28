@@ -1,0 +1,18 @@
+# The bundle ships one self-contained file (dist-mcpb/index.js, built with noExternal) plus the
+# manifest, never node_modules. Provenance: livetennisapi-mcp .mcpbignore (2026-10-28).
+node_modules/
+src/
+test/
+.github/
+dist/
+*.mcpb
+tsconfig.json
+tsup*.config.ts
+package-lock.json
+CHANGELOG.md
+SECURITY.md
+glama.json
+server.json
+Dockerfile
+.dockerignore
+scripts/

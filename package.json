@@ -1,0 +1,66 @@
+{
+  "name": "faxforagents-mcp",
+  "mcpName": "io.github.faxforagents/faxforagents-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Fax for Agents: let Claude, Cursor, Codex and other agents send and receive faxes through the Fax for Agents API, with quotes, human approvals, delegated policies and delivery evidence.",
+  "keywords": [
+    "mcp",
+    "modelcontextprotocol",
+    "model-context-protocol",
+    "mcp-server",
+    "fax",
+    "fax-api",
+    "ai-agent",
+    "agents",
+    "claude",
+    "cursor",
+    "llm"
+  ],
+  "homepage": "https://faxforagents.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/faxforagents/mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/faxforagents/mcp/issues"
+  },
+  "license": "MIT",
+  "author": "Fax for Agents <hello@faxforagents.com>",
+  "type": "module",
+  "bin": {
+    "faxforagents-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "llms-install.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "build:mcpb": "tsup --config tsup.mcpb.config.ts",
+    "pack:mcpb": "npm run build:mcpb && npx @anthropic-ai/mcpb pack . faxforagents-mcp.mcpb",
+    "typecheck": "tsc --noEmit",
+    "test": "node test/protocol.mjs && node test/tools-output.mjs && node test/parity.mjs",
+    "test:live": "node test/live.mjs",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "esbuild": "^0.28.2",
+    "tsup": "^8.5.1",
+    "typescript": "^5.5.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

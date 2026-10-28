@@ -1,0 +1,81 @@
+name: ci
+
+# Provenance: livetennisapi-oss/livetennisapi-mcp/.github/workflows/ci.yml (2026-10-28), actions pinned by SHA.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  truthcheck:
+    name: truth pins
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: sh scripts/truthcheck.sh
+
+  test:
+    name: build and test on node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["20", "22"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - name: VERSION matches package.json and the manifests
+        run: |
+          SRC=$(node -p "require('fs').readFileSync('src/version.ts','utf8').match(/'([^']+)'/)[1]")
+          PKG=$(node -p "require('./package.json').version")
+          SRV=$(node -p "require('./server.json').version")
+          SRVPKG=$(node -p "require('./server.json').packages[0].version")
+          MAN=$(node -p "require('./manifest.json').version")
+          PLG=$(node -p "require('./.claude-plugin/plugin.json').version")
+          echo "version.ts=$SRC package.json=$PKG server.json=$SRV/$SRVPKG manifest.json=$MAN plugin.json=$PLG"
+          [ "$SRC" = "$PKG" ] && [ "$SRV" = "$PKG" ] && [ "$SRVPKG" = "$PKG" ] && [ "$MAN" = "$PKG" ] && [ "$PLG" = "$PKG" ]
+      - run: npm run build
+      - run: npm test
+      - run: npm run build:mcpb
+
+  docker:
+    name: the indexer image starts and lists its tools without a key
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: docker build -t faxforagents-mcp .
+      - name: initialize and tools/list over stdio
+        run: |
+          printf '%s\n' \
+            '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"1"}}}' \
+            '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
+            '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+            | timeout 30 docker run --rm -i faxforagents-mcp 2>/dev/null \
+            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const ms=s.split('\n').filter(Boolean).map(JSON.parse);const t=ms.find(m=>m.id===2).result.tools;if(t.length!==16)process.exit(1);console.log('container lists',t.length,'tools')})"
+
+  live:
+    name: sandbox send against api.faxforagents.com (needs the secret)
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Live test (skips when FAXFORAGENTS_API_KEY is not configured)
+        env:
+          FAXFORAGENTS_API_KEY: ${{ secrets.FAXFORAGENTS_TEST_KEY }}
+        run: npm run test:live

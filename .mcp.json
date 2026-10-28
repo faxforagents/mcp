@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "faxforagents": {
+      "command": "npx",
+      "args": ["-y", "faxforagents-mcp"],
+      "env": {
+        "FAXFORAGENTS_API_KEY": "${FAXFORAGENTS_API_KEY}"
+      }
+    }
+  }
+}
