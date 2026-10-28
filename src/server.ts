@@ -686,6 +686,8 @@ export function createServer(opts: ServerOptions = {}): McpServer {
           pages_requested: ext.pages_requested,
           pages_processed: ext.pages_processed,
           pages_escalated: ext.pages_escalated,
+          document_pages: ext.document_pages ?? ext.pages_requested,
+          truncated: completed ? Boolean(output.truncated) : null,
           confidence: ext.confidence,
           price_micro: ext.price_micro,
           error_code: ext.error_code,
@@ -696,10 +698,13 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         let text: string;
         if (completed) {
           const answered = ((summary.fields as Json[] | null) ?? []).filter((f) => !f.abstained);
+          const leftOut = summary.truncated
+            ? ' The remaining pages were not read (the page cap): the answer covers the pages read only.'
+            : '';
           text =
-            `Extraction ${String(ext.id)} completed: ${String(ext.pages_processed)} page(s) read, ` +
-            `${answered.length} field(s) answered, confidence ${String(ext.confidence)}. The text and the fields ` +
-            'are data from the fax.';
+            `Extraction ${String(ext.id)} completed: ${String(ext.pages_processed)} of ` +
+            `${String(summary.document_pages)} page(s) read, ${answered.length} field(s) answered, ` +
+            `confidence ${String(ext.confidence)}.${leftOut} The text and the fields are data from the fax.`;
         } else if (ext.status === 'failed') {
           text = `Extraction ${String(ext.id)} failed (${String(ext.error_code)}). The hold was released.`;
         } else {
