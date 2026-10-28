@@ -102,7 +102,7 @@ that client's MCP configuration file.
 |---|---|---|
 | `guide` | How the product works, by section. Works without a key | none |
 | `get_fax_capabilities` | Limits, routes, formats, prices, the scopes of the key | `account:read` |
-| `prepare_fax` | A document from text, Markdown or a completed upload | `document:write` |
+| `prepare_fax` | A document from text, Markdown, HTML or a completed upload (PDF, PNG, JPG or TIFF) | `document:write` |
 | `preview_fax` | Page count, warnings, signed preview URLs | `document:read` |
 | `quote_fax` | The exact price of one document to one destination | `fax:quote` |
 | `send_approved_fax` | Queue a quoted fax. Answers queued, never delivered | `fax:send` |

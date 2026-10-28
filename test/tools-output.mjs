@@ -125,7 +125,7 @@ async function session(key, calls, apiUrl = base) {
 const fail = (msg) => { console.error('FAIL:', msg); api.close(); process.exit(1); };
 const sc = (r, label) => { if (!r?.structuredContent) fail(`${label}: no structuredContent`); if (r.content?.[0]?.type !== 'text') fail(`${label}: no text`); return r.structuredContent; };
 
-const [caps, prep, quote, send, sendAgain, status, list, balance, cancel, approval, policy, evidence, inbox, inbound, help, withExt, extDone, extNew, extBad, expired, broke, badApproval, badInbox, prepTwo, undeliverable] = await session('ffa_test_ok', [
+const [caps, prep, quote, send, sendAgain, status, list, balance, cancel, approval, policy, evidence, inbox, inbound, help, withExt, extDone, extNew, extBad, expired, broke, badApproval, badInbox, prepTwo, undeliverable, prepHtml] = await session('ffa_test_ok', [
   ['get_fax_capabilities', {}],
   ['prepare_fax', { text: 'hello' }],
   ['quote_fax', { document_id: 'doc_' + '2'.repeat(32), to: '+15550000001' }],
@@ -151,6 +151,7 @@ const [caps, prep, quote, send, sendAgain, status, list, balance, cancel, approv
   ['read_inbound_fax', { inbox_id: 'not an id' }],
   ['prepare_fax', { text: 'a', markdown: 'b' }],
   ['get_fax_status', { fax_id: 'fax_' + '9'.repeat(32) }],
+  ['prepare_fax', { html: '<p>Hello</p>', filename: 'page' }],
 ]);
 
 if (!/sandbox provider, test environment, routes us_ca/.test(sc(caps, 'caps').message)) fail('capabilities message');
@@ -200,6 +201,8 @@ if (seen.some((x) => x.body?.approval_id)) fail('bad approval id reached the API
 if (sc(badInbox, 'badInbox').error_code !== 'invalid_input') fail('bad inbox id');
 if (sc(prepTwo, 'prepTwo').error_code !== 'invalid_input') fail('prepare with two sources');
 if (!/no evidence is attached; treat as unknown/.test(sc(undeliverable, 'undeliverable').message)) fail('delivered without evidence');
+if (sc(prepHtml, 'prepHtml').ok !== true) fail('prepare_fax from html');
+if (!seen.some((x) => x.url === '/v1/documents' && x.method === 'POST' && x.body?.html === '<p>Hello</p>' && x.body?.filename === 'page')) fail('prepare_fax html body');
 
 const [rejected] = await session('ffa_test_wrong', [['get_fax_balance', {}]]);
 const rj = sc(rejected, 'rejected');

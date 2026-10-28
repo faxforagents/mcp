@@ -2,9 +2,9 @@
   "manifest_version": "0.3",
   "name": "faxforagents-mcp",
   "display_name": "Fax for Agents",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Send and receive faxes from Claude: documents, exact quotes, human approvals, delivery evidence.",
-  "long_description": "Fax for Agents is a fax API, a hosted MCP server and SDKs built so AI agents can send and receive faxes. It is made by JSB Holdings LLC.\n\nThis bundle runs the same 17 tools as the hosted server. The agent prepares a document from text or Markdown, gets an exact quote for one destination, sends it, and polls until the carrier's evidence arrives. A live send needs either a human approval bound to that exact quote or a delegated policy written by the account owner outside any prompt. Text that came from a received fax is listed as untrusted data on every result and never reaches a decision.\n\nA test key (ffa_test_...) uses the sandbox: no carrier, no cost, the destination number picks the outcome. Keys are created at https://app.faxforagents.com.",
+  "long_description": "Fax for Agents is a fax API, a hosted MCP server and SDKs built so AI agents can send and receive faxes. It is made by JSB Holdings LLC.\n\nThis bundle runs the same 17 tools as the hosted server. The agent prepares a document from text, Markdown, HTML or an uploaded PDF or image, gets an exact quote for one destination, sends it, and polls until the carrier's evidence arrives. A live send needs either a human approval bound to that exact quote or a delegated policy written by the account owner outside any prompt. Text that came from a received fax is listed as untrusted data on every result and never reaches a decision.\n\nA test key (ffa_test_...) uses the sandbox: no carrier, no cost, the destination number picks the outcome. Keys are created at https://app.faxforagents.com.",
   "author": {
     "name": "Fax for Agents",
     "email": "hello@faxforagents.com",

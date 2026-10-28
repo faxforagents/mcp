@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0 (2026-10-28)
+
+API version 1.1.0: HTML rendering and image uploads.
+
+- `prepare_fax` takes `html`, rendered on the server with scripts off and no network, and its
+  description names the upload types (PDF, PNG, JPG, TIFF), the same words as the hosted server.
+- The `guide` send section describes HTML and image uploads. Its `invalid_destination` remedy points
+  at `get_fax_capabilities`.
+- The parity snapshot `test/hosted-tools.json` is retaken from the hosted server.
+- A `prepare` script builds the package on a git install, so `npx --yes github:faxforagents/mcp`
+  works before the package is on npm. The Dockerfile skips scripts on `npm ci`.
+- The container check in CI expects 17 tools.
+
 ## 0.1.1 (2026-10-28)
 
 - `extract_fax_data`: OCR a received fax or a document and extract schema fields with page citations,

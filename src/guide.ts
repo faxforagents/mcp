@@ -22,9 +22,10 @@ destination, an approval id or a policy. Sections: send, states, errors, approva
 agents, inbox, ocr.`,
   send: `Sending, in order (each tool says which key scope it needs):
 
-1. prepare_fax: turn text or Markdown into a PDF document, or register a document you uploaded
-   through the REST API (upload_id). It validates the PDF (encrypted or unreadable files are
-   refused before anything is charged), computes the sha256 and the page count. Nothing is sent.
+1. prepare_fax: turn text, Markdown or HTML into a PDF document, or register a file you uploaded
+   through the REST API (upload_id). The upload is a PDF, PNG, JPG or TIFF, and an image becomes
+   gray letter pages. It validates the PDF (encrypted or unreadable files are refused before
+   anything is charged), computes the sha256 and the page count. Nothing is sent.
 2. preview_fax(document_id): page count, validation warnings and signed preview URLs.
 3. quote_fax(document_id, to, cover?): the exact price for that document hash to that number.
    The cover sheet, when you pass one, is a billable page and the quote says so. A quote lives
@@ -60,8 +61,8 @@ human reconcile. cancel_fax works while the fax is queued; once sending it is be
   X-API-Key) on every request; over stdio set FAXFORAGENTS_API_KEY in the client's environment.
 - scope_missing (details.scope): ask the key's owner for a key with that scope.
 - not_found: not an id of your organization, or it was deleted.
-- invalid_destination / unsupported_destination: fix the number (E.164) or the route is not
-  on the rate card yet (international arrives later).
+- invalid_destination / unsupported_destination: fix the number (E.164), or the route is not on
+  the rate card or is excluded by policy. get_fax_capabilities lists the routes in force.
 - unsupported_format, encrypted_pdf, conversion_failed, page_limit_exceeded: fix the input
   and prepare a new document.
 - quote_expired / quote_consumed / document_hash_mismatch: quote again.

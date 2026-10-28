@@ -282,18 +282,19 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     {
       outputSchema: outputSchema('prepare_fax'),
       description:
-        'Create a document to fax from text or Markdown, or register a completed REST upload (upload_id). ' +
-        'Validates the PDF and returns its id, sha256 and page count. Never sends. Scope: document:write.',
-      inputSchema: { text: opt(), markdown: opt(), upload_id: opt(), filename: opt() },
+        'Create a document to fax from text, Markdown or HTML, or register a completed REST upload ' +
+        '(PDF, PNG, JPG or TIFF) by upload_id. Validates the PDF and returns its id, sha256 and page count. ' +
+        'Never sends. Scope: document:write.',
+      inputSchema: { text: opt(), markdown: opt(), html: opt(), upload_id: opt(), filename: opt() },
       annotations: WRITE,
     },
-    async ({ text, markdown, upload_id, filename }) =>
+    async ({ text, markdown, html, upload_id, filename }) =>
       run(async (api) => {
         const given = Object.fromEntries(
-          Object.entries({ text, markdown, upload_id }).filter(([, v]) => v),
+          Object.entries({ text, markdown, html, upload_id }).filter(([, v]) => v),
         );
         if (Object.keys(given).length !== 1) {
-          return { text: 'Pass exactly one of text, markdown or upload_id.', ok: false, errorCode: 'invalid_input' };
+          return { text: 'Pass exactly one of text, markdown, html or upload_id.', ok: false, errorCode: 'invalid_input' };
         }
         const doc = await api.request('POST', '/v1/documents', { json: { ...given, filename } });
         return {

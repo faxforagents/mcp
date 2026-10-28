@@ -14,11 +14,11 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 COPY tsconfig.json tsup.config.ts ./
 COPY src ./src
 RUN npm run build
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
 FROM node:22-alpine
 WORKDIR /app

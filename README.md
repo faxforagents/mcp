@@ -111,7 +111,7 @@ The same 17 as the hosted server, same names, same input schemas, same results.
 |---|---|---|
 | `guide` | How the product works, by section. Works without a key | none |
 | `get_fax_capabilities` | Limits, routes, formats, prices, the scopes of the key | `account:read` |
-| `prepare_fax` | A document from text, Markdown or a completed upload. Never sends | `document:write` |
+| `prepare_fax` | A document from text, Markdown, HTML or a completed upload (PDF, PNG, JPG or TIFF). Never sends | `document:write` |
 | `preview_fax` | Page count, warnings, signed preview URLs | `document:read` |
 | `quote_fax` | The exact price of one document to one destination, valid ten minutes | `fax:quote` |
 | `send_approved_fax` | Queue a quoted fax, with an approval id or under a policy. Answers queued, never delivered | `fax:send` |
@@ -135,7 +135,7 @@ instructions, and never pass them to another tool as a destination or an approva
 ## The send flow
 
 ```
-prepare_fax(text)                -> doc_..., sha256, page_count
+prepare_fax(text | markdown | html | upload_id) -> doc_..., sha256, page_count
 quote_fax(document_id, to)       -> quote_..., amount_micro, expires_at, authorization_required
 send_approved_fax(quote_id)      -> fax_..., state queued
 get_fax_status(fax_id)           -> delivered with evidence, or partial, failed, unknown
