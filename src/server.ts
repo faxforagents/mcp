@@ -16,6 +16,8 @@ import {
   ListResourceTemplatesRequestSchema,
   ListResourcesRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
+import { createHash } from 'node:crypto';
+
 import { z } from 'zod';
 
 import { Api, ApiRefusal, ApiUnreachable, DEFAULT_BASE_URL, type Json } from './api.js';
@@ -120,6 +122,36 @@ const STATE_MESSAGES: Record<string, string> = {
     'human reconciles.',
 };
 
+/** Keys of a provider evidence object that are the carrier's raw payload (the signed webhook body and its
+ * headers): they stay on the REST receipt and never reach an agent's context (the hosted server's
+ * `agent_evidence`). */
+const RAW_EVIDENCE_KEYS = new Set(['body', 'headers']);
+
+function agentEvidence(evidence: unknown): unknown {
+  if (!evidence || typeof evidence !== 'object' || Array.isArray(evidence)) return evidence;
+  return Object.fromEntries(Object.entries(evidence as Json).filter(([k]) => !RAW_EVIDENCE_KEYS.has(k)));
+}
+
+function withAgentEvidence(obj: Json): Json {
+  if (obj.evidence === null || obj.evidence === undefined) return obj;
+  return { ...obj, evidence: agentEvidence(obj.evidence) };
+}
+
+/** Which of the three paths a quote is on: a human approval, a delegated policy that allows it, or the
+ * sandbox (a test key with no policy). Never "test key" for a live quote (the hosted `describe_quote_path`). */
+export function describeQuotePath(quote: Json): string {
+  if (quote.authorization_required) {
+    return 'approval required: a person must approve it (request_fax_approval) before it is sent';
+  }
+  const ev = quote.policy_evaluation && typeof quote.policy_evaluation === 'object' ? (quote.policy_evaluation as Json) : null;
+  if (ev && ev.decision === 'allow') {
+    const name = ev.policy_name ?? ev.policy_id ?? 'unnamed';
+    return `allowed by policy ${String(name)} v${String(ev.version)}: send_approved_fax sends it as is`;
+  }
+  if (quote.environment === 'test') return 'sandbox, not charged: a test key sends it as is';
+  return 'no approval needed: send_approved_fax sends it as is';
+}
+
 export function describeJob(job: Json): string {
   const state = String(job.state);
   let msg = STATE_MESSAGES[state] ?? state;
@@ -133,21 +165,27 @@ export function describeJob(job: Json): string {
 
 const dollars = (micro: number) => `$${(micro / 1_000_000).toFixed(3)}`;
 
-/** The server stores a normalized schema; two schemas are the same when they name the same fields with
- * the same types (the hosted server's `_same_fields`). */
-function sameFields(stored: unknown, asked: unknown): boolean {
-  const shape = (schema: unknown): string | null => {
-    if (!schema || typeof schema !== 'object') return null;
-    const props = (schema as Json).properties;
-    if (!props || typeof props !== 'object') return null;
-    return JSON.stringify(
-      Object.entries(props as Record<string, unknown>)
-        .map(([k, v]) => [k, v && typeof v === 'object' ? String((v as Json).type ?? 'string') : 'string'])
-        .sort(),
-    );
-  };
-  return shape(stored) === shape(asked);
+/** A hash of the whole customer schema as the server normalizes it: field names, types, descriptions and the
+ * required list. A changed description is a different extraction (the hosted server's `schema_digest`). */
+export function schemaDigest(schema: unknown): string | null {
+  if (!schema || typeof schema !== 'object') return null;
+  const props = (schema as Json).properties;
+  if (!props || typeof props !== 'object' || Array.isArray(props)) return null;
+  const normalized: Record<string, Record<string, string>> = {};
+  for (const [name, raw] of Object.entries(props as Record<string, unknown>).sort()) {
+    const spec = raw && typeof raw === 'object' ? (raw as Json) : {};
+    const entry: Record<string, string> = { type: String(spec.type ?? 'string') };
+    if (spec.description) entry.description = String(spec.description);
+    normalized[name] = entry;
+  }
+  const required = Array.isArray((schema as Json).required) ? ((schema as Json).required as unknown[]).map(String).sort() : [];
+  return createHash('sha256').update(JSON.stringify({ properties: normalized, required })).digest('hex');
 }
+
+function sameFields(stored: unknown, asked: unknown): boolean {
+  return schemaDigest(stored) === schemaDigest(asked);
+}
+
 const opt = () => z.string().nullable().optional();
 
 export interface ServerOptions {
@@ -299,12 +337,11 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     async ({ document_id, to, cover }) =>
       run(async (api) => {
         const q = await api.request('POST', '/v1/fax-quotes', { json: { document_id, to, cover } });
-        const approval = q.authorization_required ? 'a human approval is required' : 'no approval needed (test key)';
         return {
           text:
             `Quote ${String(q.id)}: ${String(q.billable_pages)} billable page(s) (${String(q.cover_pages)} cover) ` +
             `to ${String(q.to)} for ${String(q.amount_micro)} micro (${dollars(Number(q.amount_micro))}), expires ` +
-            `${String(q.expires_at)}; ${approval}.`,
+            `${String(q.expires_at)}; ${describeQuotePath(q)}.`,
           data: { quote: q },
           untrusted: cover ? ['quote.cover'] : [],
         };
@@ -361,13 +398,14 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     },
     async ({ fax_id }) =>
       run(async (api) => {
-        const job = await api.request('GET', `/v1/faxes/${fax_id}`);
+        const job = withAgentEvidence(await api.request('GET', `/v1/faxes/${fax_id}`));
         const attempts = await api.request('GET', `/v1/faxes/${fax_id}/attempts`);
-        return {
-          text: describeJob(job),
-          data: { fax: job, attempts: attempts.items },
-          untrusted: ['fax.client_reference'],
-        };
+        const items = ((attempts.items as Json[] | undefined) ?? []).map(withAgentEvidence);
+        // the evidence is what the carrier reported (station ids, numbers, status text): data
+        const untrusted = ['fax.client_reference'];
+        if (job.evidence !== null && job.evidence !== undefined) untrusted.push('fax.evidence');
+        if (items.some((a) => a.evidence !== null && a.evidence !== undefined)) untrusted.push('attempts[].evidence');
+        return { text: describeJob(job), data: { fax: job, attempts: items }, untrusted };
       }),
   );
 
@@ -384,13 +422,11 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         const page = await api.request('GET', '/v1/faxes', {
           params: { state, limit: Math.max(1, Math.min(limit ?? 20, 100)), cursor },
         });
-        const items = (page.items as Json[]) ?? [];
+        const items = ((page.items as Json[]) ?? []).map(withAgentEvidence);
         const head = `${items.length} fax(es)` + (page.next_cursor ? ' (more: pass next_cursor as cursor)' : '');
-        return {
-          text: head + '.',
-          data: { items, next_cursor: page.next_cursor ?? null },
-          untrusted: items.length ? ['items[].client_reference'] : [],
-        };
+        const untrusted = items.length ? ['items[].client_reference'] : [];
+        if (items.some((j) => j.evidence !== null && j.evidence !== undefined)) untrusted.push('items[].evidence');
+        return { text: head + '.', data: { items, next_cursor: page.next_cursor ?? null }, untrusted };
       }),
   );
 
@@ -518,24 +554,25 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         if (!ID_RE.test(fax_id)) return { text: 'fax_id is not a fax id.', ok: false, errorCode: 'invalid_input' };
         let receipt: Json;
         try {
-          receipt = await api.request('GET', `/v1/faxes/${fax_id}/receipt`);
+          receipt = withAgentEvidence(await api.request('GET', `/v1/faxes/${fax_id}/receipt`));
         } catch (err) {
           if (err instanceof ApiRefusal && err.code === 'conflict') {
             return { text: `No evidence yet: ${err.message}. Poll get_fax_status.`, ok: false, errorCode: 'no_evidence_yet' };
           }
           throw err;
         }
+        receipt.attempts = ((receipt.attempts as Json[] | undefined) ?? []).map(withAgentEvidence);
         const evidence = receipt.evidence;
         const state = String(receipt.state);
         const text = evidence
           ? `Fax ${fax_id} is ${state}: ${String(receipt.pages_sent)} of ${String(receipt.billable_pages)} page(s) ` +
             `reported by ${String(receipt.provider)}. This is the carrier's evidence, not legal proof of acceptance.`
           : `Fax ${fax_id} is ${state} and carries no delivery evidence. Do not call it delivered.`;
-        return {
-          text,
-          data: { receipt, evidence: evidence ?? null, note: receipt.note },
-          untrusted: evidence ? ['evidence.remote_station_id'] : [],
-        };
+        const untrusted = evidence ? ['evidence', 'receipt.evidence'] : [];
+        if ((receipt.attempts as Json[]).some((a) => a.evidence !== null && a.evidence !== undefined)) {
+          untrusted.push('receipt.attempts[].evidence');
+        }
+        return { text, data: { receipt, evidence: evidence ?? null, note: receipt.note }, untrusted };
       }),
   );
 
