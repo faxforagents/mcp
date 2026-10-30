@@ -130,6 +130,29 @@ agent a key with `fax:send` only when you mean it.
 Hosted: POST JSON-RPC to `https://mcp.faxforagents.com/mcp/` with `Authorization: Bearer` (or
 `X-API-Key`). Local: `npx -y faxforagents-mcp` with `FAXFORAGENTS_API_KEY` set. Node 20 or later.
 
+### Docker
+
+The repository ships a Dockerfile. The container speaks stdio, so run it with `-i` and no port.
+
+```bash
+docker build -t faxforagents-mcp https://github.com/faxforagents/mcp.git
+docker run --rm -i -e FAXFORAGENTS_API_KEY=ffa_test_... faxforagents-mcp
+```
+
+As a client entry, the same image:
+
+```json
+{
+  "mcpServers": {
+    "faxforagents": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "-e", "FAXFORAGENTS_API_KEY", "faxforagents-mcp"],
+      "env": { "FAXFORAGENTS_API_KEY": "ffa_test_..." }
+    }
+  }
+}
+```
+
 ## Tools
 
 The same 15 as the hosted server, same names, same input schemas, same results.
