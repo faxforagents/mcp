@@ -127,5 +127,5 @@ that client's MCP configuration file.
 - `send_approved_fax` answers `approval_required`. A live send needs a human approval or a policy.
   Call `request_fax_approval` and wait for a person, or use a test key for the sandbox.
 - A fax is `unknown` or `partial`. Do not send again. Tell the person and let a human reconcile.
-- `npx` cannot find the package. `faxforagents-mcp` is not on the npm registry yet: use the GitHub form
-  (`npx --yes github:faxforagents/mcp`, needs `git`) or a local clone, or the hosted URL.
+- `npx` cannot find the package. Check that the machine reaches registry.npmjs.org. The GitHub form
+  (`npx --yes github:faxforagents/mcp`, needs `git`), a local clone and the hosted URL all work without it.

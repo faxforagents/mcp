@@ -6,13 +6,13 @@
     "url": "https://github.com/faxforagents/mcp",
     "source": "github"
   },
-  "version": "0.2.0",
+  "version": "0.2.1",
   "websiteUrl": "https://faxforagents.com",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "faxforagents-mcp",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "transport": {
         "type": "stdio"
       },

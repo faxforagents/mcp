@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 (2026-10-30)
+
+First version on the npm registry, so `npx -y faxforagents-mcp` works everywhere and the README no
+longer says the package is missing. The README opens with the Fax for Agents logo, a link row to the
+website, quickstart, API reference, SDK docs, MCP page, dashboard, pricing and changelog, and badges
+for the npm version, CI, licence, Node and the tool count. No server code changed.
+
 ## 0.2.0 (2026-10-28)
 
 API version 1.1.0: HTML rendering and image uploads.
