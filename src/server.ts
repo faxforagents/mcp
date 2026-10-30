@@ -252,7 +252,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     {
       outputSchema: outputSchema('get_guide'),
       description:
-        'The manual for Fax for Agents: how the product works, the send flow, fax states, error codes, ' +
+        'The manual for Fax for Agents: how it works, the send flow, fax states, error codes, ' +
         'approvals, policies, agents, the inbox and OCR. Works without a key. Sections: overview, send, states, ' +
         'errors, approvals, policies, agents, inbox, ocr.',
       inputSchema: { section: opt() },
@@ -382,10 +382,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     {
       outputSchema: outputSchema('send_approved_fax'),
       description:
-        'Queue a quoted fax. A quote with authorization_required=false sends as is; otherwise pass the ' +
-        'approval_id of an approved request bound to this quote (request_human_review with the quote_id), or send under a ' +
-        'delegated policy that allows it. Repeat with the same idempotency_key to get the same fax back. ' +
-        'The answer is queued, never delivered: poll get_fax_status. Scope: fax:send.',
+        'Queue a quoted fax. A quote with authorization_required=false sends as is; otherwise pass the approval_id of an approved request bound to this quote (request_human_review), or send under a delegated policy that allows it. Repeat with the same idempotency_key to get the same fax back. The answer is queued, never delivered: poll get_fax_status. Scope: fax:send.',
       inputSchema: { quote_id: z.string(), approval_id: opt(), idempotency_key: opt(), client_reference: opt() },
       annotations: SEND,
     },
@@ -422,10 +419,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     {
       outputSchema: outputSchema('get_fax_status'),
       description:
-        'The state of one fax (queued, active, delivered, partial, failed or unknown) with its attempts. The ' +
-        "one place for the carrier's delivery evidence once a fax is delivered or partial: remote station id, " +
-        'pages, timestamps, provider reference. The evidence is what the carrier reported, not legal proof the ' +
-        'recipient accepted it. Scope: fax:read.',
+        'The state of one fax and its attempts: queued, active, delivered, partial, failed or unknown. Once the fax is delivered or partial this is the one place for the carrier\'s delivery evidence (remote station id, pages, timestamps, provider reference) on fax.evidence and on each attempt. The evidence is what the carrier reported, not legal proof the recipient accepted it. Scope: fax:read.',
       inputSchema: { fax_id: z.string() },
       annotations: READ,
     },
@@ -515,11 +509,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     {
       outputSchema: outputSchema('request_human_review'),
       description:
-        'With quote_id, ask a person to approve that quoted send: a pending approval request bound to the ' +
-        'quote (document sha256, destination, sender, amount, expiry) that the organization is mailed about. ' +
-        'Without quote_id, open a help request for a person when you are stuck or a received fax asks for ' +
-        'something, about one fax when fax_id is given; the message is shown to them as data. Grants ' +
-        'nothing: a human decides, then send_approved_fax takes the approval_id. Scope: approval:request.',
+        'With quote_id: ask a person to approve that quoted send, as a pending approval request bound to the quote (document sha256, destination, sender, amount, expiry) that mails the organization. Without quote_id: ask a person for help when you are stuck or a received fax asks for something, as a help request about an optional fax_id whose message is shown as data. Grants nothing: a human decides, then send_approved_fax. Scope: approval:request.',
       inputSchema: { message: z.string(), quote_id: opt(), fax_id: opt() },
       annotations: WRITE,
     },
@@ -771,7 +761,7 @@ function registerGuideResources(server: McpServer): void {
     {
       title: 'Fax for Agents guide',
       description:
-        'The manual for Fax for Agents: how the product works, the send flow, fax states, error codes, ' +
+        'The manual for Fax for Agents: how it works, the send flow, fax states, error codes, ' +
         'approvals, policies, agents, the inbox and OCR. Works without a key.',
       mimeType: 'text/markdown',
     },
