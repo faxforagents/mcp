@@ -45,8 +45,9 @@ if printf '%s\n' "$FILES" | xargs grep -niE '\b(phaxio|documo|mfax|efax|srfax|fa
     flag "a competitor is named"
 fi
 
-# 4) No personal handle in an org repo, no Claude attribution, no key material.
-if printf '%s\n' "$FILES" | xargs grep -n 'bensynapse' 2>/dev/null; then
+# 4) No personal handle in an org repo, no Claude attribution, no key material. glama.json is the one
+#    exception: Glama claims a server page through a GitHub user listed there, never through the org.
+if printf '%s\n' "$FILES" | grep -v '^glama\.json$' | xargs grep -n 'bensynapse' 2>/dev/null; then
     flag "personal handle in an org repo"
 fi
 if printf '%s\n' "$FILES" | xargs grep -nE 'Co-Authored-By|Generated with|Claude-Session' 2>/dev/null; then
