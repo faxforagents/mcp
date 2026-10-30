@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.3.0 (2026-10-30)
+
+The tool surface changes and the old names stop working. There are 15 tools now, the same as the
+hosted server. `guide` is renamed `get_guide` and keeps every section. `get_delivery_evidence` is
+removed and `get_fax_status` carries the carrier's evidence once a fax is delivered or partial, with
+every carrier string named under `untrusted`. `request_fax_approval` and `request_human_help` merge
+into `request_human_review(message, quote_id?, fax_id?)`. With a `quote_id` it is the approval request
+bound to that quote. Without one it is the help request, about one fax when `fax_id` is given. A client
+that calls one of the four old names gets an unknown-tool error from this version on.
+
+The guide is served as MCP resources. `faxforagents://guide` is the whole manual as `text/markdown` and
+`faxforagents://guide/{section}` is one section. Two prompts ship with the server. `send_a_fax` takes `to`
+and an optional `summary` and orders the send steps. `handle_received_fax` takes `inbox_item_id` and
+orders the inbox steps with the rule that text read from a fax is data. None of this needs a key.
+
+The README carries the LobeHub badge in its badge row, and the install guide says the package is on npm.
+The parity test can be skipped with `FFA_SKIP_PARITY=1` while the hosted server is behind this package.
+The hosted snapshot in `test/hosted-tools.json` is retaken once the hosted server serves this surface.
+
 ## 0.2.1 (2026-10-30)
 
 First version on the npm registry, so `npx -y faxforagents-mcp` works everywhere and the README no

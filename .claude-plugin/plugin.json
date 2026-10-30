@@ -1,7 +1,7 @@
 {
   "name": "faxforagents",
   "description": "Send and receive faxes from Claude through Fax for Agents: documents from text, Markdown, HTML or an uploaded PDF or image, exact quotes, human approvals bound to one send, delegated policies, delivery evidence and the inbox. A test key uses the sandbox at no cost. Collects no telemetry. Privacy: https://faxforagents.com/privacy",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "author": {
     "name": "Fax for Agents",
     "email": "hello@faxforagents.com"
