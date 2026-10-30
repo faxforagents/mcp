@@ -66,7 +66,7 @@ jobs:
             '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
             '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
             | timeout 30 docker run --rm -i faxforagents-mcp 2>/dev/null \
-            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const ms=s.split('\n').filter(Boolean).map(JSON.parse);const t=ms.find(m=>m.id===2).result.tools;if(t.length!==17)process.exit(1);console.log('container lists',t.length,'tools')})"
+            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const ms=s.split('\n').filter(Boolean).map(JSON.parse);const t=ms.find(m=>m.id===2).result.tools;if(t.length!==15)process.exit(1);console.log('container lists',t.length,'tools')})"
 
   live:
     name: sandbox send against api.faxforagents.com (needs the secret)

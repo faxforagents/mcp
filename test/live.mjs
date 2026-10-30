@@ -59,8 +59,7 @@ for (let i = 0; i < 60; i++) {
   await new Promise((r) => setTimeout(r, 2000));
 }
 if (status.fax.state !== 'delivered' || !status.fax.evidence) fail(`final state ${status.fax.state}, evidence ${JSON.stringify(status.fax.evidence)}`);
-const ev = await call('get_delivery_evidence', { fax_id: sent.fax.id });
-if (ev.ok !== true || !ev.evidence) fail('get_delivery_evidence');
+if (!status.untrusted?.includes('fax.evidence') || !/not legal proof/.test(status.message)) fail('get_fax_status does not present the evidence as the carrier\'s report');
 const bal = await call('get_fax_balance', {});
 if (bal.ok !== true) fail('get_fax_balance');
 const list = await call('list_faxes', { limit: 1 });
