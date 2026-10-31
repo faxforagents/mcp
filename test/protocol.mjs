@@ -12,7 +12,7 @@ const EXPECTED_TOOLS = [
   'get_guide',
   'get_fax_capabilities',
   'prepare_fax',
-  'preview_fax',
+  'get_document',
   'quote_fax',
   'send_approved_fax',
   'get_fax_status',
@@ -20,7 +20,7 @@ const EXPECTED_TOOLS = [
   'get_fax_balance',
   'cancel_fax',
   'request_human_review',
-  'evaluate_fax_policy',
+  'get_review_status',
   'list_inbox',
   'read_inbound_fax',
   'extract_fax_data',
@@ -158,7 +158,7 @@ const handlePrompt = pByName.handle_received_fax;
 if (!handlePrompt || argOf(handlePrompt, 'inbox_item_id')?.required !== true) fail('handle_received_fax arguments');
 const sendText = reply(11)?.result?.messages?.[0]?.content?.text ?? '';
 const inOrder = (text, steps) => steps.map((s) => text.indexOf(s)).every((i, k, arr) => i >= 0 && (k === 0 || i > arr[k - 1]));
-if (!inOrder(sendText, ['prepare_fax', 'quote_fax', 'request_human_review', 'evaluate_fax_policy', 'send_approved_fax', 'get_fax_status'])) fail(`send_a_fax steps out of order: ${sendText}`);
+if (!inOrder(sendText, ['prepare_fax', 'quote_fax', 'request_human_review', 'get_review_status', 'send_approved_fax', 'get_fax_status'])) fail(`send_a_fax steps out of order: ${sendText}`);
 if (!/\+15550000001/.test(sendText) || !/a test page/.test(sendText)) fail('send_a_fax does not carry its arguments');
 const handleText = reply(12)?.result?.messages?.[0]?.content?.text ?? '';
 if (!inOrder(handleText, ['read_inbound_fax', 'extract_fax_data', 'request_human_review'])) fail(`handle_received_fax steps out of order: ${handleText}`);

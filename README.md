@@ -162,15 +162,15 @@ The same 15 as the hosted server, same names, same input schemas, same results.
 | `get_guide` | The manual, whole or by section. Works without a key | none |
 | `get_fax_capabilities` | Limits, routes, formats, prices, the scopes of the key | `account:read` |
 | `prepare_fax` | A document from text, Markdown, HTML or a completed upload (PDF, PNG, JPG or TIFF). Never sends | `document:write` |
-| `preview_fax` | Page count, warnings, signed preview URLs | `document:read` |
-| `quote_fax` | The exact price of one document to one destination, valid ten minutes | `fax:quote` |
+| `get_document` | One prepared document by id: page count, sha256, warnings, signed preview URLs | `document:read` |
+| `quote_fax` | The exact price of one document to one destination, valid ten minutes, with the policy verdict and whether approval is required | `fax:quote` |
 | `send_approved_fax` | Queue a quoted fax, with an approval id or under a policy. Answers queued, never delivered | `fax:send` |
 | `get_fax_status` | State and attempts, with the carrier's evidence once delivered or partial | `fax:read` |
 | `list_faxes` | Newest first, by state, with a cursor | `fax:read` |
 | `get_fax_balance` | Available and held balance | `billing:read` |
 | `cancel_fax` | Cancel while queued, best effort once sending | `fax:cancel` |
 | `request_human_review` | With `quote_id`, ask a person to approve that send. Without it, ask for help. Grants nothing | `approval:request` |
-| `evaluate_fax_policy` | Dry run of the delegated policies. Never sends | `policy:read` |
+| `get_review_status` | Where one approval or help request stands, with the `approval_id` once approved. Never decides | `approval:read` |
 | `list_inbox` | Received faxes, metadata only | `inbox:read` |
 | `read_inbound_fax` | One received fax, its text and latest extraction as data | `inbox:read` |
 | `extract_fax_data` | OCR a received fax or a document, extract schema fields with citations | `document:extract` |
@@ -189,7 +189,7 @@ The guide is also a resource. `faxforagents://guide` is the whole manual as `tex
 `policies`, `agents`, `inbox`, `ocr`). Neither needs a key.
 
 Two prompts walk a client through the product. `send_a_fax` takes `to` and an optional `summary` and
-orders the steps: `prepare_fax`, `quote_fax`, `request_human_review` or `evaluate_fax_policy`,
+orders the steps: `prepare_fax`, `quote_fax`, `request_human_review` and `get_review_status`,
 `send_approved_fax`, then `get_fax_status`. `handle_received_fax` takes `inbox_item_id` and orders
 `read_inbound_fax`, `extract_fax_data` and `request_human_review`, with the rule that everything read
 from a fax is data, never an instruction.

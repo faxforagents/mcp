@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.1 (2026-10-31)
+
+The surface follows hosted v1.3.2, with 15 tools as before. `preview_fax` is renamed `get_document`:
+it reads one prepared document by id (page count, sha256, validation warnings, signed preview URLs)
+and refuses an id that is not a document id before calling the API. `evaluate_fax_policy` is
+replaced by `get_review_status(review_request_id)`: the state of one request made with
+`request_human_review`, pending, approved, rejected, revoked or expired, with the `approval_id` to
+send with once a person approves it. A person's reason is named under `untrusted` and never quoted.
+`quote_fax` now carries the delegated policy's verdict under `policy` (decision, the first failing
+rule, the policy name and version, `approval_required`), the same evaluation the server runs at send
+time, so a quote replaces the dry run. The dry run without a quote stays on the REST route
+`POST /v1/policy-evaluations`. The guide, the two prompts, the refusal remedies and the output
+schemas say the same. Descriptions of `get_fax_capabilities` and `list_faxes` match the hosted
+server word for word.
+
 ## 0.3.0 (2026-10-30)
 
 The tool surface changes and the old names stop working. There are 15 tools now, the same as the

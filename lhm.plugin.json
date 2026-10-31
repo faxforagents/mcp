@@ -8,7 +8,7 @@
     {
       "name": "send_a_fax",
       "title": "Send a fax",
-      "description": "Send one fax the safe way: prepare_fax, quote_fax, request_human_review or evaluate_fax_policy, send_approved_fax, then get_fax_status until the carrier answers.",
+      "description": "Send one fax the safe way: prepare_fax, quote_fax, request_human_review and get_review_status when approval is required, send_approved_fax, then get_fax_status until the carrier answers.",
       "arguments": [
         {
           "name": "to",
@@ -37,81 +37,74 @@
   ],
   "resources": [
     {
+      "uri": "faxforagents://guide",
       "name": "guide",
       "title": "Fax for Agents guide",
-      "uri": "faxforagents://guide",
       "description": "The manual for Fax for Agents: how it works, the send flow, fax states, error codes, approvals, policies, agents, the inbox and OCR. Works without a key.",
       "mimeType": "text/markdown"
     },
     {
-      "name": "guide-overview",
       "title": "Fax for Agents guide: overview",
-      "uri": "faxforagents://guide/overview",
       "description": "The overview section of the Fax for Agents guide.",
-      "mimeType": "text/markdown"
+      "mimeType": "text/markdown",
+      "uri": "faxforagents://guide/overview",
+      "name": "guide-overview"
     },
     {
-      "name": "guide-send",
       "title": "Fax for Agents guide: send",
-      "uri": "faxforagents://guide/send",
       "description": "The send section of the Fax for Agents guide.",
-      "mimeType": "text/markdown"
+      "mimeType": "text/markdown",
+      "uri": "faxforagents://guide/send",
+      "name": "guide-send"
     },
     {
-      "name": "guide-states",
       "title": "Fax for Agents guide: states",
-      "uri": "faxforagents://guide/states",
       "description": "The states section of the Fax for Agents guide.",
-      "mimeType": "text/markdown"
+      "mimeType": "text/markdown",
+      "uri": "faxforagents://guide/states",
+      "name": "guide-states"
     },
     {
-      "name": "guide-errors",
       "title": "Fax for Agents guide: errors",
-      "uri": "faxforagents://guide/errors",
       "description": "The errors section of the Fax for Agents guide.",
-      "mimeType": "text/markdown"
+      "mimeType": "text/markdown",
+      "uri": "faxforagents://guide/errors",
+      "name": "guide-errors"
     },
     {
-      "name": "guide-approvals",
       "title": "Fax for Agents guide: approvals",
-      "uri": "faxforagents://guide/approvals",
       "description": "The approvals section of the Fax for Agents guide.",
-      "mimeType": "text/markdown"
+      "mimeType": "text/markdown",
+      "uri": "faxforagents://guide/approvals",
+      "name": "guide-approvals"
     },
     {
-      "name": "guide-policies",
       "title": "Fax for Agents guide: policies",
-      "uri": "faxforagents://guide/policies",
       "description": "The policies section of the Fax for Agents guide.",
-      "mimeType": "text/markdown"
+      "mimeType": "text/markdown",
+      "uri": "faxforagents://guide/policies",
+      "name": "guide-policies"
     },
     {
-      "name": "guide-agents",
       "title": "Fax for Agents guide: agents",
-      "uri": "faxforagents://guide/agents",
       "description": "The agents section of the Fax for Agents guide.",
-      "mimeType": "text/markdown"
+      "mimeType": "text/markdown",
+      "uri": "faxforagents://guide/agents",
+      "name": "guide-agents"
     },
     {
-      "name": "guide-inbox",
       "title": "Fax for Agents guide: inbox",
-      "uri": "faxforagents://guide/inbox",
       "description": "The inbox section of the Fax for Agents guide.",
-      "mimeType": "text/markdown"
+      "mimeType": "text/markdown",
+      "uri": "faxforagents://guide/inbox",
+      "name": "guide-inbox"
     },
     {
-      "name": "guide-ocr",
       "title": "Fax for Agents guide: ocr",
-      "uri": "faxforagents://guide/ocr",
       "description": "The ocr section of the Fax for Agents guide.",
-      "mimeType": "text/markdown"
-    },
-    {
-      "name": "guide-section",
-      "title": "Fax for Agents guide, one section",
-      "uriTemplate": "faxforagents://guide/{section}",
-      "description": "One section of the guide. Sections: overview, send, states, errors, approvals, policies, agents, inbox, ocr.",
-      "mimeType": "text/markdown"
+      "mimeType": "text/markdown",
+      "uri": "faxforagents://guide/ocr",
+      "name": "guide-ocr"
     }
   ],
   "tags": [
@@ -212,11 +205,11 @@
     },
     {
       "name": "get_fax_capabilities",
-      "description": "Limits, routes, formats, prices and the scopes of your key. Scope: account:read.",
+      "description": "The account-level view behind your key: limits, routes, formats, prices and the key's scopes. Facts about the account only; it never evaluates a send (quote_fax prices and judges one). Scope: account:read.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
-        "properties": {},
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "properties": {}
       },
       "outputSchema": {
         "type": "object",
@@ -585,8 +578,8 @@
       }
     },
     {
-      "name": "preview_fax",
-      "description": "Page count, validation warnings and signed preview URLs of a document. Scope: document:read.",
+      "name": "get_document",
+      "description": "Fetch a prepared document by id, the ids prepare_fax returns: page count, sha256, validation warnings and signed preview URLs. Scope: document:read.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -821,7 +814,7 @@
     },
     {
       "name": "quote_fax",
-      "description": "Exact price for one document to one E.164 destination; the cover sheet (to_name, from_name, subject, message) is a billable page. Returns amount in USD micro-units, expiry (10 min) and whether a human approval is required. Scope: fax:quote.",
+      "description": "Exact price for one document to one E.164 destination; the cover sheet (to_name, from_name, subject, message) is a billable page. Returns amount in USD micro-units, expiry (10 min) and the delegated policy's verdict for this exact send under policy: allowed or denied, the first failing rule and whether a human approval is required. The same evaluation the server runs at send time, so no separate dry run. Nothing is sent. Scope: fax:quote.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -867,6 +860,71 @@
           },
           "ok": {
             "type": "boolean"
+          },
+          "policy": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "approval_required": {
+                    "type": "boolean"
+                  },
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "allow",
+                      "deny"
+                    ]
+                  },
+                  "policy_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "policy_name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "policy_version_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "rule": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "version": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "approval_required",
+                  "decision",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "quote": {
             "anyOf": [
@@ -1600,7 +1658,7 @@
     },
     {
       "name": "list_faxes",
-      "description": "Your organization's faxes, newest first, optionally by state; pages continue with cursor. Scope: fax:read.",
+      "description": "Sent faxes of your organization, newest first, optionally by state; pages continue with cursor. Scope: fax:read.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -1849,9 +1907,9 @@
       "name": "get_fax_balance",
       "description": "Available and held wallet balance of this key's environment, in USD micro-units. Read-only. Scope: billing:read.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
-        "properties": {},
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "properties": {}
       },
       "outputSchema": {
         "type": "object",
@@ -2243,6 +2301,12 @@
                       "null"
                     ]
                   },
+                  "fax_job_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
                   "id": {
                     "type": "string"
                   },
@@ -2345,36 +2409,30 @@
       }
     },
     {
-      "name": "evaluate_fax_policy",
-      "description": "Dry run of the delegated policies that apply to your key: allow or deny for a quote (quote_id) or a planned send (document_id and to), with the first failing rule. Never sends, never changes anything. Scope: policy:read.",
+      "name": "get_review_status",
+      "description": "The state of one request made with request_human_review. For an approval request: pending, approved, rejected, revoked or expired, with the approval_id to pass to send_approved_fax once it is approved. For a help request: whether a person has closed it. Read-only; it never decides. Scope: approval:read.",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "quote_id": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "document_id": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "to": {
-            "type": [
-              "string",
-              "null"
-            ]
+          "review_request_id": {
+            "type": "string"
           }
         },
+        "required": [
+          "review_request_id"
+        ],
         "additionalProperties": false,
         "$schema": "http://json-schema.org/draft-07/schema#"
       },
       "outputSchema": {
         "type": "object",
         "properties": {
+          "approval_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "details": {},
           "error_code": {
             "type": [
@@ -2382,76 +2440,116 @@
               "null"
             ]
           },
-          "evaluation": {
+          "message": {
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "review_request": {
             "anyOf": [
               {
                 "type": "object",
                 "properties": {
-                  "decision": {
-                    "type": "string"
-                  },
-                  "denials": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": {}
-                    }
-                  },
-                  "executed": {
-                    "type": "boolean"
-                  },
-                  "plan": {
+                  "bound": {
                     "type": "object",
                     "additionalProperties": {}
                   },
-                  "policy_id": {
+                  "consumed_by_job_id": {
                     "type": [
                       "string",
                       "null"
                     ]
                   },
-                  "policy_name": {
+                  "created_at": {
+                    "type": "string"
+                  },
+                  "decided_at": {
                     "type": [
                       "string",
                       "null"
                     ]
                   },
-                  "policy_version_id": {
+                  "decided_by": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "expires_at": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "fax_job_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "send",
+                      "help"
+                    ]
+                  },
+                  "message": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "notified": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "quote_id": {
                     "type": [
                       "string",
                       "null"
                     ]
                   },
                   "reason": {
-                    "type": "string"
-                  },
-                  "rule": {
                     "type": [
                       "string",
                       "null"
                     ]
                   },
-                  "version": {
-                    "anyOf": [
-                      {
-                        "type": "integer"
-                      },
-                      {
-                        "type": "null"
-                      }
+                  "requested_by": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "approved",
+                      "rejected",
+                      "revoked",
+                      "expired"
                     ]
                   }
                 },
                 "required": [
-                  "decision",
-                  "denials",
-                  "plan",
-                  "policy_id",
-                  "policy_name",
-                  "policy_version_id",
+                  "bound",
+                  "consumed_by_job_id",
+                  "created_at",
+                  "decided_at",
+                  "decided_by",
+                  "expires_at",
+                  "id",
+                  "kind",
+                  "message",
+                  "quote_id",
                   "reason",
-                  "rule",
-                  "version"
+                  "requested_by",
+                  "status"
                 ],
                 "additionalProperties": true
               },
@@ -2459,12 +2557,6 @@
                 "type": "null"
               }
             ]
-          },
-          "message": {
-            "type": "string"
-          },
-          "ok": {
-            "type": "boolean"
           },
           "untrusted": {
             "anyOf": [
@@ -2534,6 +2626,9 @@
                 "items": {
                   "type": "object",
                   "properties": {
+                    "amount_micro": {
+                      "type": "integer"
+                    },
                     "document_id": {
                       "type": [
                         "string",
@@ -2710,6 +2805,9 @@
               {
                 "type": "object",
                 "properties": {
+                  "amount_micro": {
+                    "type": "integer"
+                  },
                   "document": {
                     "anyOf": [
                       {
@@ -3037,5 +3135,5 @@
       }
     }
   ],
-  "version": "0.3.0"
+  "version": "0.3.1"
 }

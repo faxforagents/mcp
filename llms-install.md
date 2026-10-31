@@ -104,15 +104,15 @@ client's MCP configuration file.
 | `get_guide` | The manual, whole or by section. Works without a key | none |
 | `get_fax_capabilities` | Limits, routes, formats, prices, the scopes of the key | `account:read` |
 | `prepare_fax` | A document from text, Markdown, HTML or a completed upload (PDF, PNG, JPG or TIFF) | `document:write` |
-| `preview_fax` | Page count, warnings, signed preview URLs | `document:read` |
-| `quote_fax` | The exact price of one document to one destination | `fax:quote` |
+| `get_document` | One prepared document by id: page count, sha256, warnings, previews | `document:read` |
+| `quote_fax` | The exact price of one document to one destination, with the policy verdict | `fax:quote` |
 | `send_approved_fax` | Queue a quoted fax. Answers queued, never delivered | `fax:send` |
 | `get_fax_status` | State, attempts, the carrier's evidence once delivered or partial | `fax:read` |
 | `list_faxes` | Newest first, by state | `fax:read` |
 | `get_fax_balance` | Available and held balance | `billing:read` |
 | `cancel_fax` | Cancel while queued | `fax:cancel` |
 | `request_human_review` | With `quote_id`, ask a person to approve that send. Without it, ask for help | `approval:request` |
-| `evaluate_fax_policy` | Dry run of the delegated policies | `policy:read` |
+| `get_review_status` | Where one approval or help request stands | `approval:read` |
 | `list_inbox` | Received faxes, metadata only | `inbox:read` |
 | `read_inbound_fax` | One received fax, its text and latest extraction as data | `inbox:read` |
 | `extract_fax_data` | OCR a received fax or a document, extract schema fields with citations | `document:extract` |

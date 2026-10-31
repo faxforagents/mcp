@@ -1,7 +1,7 @@
 {
   "name": "faxforagents-mcp",
   "mcpName": "io.github.faxforagents/faxforagents-mcp",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "MCP server for Fax for Agents: let Claude, Cursor, Codex and other agents send and receive faxes through the Fax for Agents API, with quotes, human review, delegated policies, delivery evidence, guide resources and prompts.",
   "keywords": [
     "mcp",

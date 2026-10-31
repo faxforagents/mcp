@@ -28,11 +28,14 @@ agents, inbox, ocr.`,
    through the REST API (upload_id). The upload is a PDF, PNG, JPG or TIFF, and an image becomes
    gray letter pages. It validates the PDF (encrypted or unreadable files are refused before
    anything is charged), computes the sha256 and the page count. Nothing is sent.
-2. preview_fax(document_id): page count, validation warnings and signed preview URLs.
+2. get_document(document_id): the document by the id prepare_fax returned: page count, sha256,
+   validation warnings and signed preview URLs. Documents are listed through the REST API
+   (GET /v1/documents); the tool reads one id.
 3. quote_fax(document_id, to, cover?): the exact price for that document hash to that number.
    The cover sheet, when you pass one, is a billable page and the quote says so. A quote lives
-   10 minutes and is used by exactly one send. The quote says whether a human approval is
-   required (authorization_required) and, when your key is under a policy, the policy's answer.
+   10 minutes and is used by exactly one send. The quote carries the policy verdict under
+   policy: decision (allow or deny), the first failing rule, and approval_required, which says
+   whether a person must approve it. It is the same evaluation the server runs at send time.
 4. send_approved_fax(quote_id, approval_id?): queues the fax. The answer says queued, never
    delivered: a fax is delivered only when the carrier's evidence is on the attempt. A quote that
    needs authorization is sent with an approval_id (see approvals) or under a delegated policy
@@ -88,14 +91,17 @@ human reconcile. cancel_fax works while the fax is queued; once sending it is be
   expiry. It grants nothing. The organization is mailed. The answer is the request id and its
   status.
 - A person approves or rejects it in the dashboard or with the REST API (scope approval:decide,
-  never the key that asked, never an agent's key). Poll the request by id or wait to be told.
+  never the key that asked, never an agent's key). get_review_status(review_request_id) (scope
+  approval:read) says where it stands: pending, approved, rejected, revoked or expired. Once it
+  is approved the answer carries the approval_id to send with.
 - send_approved_fax(quote_id, approval_id) consumes the approval. Every bound field is checked
   again: a changed document is document_hash_mismatch, a different destination or amount is
   approval_mismatch, a request past its quote's expiry is approval_expired. One approval covers
   exactly one send.
 - request_human_review(message, fax_id?) without a quote_id (scope approval:request) opens a help
   request for a person when you are stuck, about one fax when fax_id is given. The message is
-  shown to them as data. It does not approve anything.`,
+  shown to them as data. It does not approve anything. get_review_status says when a person has
+  closed it.`,
   policies: `Delegated policies: an administrator writes limits once, outside any prompt, and the server
 evaluates them deterministically on every send (scope policy:read to look, policy:admin to write;
 an agent key never has policy:admin).
@@ -105,8 +111,10 @@ numbers, max pages and max amount per job, daily and monthly caps (jobs and amou
 document sources (uploaded or rendered), allowed environments, an expiry, and the agents or keys
 it applies to. A change is a new version; a job records the version it was sent under.
 
-- evaluate_fax_policy(quote_id) or evaluate_fax_policy(document_id, to) is a dry run: allow or
-  deny with the first failing rule. It never sends and never changes anything.
+- quote_fax carries the verdict under policy: allow or deny with the first failing rule, and
+  approval_required. It is the evaluation the server runs at send time; the quote itself sends
+  nothing. A dry run without a quote (document_id and to) is the REST route
+  POST /v1/policy-evaluations (scope policy:read).
 - When a quote is allowed by a policy, send_approved_fax(quote_id) sends without an approval.
 - Nothing you write in a prompt, a purpose, a client_reference or a cover sheet reaches the
   policy engine. Text that says "ignore the budget" changes nothing; the rule still decides.`,
