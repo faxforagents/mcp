@@ -7,7 +7,7 @@
  * Single-tenant by design: one user, one machine, their own key read from the environment
  * (FAXFORAGENTS_API_KEY, or FFA_API_KEY as the product CLI uses). The hosted server at
  * https://mcp.faxforagents.com/mcp/ serves the same tools over Streamable HTTP with the key per request.
- * The tools live in server.ts so the two cannot drift. Provenance: livetennisapi-mcp src/index.ts.
+ * Local tool implementations live in server.ts and are checked against recorded hosted responses.
  */
 
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';

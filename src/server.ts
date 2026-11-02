@@ -1,18 +1,8 @@
 /**
- * The MCP server: the same 15 tools as the hosted server at https://mcp.faxforagents.com/mcp/, with
- * the same names, input schemas and results, calling the REST API with the user's own key. The guide is
- * also served as resources (faxforagents://guide and faxforagents://guide/{section}) and two prompts walk
- * through sending a fax and handling a received one; neither needs a key.
- *
- * Ported from the hosted server's tools.py (2026-10-28, surface of 2026-10-30). Rules kept from it and
- * from livetennisapi-mcp:
- * the key is a parameter, never read at module level; every result is both prose and structured
- * content `{ok, message, error_code, untrusted?, ...}`; a refusal from the API is a normal result with
- * a remedy, not a thrown error; the success message of a send says queued, never delivered; text that
- * came from a customer or from a received fax is listed under `untrusted`; a missing key degrades to a
- * message naming the environment variable rather than an error. Every tool declares the hosted server's
- * output schema (src/output-schemas.json, built into zod by output-schema.ts) and the SDK validates each
- * result's structured content against it before it leaves the process.
+ * Local implementations of the hosted server's tools over the REST API.
+ * Tool argument validation returns the hosted invalid_input envelope before dispatch.
+ * Output schemas are checked without rebuilding the tool response.
+ * Guide resources and prompts work without credentials.
  */
 
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -25,6 +15,7 @@ import { Api, ApiRefusal, ApiUnreachable, DEFAULT_BASE_URL, type Json } from './
 import { GUIDE_TEXT, SECTIONS, section } from './guide.js';
 import { outputSchema } from './output-schema.js';
 import { VERSION } from './version.js';
+import { toolDispatch } from './tool-dispatch.js';
 
 export { VERSION };
 
@@ -33,7 +24,6 @@ export const STDIO_HINT =
   'faxforagents-mcp (never on the command line). Keys are created in the dashboard or with the ffa CLI.';
 
 const HARD_REFUSALS = new Set(['invalid_token', 'scope_missing', 'api_not_configured']);
-const ID_RE = /^[a-z]{2,8}_[0-9a-f]{32}$/;
 
 const READ = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false } as const;
 const WRITE = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true } as const;
@@ -283,6 +273,8 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     { capabilities: { tools: {}, resources: {}, prompts: {} }, instructions: SECTIONS.overview },
   );
 
+  const dispatch = toolDispatch(server);
+
   registerGuideResources(server);
   registerPrompts(server);
 
@@ -304,7 +296,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     }
   };
 
-  server.registerTool(
+  dispatch.registerTool(
     'get_guide',
     {
       outputSchema: outputSchema('get_guide'),
@@ -331,7 +323,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     },
   );
 
-  server.registerTool(
+  dispatch.registerTool(
     'get_fax_capabilities',
     {
       outputSchema: outputSchema('get_fax_capabilities'),
@@ -356,7 +348,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       }),
   );
 
-  server.registerTool(
+  dispatch.registerTool(
     'prepare_fax',
     {
       outputSchema: outputSchema('prepare_fax'),
@@ -386,7 +378,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       }),
   );
 
-  server.registerTool(
+  dispatch.registerTool(
     'get_document',
     {
       outputSchema: outputSchema('get_document'),
@@ -398,7 +390,6 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     },
     async ({ document_id }) =>
       run(async (api) => {
-        if (!ID_RE.test(document_id)) return { text: 'document_id is not a document id.', ok: false, errorCode: 'invalid_input' };
         const doc = await api.request('GET', `/v1/documents/${document_id}`);
         const pages = await api.request('GET', `/v1/documents/${document_id}/pages`);
         const warnings = ((doc.validation as Json | null)?.warnings as unknown[] | undefined) ?? [];
@@ -415,7 +406,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       }),
   );
 
-  server.registerTool(
+  dispatch.registerTool(
     'quote_fax',
     {
       outputSchema: outputSchema('quote_fax'),
@@ -447,7 +438,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       }),
   );
 
-  server.registerTool(
+  dispatch.registerTool(
     'send_approved_fax',
     {
       outputSchema: outputSchema('send_approved_fax'),
@@ -458,13 +449,6 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     },
     async ({ quote_id, approval_id, idempotency_key, client_reference }) =>
       run(async (api) => {
-        if (approval_id && !ID_RE.test(approval_id)) {
-          return {
-            text: 'approval_id is not an approval id (apr_ followed by 32 hex characters). Nothing was sent.',
-            ok: false,
-            errorCode: 'invalid_input',
-          };
-        }
         const idem = idempotency_key || `mcp:${quote_id}`;
         const payload: Json = { quote_id, client_reference };
         if (approval_id) payload.approval_id = approval_id;
@@ -484,7 +468,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       }),
   );
 
-  server.registerTool(
+  dispatch.registerTool(
     'get_fax_status',
     {
       outputSchema: outputSchema('get_fax_status'),
@@ -495,7 +479,6 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     },
     async ({ fax_id }) =>
       run(async (api) => {
-        if (!ID_RE.test(fax_id)) return { text: 'fax_id is not a fax id.', ok: false, errorCode: 'invalid_input' };
         const job = withAgentEvidence(await api.request('GET', `/v1/faxes/${fax_id}`));
         const attempts = await api.request('GET', `/v1/faxes/${fax_id}/attempts`);
         const items = ((attempts.items as Json[] | undefined) ?? []).map(withAgentEvidence);
@@ -509,7 +492,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       }),
   );
 
-  server.registerTool(
+  dispatch.registerTool(
     'list_faxes',
     {
       outputSchema: outputSchema('list_faxes'),
@@ -532,7 +515,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       }),
   );
 
-  server.registerTool(
+  dispatch.registerTool(
     'get_fax_balance',
     {
       outputSchema: outputSchema('get_fax_balance'),
@@ -554,7 +537,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       }),
   );
 
-  server.registerTool(
+  dispatch.registerTool(
     'cancel_fax',
     {
       outputSchema: outputSchema('cancel_fax'),
@@ -575,7 +558,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       }),
   );
 
-  server.registerTool(
+  dispatch.registerTool(
     'request_human_review',
     {
       outputSchema: outputSchema('request_human_review'),
@@ -589,7 +572,6 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         if (!message.trim()) return { text: 'Say what the person should know.', ok: false, errorCode: 'invalid_input' };
         const note = message.slice(0, 2000);
         if (quote_id) {
-          if (!ID_RE.test(quote_id)) return { text: 'quote_id is not a quote id.', ok: false, errorCode: 'invalid_input' };
           if (fax_id) {
             return {
               text: 'Pass quote_id to ask for an approval, or fax_id to ask for help about a fax, not both.',
@@ -610,7 +592,6 @@ export function createServer(opts: ServerOptions = {}): McpServer {
             untrusted: ['review_request.message'],
           };
         }
-        if (fax_id && !ID_RE.test(fax_id)) return { text: 'fax_id is not a fax id.', ok: false, errorCode: 'invalid_input' };
         const req = await api.request('POST', '/v1/approval-requests', {
           json: { kind: 'help', message: note, fax_job_id: fax_id },
         });
@@ -627,7 +608,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       }),
   );
 
-  server.registerTool(
+  dispatch.registerTool(
     'get_review_status',
     {
       outputSchema: outputSchema('get_review_status'),
@@ -640,13 +621,6 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     },
     async ({ review_request_id }) =>
       run(async (api) => {
-        if (!ID_RE.test(review_request_id)) {
-          return {
-            text: 'review_request_id is not a request id (apr_ followed by 32 hex characters).',
-            ok: false,
-            errorCode: 'invalid_input',
-          };
-        }
         const req = await api.request('GET', `/v1/approval-requests/${review_request_id}`);
         const { text, approvalId } = describeReview(req);
         const untrusted = ['message', 'reason'].filter((k) => req[k]).map((k) => `review_request.${k}`);
@@ -654,7 +628,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       }),
   );
 
-  server.registerTool(
+  dispatch.registerTool(
     'list_inbox',
     {
       outputSchema: outputSchema('list_inbox'),
@@ -676,7 +650,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       }),
   );
 
-  server.registerTool(
+  dispatch.registerTool(
     'read_inbound_fax',
     {
       outputSchema: outputSchema('read_inbound_fax'),
@@ -689,7 +663,6 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     },
     async ({ inbox_id }) =>
       run(async (api) => {
-        if (!ID_RE.test(inbox_id)) return { text: 'inbox_id is not an inbox item id.', ok: false, errorCode: 'invalid_input' };
         const item = await api.request('GET', `/v1/inbox/${inbox_id}`);
         const hasText = item.text !== null && item.text !== undefined;
         // M13: the latest extraction, so the caller knows whether to wait, read or ask for one.
@@ -721,7 +694,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       }),
   );
 
-  server.registerTool(
+  dispatch.registerTool(
     'extract_fax_data',
     {
       outputSchema: outputSchema('extract_fax_data'),
@@ -745,8 +718,6 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         if (Boolean(inbox_item_id) === Boolean(document_id)) {
           return { text: 'Pass exactly one of inbox_item_id or document_id.', ok: false, errorCode: 'invalid_input' };
         }
-        const target = inbox_item_id || document_id || '';
-        if (!ID_RE.test(target)) return { text: 'That is not a resource id.', ok: false, errorCode: 'invalid_input' };
         const existing =
           ((await api.request('GET', '/v1/extractions', { params: { inbox_item_id, document_id, limit: 5 } })).items as
             | Json[]
@@ -801,6 +772,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       }),
   );
 
+  dispatch.install();
   return server;
 }
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.2 (2026-11-02)
+
+Wrong tool argument types now return the hosted `invalid_input` envelope with `isError=true`, the argument name, expected type and remedy.
+Every resource-ID argument requires its own prefix and 32 lowercase hexadecimal characters before any REST call.
+Malformed quote IDs in `send_approved_fax` return `invalid_input`. Unknown well-formed IDs still reach the API and return `not_found`.
+Regression fixtures use the hosted 1.5.2 acceptance responses over raw stdio and the MCP SDK.
+The README explains local validation, REST calls and bearer authentication.
+
 ## 0.3.1 (2026-10-31)
 
 The surface follows hosted v1.3.2, with 15 tools as before. `preview_fax` is renamed `get_document`:

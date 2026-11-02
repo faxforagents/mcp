@@ -1,0 +1,705 @@
+{
+  "source": "client-acceptance-mcp-2026-11-02b.md",
+  "hosted_version": "1.5.2",
+  "notes": "Structured responses copied from the report. Validation isError=true is recorded in the detailed retests. Text content was redacted.",
+  "cases": [
+    {
+      "row": 6,
+      "name": "get_guide",
+      "arguments": {
+        "section": 17
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "section requires a value of type string. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 7,
+      "name": "get_guide",
+      "arguments": {
+        "section": 17
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "section requires a value of type string. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 8,
+      "name": "list_faxes",
+      "arguments": {
+        "limit": "wave2-invalid"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "limit requires a value of type integer. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 9,
+      "name": "list_inbox",
+      "arguments": {
+        "limit": "wave2-invalid"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "limit requires a value of type integer. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 10,
+      "name": "send_approved_fax",
+      "arguments": {
+        "quote_id": "wave2-invalid"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "quote_id must be a string with the quote_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 11,
+      "name": "get_guide",
+      "arguments": {
+        "section": 17
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "section requires a value of type string. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 15,
+      "name": "prepare_fax",
+      "arguments": {
+        "text": 17
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "text requires a value of type string. Correct the argument and try again."
+      },
+      "input_note": "The report redacts text. The numeric input is a synthetic wrong-type replacement."
+    },
+    {
+      "row": 16,
+      "name": "prepare_fax",
+      "arguments": {
+        "upload_id": "wave2b_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "upload_id must be a string with the up_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 17,
+      "name": "prepare_fax",
+      "arguments": {
+        "upload_id": "up_wave2b"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "upload_id must be a string with the up_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 18,
+      "name": "prepare_fax",
+      "arguments": {
+        "upload_id": "up_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "message": "No such id in your organization, or it was deleted.",
+        "error_code": "not_found"
+      }
+    },
+    {
+      "row": 19,
+      "name": "get_document",
+      "arguments": {
+        "document_id": 17
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "document_id requires a value of type string. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 20,
+      "name": "get_document",
+      "arguments": {
+        "document_id": "wave2b_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "document_id must be a string with the doc_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 21,
+      "name": "get_document",
+      "arguments": {
+        "document_id": "doc_wave2b"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "document_id must be a string with the doc_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 22,
+      "name": "get_document",
+      "arguments": {
+        "document_id": "doc_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "message": "No such id in your organization, or it was deleted.",
+        "error_code": "not_found"
+      }
+    },
+    {
+      "row": 23,
+      "name": "quote_fax",
+      "arguments": {
+        "document_id": 17,
+        "to": "+15550000001"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "document_id requires a value of type string. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 24,
+      "name": "quote_fax",
+      "arguments": {
+        "document_id": "wave2b_00000000000000000000000000000000",
+        "to": "+15550000001"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "document_id must be a string with the doc_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 25,
+      "name": "quote_fax",
+      "arguments": {
+        "document_id": "doc_wave2b",
+        "to": "+15550000001"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "document_id must be a string with the doc_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 26,
+      "name": "quote_fax",
+      "arguments": {
+        "document_id": "doc_00000000000000000000000000000000",
+        "to": "+15550000001"
+      },
+      "structuredContent": {
+        "ok": false,
+        "message": "No such id in your organization, or it was deleted.",
+        "error_code": "not_found"
+      }
+    },
+    {
+      "row": 27,
+      "name": "send_approved_fax",
+      "arguments": {
+        "quote_id": 17
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "quote_id requires a value of type string. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 28,
+      "name": "send_approved_fax",
+      "arguments": {
+        "quote_id": "wave2b_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "quote_id must be a string with the quote_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 29,
+      "name": "send_approved_fax",
+      "arguments": {
+        "quote_id": "quote_wave2b"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "quote_id must be a string with the quote_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 30,
+      "name": "send_approved_fax",
+      "arguments": {
+        "quote_id": "quote_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "message": "No such id in your organization, or it was deleted.",
+        "error_code": "not_found"
+      }
+    },
+    {
+      "row": 31,
+      "name": "send_approved_fax",
+      "arguments": {
+        "quote_id": "quote_00000000000000000000000000000000",
+        "approval_id": "wave2b_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "approval_id must be a string with the apr_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 32,
+      "name": "send_approved_fax",
+      "arguments": {
+        "quote_id": "quote_00000000000000000000000000000000",
+        "approval_id": "apr_wave2b"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "approval_id must be a string with the apr_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 33,
+      "name": "send_approved_fax",
+      "arguments": {
+        "quote_id": "quote_00000000000000000000000000000000",
+        "approval_id": "apr_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "message": "No such id in your organization, or it was deleted.",
+        "error_code": "not_found"
+      }
+    },
+    {
+      "row": 34,
+      "name": "get_fax_status",
+      "arguments": {
+        "fax_id": 17
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "fax_id requires a value of type string. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 35,
+      "name": "get_fax_status",
+      "arguments": {
+        "fax_id": "wave2b_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "fax_id must be a string with the fax_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 36,
+      "name": "get_fax_status",
+      "arguments": {
+        "fax_id": "fax_wave2b"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "fax_id must be a string with the fax_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 37,
+      "name": "get_fax_status",
+      "arguments": {
+        "fax_id": "fax_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "message": "No such id in your organization, or it was deleted.",
+        "error_code": "not_found"
+      }
+    },
+    {
+      "row": 38,
+      "name": "list_faxes",
+      "arguments": {
+        "state": 17
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "state requires a value of type string. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 42,
+      "name": "cancel_fax",
+      "arguments": {
+        "fax_id": 17
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "fax_id requires a value of type string. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 43,
+      "name": "cancel_fax",
+      "arguments": {
+        "fax_id": "wave2b_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "fax_id must be a string with the fax_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 44,
+      "name": "cancel_fax",
+      "arguments": {
+        "fax_id": "fax_wave2b"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "fax_id must be a string with the fax_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 45,
+      "name": "cancel_fax",
+      "arguments": {
+        "fax_id": "fax_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "message": "No such id in your organization, or it was deleted.",
+        "error_code": "not_found"
+      }
+    },
+    {
+      "row": 46,
+      "name": "request_human_review",
+      "arguments": {
+        "message": 17
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "message requires a value of type string. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 47,
+      "name": "request_human_review",
+      "arguments": {
+        "message": "wave2b validation probe",
+        "quote_id": "wave2b_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "quote_id must be a string with the quote_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 48,
+      "name": "request_human_review",
+      "arguments": {
+        "message": "wave2b validation probe",
+        "quote_id": "quote_wave2b"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "quote_id must be a string with the quote_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 49,
+      "name": "request_human_review",
+      "arguments": {
+        "message": "wave2b validation probe",
+        "quote_id": "quote_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "message": "No such id in your organization, or it was deleted.",
+        "error_code": "not_found"
+      }
+    },
+    {
+      "row": 50,
+      "name": "request_human_review",
+      "arguments": {
+        "message": "wave2b validation probe",
+        "fax_id": "wave2b_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "fax_id must be a string with the fax_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 51,
+      "name": "request_human_review",
+      "arguments": {
+        "message": "wave2b validation probe",
+        "fax_id": "fax_wave2b"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "fax_id must be a string with the fax_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 52,
+      "name": "request_human_review",
+      "arguments": {
+        "message": "wave2b validation probe",
+        "fax_id": "fax_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "message": "No such id in your organization, or it was deleted.",
+        "error_code": "not_found"
+      }
+    },
+    {
+      "row": 53,
+      "name": "get_review_status",
+      "arguments": {
+        "review_request_id": 17
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "review_request_id requires a value of type string. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 54,
+      "name": "get_review_status",
+      "arguments": {
+        "review_request_id": "wave2b_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "review_request_id must be a string with the apr_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 55,
+      "name": "get_review_status",
+      "arguments": {
+        "review_request_id": "apr_wave2b"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "review_request_id must be a string with the apr_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 56,
+      "name": "get_review_status",
+      "arguments": {
+        "review_request_id": "apr_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "message": "No such id in your organization, or it was deleted.",
+        "error_code": "not_found"
+      }
+    },
+    {
+      "row": 57,
+      "name": "list_inbox",
+      "arguments": {
+        "limit": "wave2b-invalid"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "limit requires a value of type integer. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 59,
+      "name": "read_inbound_fax",
+      "arguments": {
+        "inbox_id": 17
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "inbox_id requires a value of type string. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 60,
+      "name": "read_inbound_fax",
+      "arguments": {
+        "inbox_id": "wave2b_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "inbox_id must be a string with the inb_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 61,
+      "name": "read_inbound_fax",
+      "arguments": {
+        "inbox_id": "inb_wave2b"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "inbox_id must be a string with the inb_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 62,
+      "name": "read_inbound_fax",
+      "arguments": {
+        "inbox_id": "inb_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "message": "No such id in your organization, or it was deleted.",
+        "error_code": "not_found"
+      }
+    },
+    {
+      "row": 63,
+      "name": "extract_fax_data",
+      "arguments": {
+        "inbox_item_id": 17
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "inbox_item_id requires a value of type string. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 64,
+      "name": "extract_fax_data",
+      "arguments": {
+        "inbox_item_id": "wave2b_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "inbox_item_id must be a string with the inb_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 65,
+      "name": "extract_fax_data",
+      "arguments": {
+        "inbox_item_id": "inb_wave2b"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "inbox_item_id must be a string with the inb_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 66,
+      "name": "extract_fax_data",
+      "arguments": {
+        "inbox_item_id": "inb_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "message": "No such id in your organization, or it was deleted.",
+        "error_code": "not_found"
+      }
+    },
+    {
+      "row": 67,
+      "name": "extract_fax_data",
+      "arguments": {
+        "document_id": "wave2b_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "document_id must be a string with the doc_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 68,
+      "name": "extract_fax_data",
+      "arguments": {
+        "document_id": "doc_wave2b"
+      },
+      "structuredContent": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "document_id must be a string with the doc_ prefix and 32 lowercase hexadecimal characters. Correct the argument and try again."
+      }
+    },
+    {
+      "row": 69,
+      "name": "extract_fax_data",
+      "arguments": {
+        "document_id": "doc_00000000000000000000000000000000"
+      },
+      "structuredContent": {
+        "ok": false,
+        "message": "No such id in your organization, or it was deleted.",
+        "error_code": "not_found"
+      }
+    }
+  ]
+}
