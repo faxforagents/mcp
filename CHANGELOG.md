@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+Add a tool.store MCPB bundle with all 15 tools and required API key configuration.
+`npm run pack:tool-store` builds the server, validates the manifest strictly and packs the bundle locally.
+
 ## 0.4.1 (2026-11-04)
 
 All 15 tools carry the same human-readable name in `title` and `annotations.title` for directory listings and older clients.

@@ -17,3 +17,4 @@ server.json
 Dockerfile
 .dockerignore
 scripts/
+distribution/

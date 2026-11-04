@@ -5,3 +5,8 @@ dist-mcpb/
 .env
 .env.*
 .coding-agent/
+distribution/tool-store/server/
+distribution/tool-store/LICENSE
+distribution/tool-store/.mcpbignore
+distribution/tool-store/package.json
+distribution/tool-store/package-lock.json

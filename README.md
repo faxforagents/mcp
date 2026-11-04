@@ -87,6 +87,8 @@ Linux `~/.config/Claude/`).
 Or install the bundle: `npm run pack:mcpb` produces `faxforagents-mcp.mcpb`, which Claude Desktop opens
 and asks for the key in its own settings.
 
+tool.store: `npm run pack:tool-store` prepares a local bundle. See the [build and publishing steps](distribution/tool-store/README.md).
+
 ### Cursor
 
 `.cursor/mcp.json` in the project, or the global file in Cursor settings.

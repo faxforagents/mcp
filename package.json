@@ -44,6 +44,7 @@
     "build": "tsup",
     "build:mcpb": "tsup --config tsup.mcpb.config.ts",
     "pack:mcpb": "npm run build:mcpb && npx @anthropic-ai/mcpb pack . faxforagents-mcp.mcpb",
+    "pack:tool-store": "node scripts/pack-tool-store.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node test/protocol.mjs && node test/tools-output.mjs && node test/parity.mjs && node test/validation.mjs",
     "test:live": "node test/live.mjs",
