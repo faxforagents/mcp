@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.1 (2026-11-04)
+
+All 15 tools carry the same human-readable name in `title` and `annotations.title` for directory listings and older clients.
+Tool names, descriptions, schemas and behavior hints are unchanged.
+
 ## 0.4.0 (2026-11-04)
 
 `get_document` is renamed `get_fax_document` with no alias. Refresh cached tool lists before calling the renamed tool.

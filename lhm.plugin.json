@@ -228,6 +228,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Get guide",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -479,6 +480,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Get fax capabilities",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -765,6 +767,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Prepare fax",
         "readOnlyHint": false,
         "destructiveHint": false,
         "idempotentHint": false,
@@ -1082,6 +1085,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Get fax document",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -1511,6 +1515,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Quote fax",
         "readOnlyHint": false,
         "destructiveHint": false,
         "idempotentHint": false,
@@ -1888,6 +1893,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Send approved fax",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": true,
@@ -2325,6 +2331,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Get fax status",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -2686,6 +2693,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "List faxes",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -2801,6 +2809,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Get fax balance",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -3117,6 +3126,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Cancel fax",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": false,
@@ -3408,6 +3418,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Request human review",
         "readOnlyHint": false,
         "destructiveHint": false,
         "idempotentHint": false,
@@ -3679,6 +3690,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Get review status",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -3878,6 +3890,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "List inbox",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -4143,6 +4156,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Read inbound fax",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -4484,6 +4498,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Extract fax data",
         "readOnlyHint": false,
         "destructiveHint": false,
         "idempotentHint": false,
@@ -4491,5 +4506,5 @@
       }
     }
   ],
-  "version": "0.4.0"
+  "version": "0.4.1"
 }

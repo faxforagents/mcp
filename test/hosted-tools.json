@@ -2,7 +2,7 @@
   "captured_at": "2026-11-04",
   "source": "Local Python source: src/faxforagents/mcp/{tools,schemas,guide}.py (no hosted request)",
   "source_sha256": {
-    "tools.py": "6f2d5bd8b38478003c21ea741c2344292e7d33bb96eac93002eaba675f525ea6",
+    "tools.py": "8907e6de7e2acf102e59e3c271dc01009213fd4af342a1495dc5d7eabb1ad4dd",
     "schemas.py": "b3eb50f5b796e112475e82b77287d11c6f98f7d604ae9588bcfb79142d35312a",
     "guide.py": "6fc2bb9047a6bcd78c71f966588b01803a79fd778ab28dea5d3545eed0f4dac8"
   },
@@ -114,6 +114,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Get guide",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -365,6 +366,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Get fax capabilities",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -651,6 +653,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Prepare fax",
         "readOnlyHint": false,
         "destructiveHint": false,
         "idempotentHint": false,
@@ -968,6 +971,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Get fax document",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -1397,6 +1401,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Quote fax",
         "readOnlyHint": false,
         "destructiveHint": false,
         "idempotentHint": false,
@@ -1774,6 +1779,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Send approved fax",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": true,
@@ -2211,6 +2217,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Get fax status",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -2572,6 +2579,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "List faxes",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -2687,6 +2695,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Get fax balance",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -3003,6 +3012,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Cancel fax",
         "readOnlyHint": false,
         "destructiveHint": true,
         "idempotentHint": false,
@@ -3294,6 +3304,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Request human review",
         "readOnlyHint": false,
         "destructiveHint": false,
         "idempotentHint": false,
@@ -3565,6 +3576,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Get review status",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -3764,6 +3776,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "List inbox",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -4029,6 +4042,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Read inbound fax",
         "readOnlyHint": true,
         "destructiveHint": false,
         "idempotentHint": true,
@@ -4370,6 +4384,7 @@
         "type": "object"
       },
       "annotations": {
+        "title": "Extract fax data",
         "readOnlyHint": false,
         "destructiveHint": false,
         "idempotentHint": false,

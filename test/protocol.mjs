@@ -94,6 +94,7 @@ for (const t of tools) {
   if (!t.description) fail(`tool ${t.name} has no description`);
   if (!t.title) fail(`tool ${t.name} has no title`);
   if (!t.annotations) fail(`tool ${t.name} has no annotations`);
+  if (t.annotations.title !== t.title) fail(`tool ${t.name}: annotations.title differs from title`);
   for (const [name, property] of Object.entries(t.inputSchema.properties ?? {})) {
     if (!property.description || !property.examples?.length) fail(`${t.name}.${name}: missing description or example`);
   }
