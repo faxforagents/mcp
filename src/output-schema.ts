@@ -98,3 +98,9 @@ export function outputSchema(tool: string): z.ZodObject<z.ZodRawShape> {
 }
 
 export const OUTPUT_SCHEMA_TOOLS: string[] = Object.keys((schemas as { tools: Record<string, JsonSchema> }).tools);
+
+export function advertisedOutputSchema(tool: string): JsonSchema {
+  const schema = (schemas.tools as Record<string, JsonSchema>)[tool];
+  if (!schema) throw new Error(`no output schema for ${tool}`);
+  return schema;
+}

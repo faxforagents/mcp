@@ -1,6 +1,8 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { CallToolRequestSchema, ErrorCode, McpError, type CallToolResult, type ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema, ErrorCode, McpError, type CallToolResult, type Tool } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
+import definitions from './tool-definitions.json' with { type: 'json' };
+import { advertisedOutputSchema } from './output-schema.js';
 
 const ID_PREFIXES: Record<string, string> = {
   upload_id: 'up',
@@ -33,14 +35,19 @@ function expectedType(schema: z.ZodTypeAny): string {
 /** Keep the advertised schemas while handling validation refusals before the SDK turns them into plain text. */
 export function toolDispatch(server: McpServer) {
   const calls = new Map<string, (args: Record<string, unknown>) => Promise<CallToolResult>>();
+  const listed = new Map<string, () => Tool | undefined>();
 
   function registerTool<S extends z.ZodRawShape>(
     name: string,
-    config: { description: string; inputSchema: S; outputSchema: z.ZodObject<z.ZodRawShape>; annotations: ToolAnnotations },
+    config: { inputSchema: S; outputSchema: z.ZodObject<z.ZodRawShape> },
     callback: (args: z.output<z.ZodObject<S>>) => Promise<CallToolResult>,
   ): void {
     const input = z.object(config.inputSchema);
-    const registered = server.registerTool(name, { ...config, inputSchema: input }, callback);
+    const definition = (definitions.tools as Record<string, Omit<Tool, 'outputSchema'>>)[name];
+    if (!definition) throw new Error(`no tool definition for ${name}`);
+    const advertised = { ...definition, outputSchema: advertisedOutputSchema(name) } as Tool;
+    const registered = server.registerTool(name, { ...definition, ...config, inputSchema: input }, callback);
+    listed.set(name, () => registered.enabled ? advertised : undefined);
     calls.set(name, async (args) => {
       if (!registered.enabled) throw new McpError(ErrorCode.InvalidParams, `Tool ${name} disabled`);
       const parsed = input.safeParse(args);
@@ -69,6 +76,11 @@ export function toolDispatch(server: McpServer) {
   }
 
   function install(): void {
+    // Zod's JSON conversion drops Python metadata and rewrites refs and nullability.
+    // Publish the source schemas verbatim while retaining local argument and result validation.
+    server.server.setRequestHandler(ListToolsRequestSchema, async () => ({
+      tools: [...listed.values()].flatMap((get) => { const tool = get(); return tool ? [tool] : []; }),
+    }));
     // The protocol schema still rejects non-object arguments before tool dispatch.
     server.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       try {

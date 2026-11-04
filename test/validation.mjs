@@ -87,7 +87,7 @@ try {
     assert.ok(response.error, 'non-object arguments remain a protocol error');
     assert.equal(response.result, undefined);
   }
-  const missing = await request('tools/call', { name: 'get_document', arguments: {} });
+  const missing = await request('tools/call', { name: 'get_fax_document', arguments: {} });
   assert.equal(missing.result.structuredContent.error_code, 'invalid_input');
   assert.match(missing.result.structuredContent.message, /document_id requires a value of type string/);
   const nested = await request('tools/call', { name: 'quote_fax', arguments: { document_id: 'doc_' + 'a'.repeat(32), to: '+15550000001', cover: { subject: 17 } } });

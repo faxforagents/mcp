@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0 (2026-11-04)
+
+`get_document` is renamed `get_fax_document` with no alias. Refresh cached tool lists before calling the renamed tool.
+All 15 tools match the hosted v1.8.0 Python definitions, including titles and full input and output schemas.
+Every parameter has a description and examples, with formats, defaults and limits copied from the source.
+Tool descriptions explain their purpose, sibling choices and behavior.
+`prepare_fax` and `quote_fax` now declare `openWorldHint=false`. `cancel_fax` now declares `idempotentHint=false`.
+Extraction reuse checks the confidence threshold. Quote-bound reviews accept blank messages, matching hosted behavior.
+The recorded snapshot comes from local Python source without contacting the hosted server.
+Parity checks compare every definition field and the plugin listing. `FFA_SKIP_PARITY=1` still skips that comparison.
+
 ## 0.3.2 (2026-11-02)
 
 Wrong tool argument types now return the hosted `invalid_input` envelope with `isError=true`, the argument name, expected type and remedy.

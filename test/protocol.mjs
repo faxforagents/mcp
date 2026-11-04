@@ -12,7 +12,7 @@ const EXPECTED_TOOLS = [
   'get_guide',
   'get_fax_capabilities',
   'prepare_fax',
-  'get_document',
+  'get_fax_document',
   'quote_fax',
   'send_approved_fax',
   'get_fax_status',
@@ -43,6 +43,7 @@ const requests = [
   { jsonrpc: '2.0', id: 11, method: 'prompts/get', params: { name: 'send_a_fax', arguments: { to: '+15550000001', summary: 'a test page' } } },
   { jsonrpc: '2.0', id: 12, method: 'prompts/get', params: { name: 'handle_received_fax', arguments: { inbox_item_id: 'inb_' + '7'.repeat(32) } } },
   { jsonrpc: '2.0', id: 13, method: 'tools/call', params: { name: 'get_guide', arguments: {} } },
+  { jsonrpc: '2.0', id: 14, method: 'tools/call', params: { name: 'get_document', arguments: { document_id: 'doc_' + 'a'.repeat(32) } } },
 ];
 const ids = requests.filter((r) => r.id).map((r) => r.id);
 
@@ -91,26 +92,35 @@ for (const t of tools) {
   if (!out.properties?.untrusted) fail(`${t.name}: outputSchema lacks untrusted`);
   if (out.additionalProperties !== false) fail(`${t.name}: outputSchema allows unknown keys`);
   if (!t.description) fail(`tool ${t.name} has no description`);
+  if (!t.title) fail(`tool ${t.name} has no title`);
   if (!t.annotations) fail(`tool ${t.name} has no annotations`);
+  for (const [name, property] of Object.entries(t.inputSchema.properties ?? {})) {
+    if (!property.description || !property.examples?.length) fail(`${t.name}.${name}: missing description or example`);
+  }
   for (const old of GONE) if (new RegExp(`\\b${old}\\b`).test(t.description)) fail(`${t.name} still names ${old}`);
 }
 const byName = Object.fromEntries(tools.map((t) => [t.name, t]));
 const guideTool = byName.get_guide;
-if (!guideTool.description.startsWith('The manual for Fax for Agents:')) fail(`get_guide description: ${guideTool.description}`);
-if (!SECTIONS.every((s) => guideTool.description.includes(s))) fail('get_guide description does not list the sections');
+if (!guideTool.description.startsWith('Read the Fax for Agents manual')) fail(`get_guide description: ${guideTool.description}`);
+if (!SECTIONS.every((s) => guideTool.inputSchema.properties.section.description.includes(s))) fail('section description does not list the sections');
 if (guideTool.inputSchema.required?.length) fail('get_guide section must be optional');
 const status = byName.get_fax_status;
-if (!/delivery evidence/.test(status.description) || !/not legal proof/.test(status.description)) fail(`get_fax_status description: ${status.description}`);
-if (!/remote station id/.test(status.description) || !/provider reference/.test(status.description)) fail('get_fax_status description does not say what the evidence holds');
+if (!/carrier evidence/.test(status.description) || !/not legal proof/.test(status.description)) fail(`get_fax_status description: ${status.description}`);
+if (!/get_review_status/.test(status.description) || !/read_inbound_fax/.test(status.description)) fail('get_fax_status lacks sibling guidance');
 const review = byName.request_human_review;
-if (!/Grants nothing: a human decides, then send_approved_fax/.test(review.description)) fail(`request_human_review description: ${review.description}`);
+if (!/Grants no approval itself/.test(review.description)) fail(`request_human_review description: ${review.description}`);
 if (!/Scope: approval:request\.$/.test(review.description)) fail('request_human_review scope');
-const firstTwo = review.description.split('. ').slice(0, 2).join('. ');
-if (!/quote_id/.test(firstTwo) || !/help request/.test(firstTwo)) fail(`request_human_review: both modes are not in the first two sentences: ${firstTwo}`);
+const firstThree = review.description.split('. ').slice(0, 3).join('. ');
+if (!/quote_id/.test(firstThree) || !/help request/.test(firstThree)) fail(`request_human_review: both modes are not in the first three sentences: ${firstThree}`);
 if (Object.keys(review.inputSchema.properties).sort().join() !== 'fax_id,message,quote_id') fail('request_human_review properties');
 if ((review.inputSchema.required ?? []).join() !== 'message') fail('request_human_review: only message is required');
 if (!review.outputSchema.properties.review_request) fail('request_human_review outputSchema lacks review_request');
 if (byName.send_approved_fax.description.includes('request_human_review') !== true) fail('send_approved_fax does not point at request_human_review');
+if (byName.prepare_fax.annotations.openWorldHint || byName.quote_fax.annotations.openWorldHint) fail('local writes must be closed-world');
+if (byName.cancel_fax.annotations.idempotentHint) fail('cancel_fax must not promise idempotency');
+if (names.includes('get_document')) fail('retired document tool is still listed');
+const retired = reply(14)?.result;
+if (!retired?.isError || !/Tool get_document not found/.test(retired.content?.[0]?.text ?? '')) fail('retired document tool still accepts calls');
 
 // Without a key, a tool answers ok=false, error_code=invalid_token and names the env var.
 const call = reply(3)?.result;

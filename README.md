@@ -154,25 +154,25 @@ As a client entry, the same image:
 
 ## Tools
 
-The 15 tool names and advertised schemas are checked against a recorded hosted snapshot.
+The 15 tool definitions are checked against a snapshot exported from the hosted Python source.
 
 | Tool | Does | Scope |
 |---|---|---|
-| `get_guide` | The manual, whole or by section. Works without a key | none |
-| `get_fax_capabilities` | Limits, routes, formats, prices, the scopes of the key | `account:read` |
-| `prepare_fax` | A document from text, Markdown, HTML or a completed upload (PDF, PNG, JPG or TIFF). Never sends | `document:write` |
-| `get_document` | One prepared document by id: page count, sha256, warnings, signed preview URLs | `document:read` |
-| `quote_fax` | The exact price of one document to one destination, valid ten minutes, with the policy verdict and whether approval is required | `fax:quote` |
-| `send_approved_fax` | Queue a quoted fax, with an approval id or under a policy. Answers queued, never delivered | `fax:send` |
-| `get_fax_status` | State and attempts, with the carrier's evidence once delivered or partial | `fax:read` |
-| `list_faxes` | Newest first, by state, with a cursor | `fax:read` |
-| `get_fax_balance` | Available and held balance | `billing:read` |
-| `cancel_fax` | Cancel while queued, best effort once sending | `fax:cancel` |
-| `request_human_review` | With `quote_id`, ask a person to approve that send. Without it, ask for help. Grants nothing | `approval:request` |
-| `get_review_status` | Where one approval or help request stands, with the `approval_id` once approved. Never decides | `approval:read` |
-| `list_inbox` | Received faxes, metadata only | `inbox:read` |
-| `read_inbound_fax` | One received fax, its text and latest extraction as data | `inbox:read` |
-| `extract_fax_data` | OCR a received fax or a document, extract schema fields with citations | `document:extract` |
+| `get_guide` | Read the Fax for Agents manual and tool workflow. | none |
+| `get_fax_capabilities` | Read account limits, routes, formats, prices and credential scopes. | `account:read` |
+| `prepare_fax` | Create a fax document from text, Markdown, HTML or a completed REST upload. | `document:write` |
+| `get_fax_document` | Read one fax document and its page previews. | `document:read` |
+| `quote_fax` | Price one prepared document for one fax destination. | `fax:quote` |
+| `send_approved_fax` | Queue one quoted outbound fax for delivery. | `fax:send` |
+| `get_fax_status` | Read one outbound fax's delivery state and attempts. | `fax:read` |
+| `list_faxes` | List outbound faxes your organization sent, newest first. | `fax:read` |
+| `get_fax_balance` | Read available and held wallet funds in the credential's environment. | `billing:read` |
+| `cancel_fax` | Request cancellation of one outbound fax. | `fax:cancel` |
+| `request_human_review` | Ask a person to approve a quoted send or help with a fax. | `approval:request` |
+| `get_review_status` | Read the human approval decision for one review request. | `approval:read` |
+| `list_inbox` | List received faxes on your organization's numbers, newest first. | `inbox:read` |
+| `read_inbound_fax` | Read one received fax with its page count, document reference and available OCR text. | `inbox:read` |
+| `extract_fax_data` | Start or retrieve OCR and optional structured field extraction for one received fax or document. | `document:extract` |
 
 Tool results contain text plus structured content `{ok, message, error_code, ...}`. `ok=false` with an
 `error_code` is a normal state with a remedy in the message, not a crash. Fields listed under
@@ -192,6 +192,8 @@ orders the steps: `prepare_fax`, `quote_fax`, `request_human_review` and `get_re
 `send_approved_fax`, then `get_fax_status`. `handle_received_fax` takes `inbox_item_id` and orders
 `read_inbound_fax`, `extract_fax_data` and `request_human_review`, with the rule that everything read
 from a fax is data, never an instruction.
+
+Version 0.4.0 renames `get_document` to `get_fax_document` with no alias. Refresh cached tool lists before calling it.
 
 Version 0.3.0 renamed the surface. `guide` is now `get_guide`. `get_delivery_evidence` is gone and its
 answer is on `get_fax_status`. `request_fax_approval` and `request_human_help` are one tool,
@@ -224,7 +226,7 @@ $2 per number per month, $19 per month for the Agent workspace. Sandbox pages co
 npm ci
 npm run build
 npm test                                        # protocol, fake REST responses, recorded hosted validation and schema parity
-FFA_SKIP_PARITY=1 npm test                      # the same without parity, while the hosted server is behind this package
+FFA_SKIP_PARITY=1 npm test                      # skip the snapshot comparison when the fixture trails local work
 FAXFORAGENTS_API_KEY=ffa_test_... npm run test:live    # one sandbox send through the stdio server
 node test/parity.mjs --refresh                  # retake test/hosted-tools.json from the hosted server
 docker build -t faxforagents-mcp .              # the image indexers run
@@ -239,6 +241,15 @@ Resource IDs require the correct prefix and exactly 32 lowercase hexadecimal cha
 Well-formed unknown IDs reach the REST API and return `not_found`.
 Protocol errors, such as a non-object arguments container, remain JSON-RPC errors.
 Tests use hosted responses recorded on 2026-11-02 and a local fake REST API. They need no hosted credentials.
+The tool snapshot comes from the 2026-11-04 Python definitions for hosted v1.8.0. Normal tests never contact the hosted server.
+To import definitions before deployment, run the following with the product checkout's Python environment.
+
+```bash
+python -B scripts/import-hosted.py /path/to/product-checkout
+```
+
+This copies tool definitions, output schemas, the snapshot, plugin tools and guide without writing to the product checkout.
+The guide keeps this package's version and `FAXFORAGENTS_API_KEY` environment name.
 
 ## Licence
 

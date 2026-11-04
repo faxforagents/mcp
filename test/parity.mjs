@@ -1,15 +1,11 @@
 #!/usr/bin/env node
 /**
- * Parity with the hosted server: the stdio package exposes the same 15 tools (get_guide, get_fax_status
- * carrying the evidence, request_human_review in place of the two request tools), with the same
- * descriptions, the same input properties, the same required lists, the same defaults and the same
- * annotations as https://mcp.faxforagents.com/mcp/ answers (test/hosted-tools.json, see captured_at).
- * Refresh the snapshot with `node test/parity.mjs --refresh` (initialize and tools/list need no key).
- *
- * The snapshot is retaken only from a hosted server that already serves the surface this package
- * implements. Until then `FFA_SKIP_PARITY=1 npm test` runs the protocol and tools-output suites and
- * reports this one as skipped instead of failing on the known difference.
+ * Compare the full tool definitions with a recorded hosted or local Python snapshot.
+ * Normal runs never contact the hosted server. --refresh explicitly fetches tools/list.
+ * scripts/import-hosted.py imports definitions before the hosted release is deployed.
+ * FFA_SKIP_PARITY=1 skips this suite when the fixture intentionally trails local work.
  */
+import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -32,7 +28,7 @@ if (process.argv.includes('--refresh')) {
 }
 
 if (process.env.FFA_SKIP_PARITY === '1') {
-  console.log('parity SKIPPED (FFA_SKIP_PARITY=1): the hosted snapshot is retaken once the hosted server serves this surface');
+  console.log('parity SKIPPED (FFA_SKIP_PARITY=1): recorded snapshot comparison disabled');
   process.exit(0);
 }
 
@@ -40,6 +36,7 @@ const hosted = JSON.parse(readFileSync(SNAPSHOT, 'utf8')).tools;
 
 const env = { ...process.env };
 delete env.FAXFORAGENTS_API_KEY;
+delete env.FFA_API_KEY;
 const child = spawn('node', ['dist/index.js'], { env, stdio: ['pipe', 'pipe', 'ignore'] });
 let out = '';
 child.stdout.on('data', (d) => { out += d; });
@@ -56,55 +53,8 @@ const local = parse().find((m) => m.id === 2)?.result?.tools;
 const fail = (msg) => { console.error('FAIL:', msg); process.exit(1); };
 if (!local) fail('no local tools/list');
 
-const byName = (tools) => Object.fromEntries(tools.map((t) => [t.name, t]));
-const h = byName(hosted);
-const l = byName(local);
-if (hosted.map((t) => t.name).join() !== local.map((t) => t.name).join()) {
-  fail(`tool names or order differ\n hosted: ${hosted.map((t) => t.name).join(', ')}\n local:  ${local.map((t) => t.name).join(', ')}`);
-}
-
-const typesOf = (schema) => {
-  const types = new Set();
-  const walk = (s) => {
-    if (!s) return;
-    if (Array.isArray(s.type)) s.type.forEach((t) => types.add(t));
-    else if (s.type) types.add(s.type);
-    (s.anyOf ?? []).forEach(walk);
-  };
-  walk(schema);
-  return [...types].sort().join('|');
-};
-
-for (const name of Object.keys(h)) {
-  const a = h[name];
-  const b = l[name];
-  if (a.description !== b.description) fail(`${name}: description differs\n hosted: ${a.description}\n local:  ${b.description}`);
-  const ap = Object.keys(a.inputSchema.properties ?? {}).sort();
-  const bp = Object.keys(b.inputSchema.properties ?? {}).sort();
-  if (ap.join() !== bp.join()) fail(`${name}: properties differ (${ap} vs ${bp})`);
-  const ar = [...(a.inputSchema.required ?? [])].sort().join();
-  const br = [...(b.inputSchema.required ?? [])].sort().join();
-  if (ar !== br) fail(`${name}: required differs (${ar} vs ${br})`);
-  for (const p of ap) {
-    const ta = typesOf(a.inputSchema.properties[p]);
-    const tb = typesOf(b.inputSchema.properties[p]);
-    if (ta !== tb) fail(`${name}.${p}: type differs (hosted ${ta}, local ${tb})`);
-    const da = a.inputSchema.properties[p].default;
-    const db = b.inputSchema.properties[p].default;
-    if (JSON.stringify(da ?? null) !== JSON.stringify(db ?? null)) fail(`${name}.${p}: default differs (${da} vs ${db})`);
-  }
-  for (const k of ['readOnlyHint', 'destructiveHint', 'idempotentHint', 'openWorldHint']) {
-    if (a.annotations?.[k] !== b.annotations?.[k]) fail(`${name}: annotation ${k} differs`);
-  }
-  // the output schema, once the hosted server publishes one: the same top-level keys and required list
-  if (a.outputSchema) {
-    const ao = Object.keys(a.outputSchema.properties ?? {}).sort().join();
-    const bo = Object.keys(b.outputSchema?.properties ?? {}).sort().join();
-    if (ao !== bo) fail(`${name}: outputSchema properties differ (${ao} vs ${bo})`);
-    const ar = [...(a.outputSchema.required ?? [])].sort().join();
-    const br = [...(b.outputSchema?.required ?? [])].sort().join();
-    if (ar !== br) fail(`${name}: outputSchema required differs (${ar} vs ${br})`);
-  }
-}
-const withOut = hosted.filter((t) => t.outputSchema).length;
-console.log(`parity OK: ${hosted.length} tools match the hosted snapshot (names, descriptions, properties, required, types, defaults, annotations${withOut ? ', output schemas' : ''})`);
+assert.equal(hosted.length, 15, 'snapshot tool count');
+assert.deepEqual(local, hosted, 'full tool definitions must match the source snapshot');
+const plugin = JSON.parse(readFileSync(new URL('../lhm.plugin.json', import.meta.url), 'utf8'));
+assert.deepEqual(plugin.tools, hosted, 'plugin tools must match the source snapshot');
+console.log(`parity OK: ${hosted.length} tools match the snapshot and plugin (names, titles, descriptions, full input/output schemas, annotations)`);
