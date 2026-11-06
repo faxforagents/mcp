@@ -47,6 +47,18 @@ guide resources work. Other tools with valid arguments answer `ok=false, error_c
 
 ## Connect
 
+### One paste
+
+Paste this line into your assistant. It reads the setup page and does the rest, signed in through the
+browser, in the free sandbox. No key to copy.
+
+```
+Read https://faxforagents.com/setup.md and set up Fax for Agents for me. Start in Sandbox.
+```
+
+A coding agent can also run `curl -fsSL https://faxforagents.com/install | sh`, which registers the
+hosted server with every agent on the machine. The lines below are the same thing by hand.
+
 The package is on the npm registry as `faxforagents-mcp`, so `npx -y faxforagents-mcp` works on any machine
 with Node 20. `npx --yes github:faxforagents/mcp` installs straight from GitHub instead (needs `git`).
 `llms-install.md` has the full forms.
