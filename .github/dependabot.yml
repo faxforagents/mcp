@@ -20,3 +20,8 @@ updates:
     groups:
       docker-minor:
         update-types: [minor, patch]
+    ignore:
+      # Odd node majors (25, 27) never become LTS. The image follows the even major the CI matrix tests and
+      # moves with the matrix by hand (2026-11-08). Drop only if Dependabot learns to skip odd majors on its own.
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
