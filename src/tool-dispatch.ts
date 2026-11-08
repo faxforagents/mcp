@@ -23,14 +23,17 @@ function invalidInput(message: string): CallToolResult {
   };
 }
 
-function expectedType(schema: z.ZodTypeAny): string {
-  if (schema instanceof z.ZodOptional || schema instanceof z.ZodNullable) return expectedType(schema.unwrap());
-  if (schema instanceof z.ZodDefault) return expectedType(schema.removeDefault());
+function expectedType(schema: z.ZodType): string {
+  if (schema instanceof z.ZodOptional || schema instanceof z.ZodNullable) return expectedType(schema.unwrap() as z.ZodType);
+  if (schema instanceof z.ZodDefault) return expectedType(schema.removeDefault() as z.ZodType);
   if (schema instanceof z.ZodNumber) return schema.isInt ? 'integer' : 'number';
   if (schema instanceof z.ZodString) return 'string';
   if (schema instanceof z.ZodRecord || schema instanceof z.ZodObject) return 'object';
   throw new Error('Unsupported tool argument schema');
 }
+
+/** The object schema zod builds from a raw shape. Zod 4 maps the shape, so the callback and the SDK share this one name. */
+type Input<S extends z.ZodRawShape> = ReturnType<typeof z.object<S>>;
 
 /** Keep the advertised schemas while handling validation refusals before the SDK turns them into plain text. */
 export function toolDispatch(server: McpServer) {
@@ -40,13 +43,13 @@ export function toolDispatch(server: McpServer) {
   function registerTool<S extends z.ZodRawShape>(
     name: string,
     config: { inputSchema: S; outputSchema: z.ZodObject<z.ZodRawShape> },
-    callback: (args: z.output<z.ZodObject<S>>) => Promise<CallToolResult>,
+    callback: (args: z.output<Input<S>>) => Promise<CallToolResult>,
   ): void {
-    const input = z.object(config.inputSchema);
+    const input: Input<S> = z.object(config.inputSchema);
     const definition = (definitions.tools as Record<string, Omit<Tool, 'outputSchema'>>)[name];
     if (!definition) throw new Error(`no tool definition for ${name}`);
     const advertised = { ...definition, outputSchema: advertisedOutputSchema(name) } as Tool;
-    const registered = server.registerTool(name, { ...definition, ...config, inputSchema: input }, callback);
+    const registered = server.registerTool<z.ZodObject<z.ZodRawShape>, Input<S>>(name, { ...definition, inputSchema: input, outputSchema: config.outputSchema }, callback);
     listed.set(name, () => registered.enabled ? advertised : undefined);
     calls.set(name, async (args) => {
       if (!registered.enabled) throw new McpError(ErrorCode.InvalidParams, `Tool ${name} disabled`);
@@ -55,7 +58,7 @@ export function toolDispatch(server: McpServer) {
       if (!parsed.success) {
         const issue = parsed.error.issues[0]!;
         const argument = issue.path.join('.');
-        const field = config.inputSchema[String(issue.path[0])]!;
+        const field = config.inputSchema[String(issue.path[0])]! as z.ZodType;
         const expected = issue.path.length > 1 && issue.code === 'invalid_type' ? issue.expected : expectedType(field);
         response = invalidInput(`${argument} requires a value of type ${expected}. Correct the argument and try again.`);
       } else {
