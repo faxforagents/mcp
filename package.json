@@ -58,7 +58,7 @@
   "devDependencies": {
     "@types/node": "^26.4.0",
     "esbuild": "^0.28.2",
-    "tsup": "^8.5.1",
+    "tsup": "^9.0.0",
     "typescript": "^5.5.0"
   },
   "publishConfig": {
