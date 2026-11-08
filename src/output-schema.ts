@@ -70,7 +70,7 @@ export function toZod(schema: JsonSchema, root: JsonSchema = schema): z.ZodTypeA
       return z.array(node.items ? toZod(node.items as JsonSchema, root) : z.unknown());
     case 'object': {
       const props = (node.properties as Record<string, JsonSchema> | undefined) ?? {};
-      if (Object.keys(props).length === 0) return z.record(z.unknown());
+      if (Object.keys(props).length === 0) return z.record(z.string(), z.unknown());
       const required = new Set((node.required as string[] | undefined) ?? []);
       const shape: Record<string, z.ZodTypeAny> = {};
       for (const [name, prop] of Object.entries(props)) {

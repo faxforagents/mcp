@@ -396,7 +396,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     'quote_fax',
     {
       outputSchema: outputSchema('quote_fax'),
-      inputSchema: { document_id: z.string(), to: z.string(), cover: z.record(z.string()).nullable().optional() },
+      inputSchema: { document_id: z.string(), to: z.string(), cover: z.record(z.string(), z.string()).nullable().optional() },
     },
     async ({ document_id, to, cover }) =>
       run(async (api) => {
@@ -647,7 +647,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       inputSchema: {
         inbox_item_id: opt(),
         document_id: opt(),
-        schema: z.record(z.unknown()).nullable().optional(),
+        schema: z.record(z.string(), z.unknown()).nullable().optional(),
         strong_model_if_below: z.number().default(0.75),
       },
     },
