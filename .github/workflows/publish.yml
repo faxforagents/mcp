@@ -76,4 +76,13 @@ jobs:
           curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/').tar.gz" \
             | tar xz mcp-publisher
           ./mcp-publisher login github-oidc
-          ./mcp-publisher publish
+          # The registry checks that npm already serves this version. Right after the npm step npm's read
+          # path can lag by a minute or two (0.4.2 and 0.4.3 both failed once on 2026-11-09 with "version
+          # was not found"), so try up to six times, a minute apart, before giving up.
+          for attempt in 1 2 3 4 5 6; do
+            if ./mcp-publisher publish; then exit 0; fi
+            echo "registry publish attempt $attempt failed, waiting 60 s for npm to propagate"
+            sleep 60
+          done
+          echo "::error::the MCP Registry refused the publish six times"
+          exit 1
