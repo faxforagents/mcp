@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.2 (2026-11-09)
 
 `quote_fax` takes `quality`: standard, fine (the default), superfine or ultra. The quote text names the level. Same price at every level. Needs API 1.11.0.
 
