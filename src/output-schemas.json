@@ -67,6 +67,11 @@
               "title": "Currency",
               "type": "string"
             },
+            "delete_after_send": {
+              "default": false,
+              "title": "Delete After Send",
+              "type": "boolean"
+            },
             "direction": {
               "title": "Direction",
               "type": "string"
@@ -166,6 +171,18 @@
             "route": {
               "title": "Route",
               "type": "string"
+            },
+            "sender_name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Sender Name"
             },
             "state": {
               "enum": [
@@ -1339,6 +1356,11 @@
               "title": "Currency",
               "type": "string"
             },
+            "delete_after_send": {
+              "default": false,
+              "title": "Delete After Send",
+              "type": "boolean"
+            },
             "direction": {
               "title": "Direction",
               "type": "string"
@@ -1438,6 +1460,18 @@
             "route": {
               "title": "Route",
               "type": "string"
+            },
+            "sender_name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Sender Name"
             },
             "state": {
               "enum": [
@@ -1969,6 +2003,11 @@
               "title": "Currency",
               "type": "string"
             },
+            "delete_after_send": {
+              "default": false,
+              "title": "Delete After Send",
+              "type": "boolean"
+            },
             "direction": {
               "title": "Direction",
               "type": "string"
@@ -2068,6 +2107,18 @@
             "route": {
               "title": "Route",
               "type": "string"
+            },
+            "sender_name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Sender Name"
             },
             "state": {
               "enum": [
@@ -2609,6 +2660,11 @@
               "title": "Currency",
               "type": "string"
             },
+            "delete_after_send": {
+              "default": false,
+              "title": "Delete After Send",
+              "type": "boolean"
+            },
             "document_id": {
               "title": "Document Id",
               "type": "string"
@@ -2689,6 +2745,18 @@
               "default": "",
               "title": "Route Label",
               "type": "string"
+            },
+            "sender_name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Sender Name"
             },
             "to": {
               "title": "To",
@@ -3438,6 +3506,11 @@
               "title": "Currency",
               "type": "string"
             },
+            "delete_after_send": {
+              "default": false,
+              "title": "Delete After Send",
+              "type": "boolean"
+            },
             "direction": {
               "title": "Direction",
               "type": "string"
@@ -3537,6 +3610,18 @@
             "route": {
               "title": "Route",
               "type": "string"
+            },
+            "sender_name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Sender Name"
             },
             "state": {
               "enum": [

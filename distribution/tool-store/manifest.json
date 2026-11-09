@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "faxforagents",
   "display_name": "Fax for Agents",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Send and receive faxes with document preparation, exact quotes, human approvals and delivery evidence.",
   "author": {
     "name": "JSB Holdings LLC",

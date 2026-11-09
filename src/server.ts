@@ -519,15 +519,38 @@ export function createServer(opts: ServerOptions = {}): McpServer {
           .enum(["standard", "fine", "superfine", "ultra"])
           .optional()
           .describe(
-            "Fax resolution. standard is 204 by 98 dpi, fine 204 by 196 (the default when omitted), superfine 204 by 392; " +
-              "ultra asks the carrier for its best text setting and takes longer. Same price at every level.",
+            "Fax resolution. standard is 204 by 98 dpi, fine 204 by 196 (the default when omitted), superfine 204 by 392. " +
+              "ultra is the carrier's darkest text processing at superfine resolution (measured 2026-11-09: 204 by 391 dpi). Same price.",
+          ),
+        sender_name: z
+          .string()
+          .max(128)
+          .optional()
+          .describe(
+            "Station name the carrier prints in the fax header next to the sending number. Letters, digits, spaces and - _ ~ ! . + only.",
+          ),
+        delete_after_send: z
+          .boolean()
+          .optional()
+          .describe(
+            "true deletes the document and the transmitted copy when the fax ends. The receipt and the evidence stay.",
           ),
       },
     },
-    async ({ document_id, to, cover, quality }) =>
+    async ({
+      document_id,
+      to,
+      cover,
+      quality,
+      sender_name,
+      delete_after_send,
+    }) =>
       run(async (api) => {
         const body: Json = { document_id, to, cover };
         if (quality) body.quality = quality;
+        if (sender_name) body.sender_name = sender_name;
+        if (delete_after_send !== undefined)
+          body.delete_after_send = delete_after_send;
         const q = await api.request("POST", "/v1/fax-quotes", { json: body });
         const policy = quotePolicy(q);
         const denied =

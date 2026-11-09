@@ -38,7 +38,9 @@ An empty result cannot prove no fax was sent. Never replace an uncertain send wi
    (GET /v1/documents); the tool reads one id.
 3. quote_fax(document_id, to, cover?, quality?): the exact price for that document hash to that
    number. The cover sheet, when you pass one, is a billable page and the quote says so. quality
-   picks the resolution (standard, fine, superfine, ultra; fine by default, same price). A quote lives
+   picks the resolution (standard, fine, superfine, ultra; fine by default, same price). sender_name
+   is the station name in the fax header. delete_after_send removes the document and the transmitted
+   copy when the fax ends; the receipt and the evidence stay. A quote lives
    10 minutes and is used by exactly one send. The quote carries the policy verdict under
    policy: decision (allow or deny), the first failing rule, and approval_required, which says
    whether a person must approve it. It is the same evaluation the server runs at send time.

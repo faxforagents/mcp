@@ -1240,11 +1240,43 @@
               }
             ],
             "default": null,
-            "description": "Fax resolution. standard is 204 by 98 dpi, fine 204 by 196 (the default when omitted), superfine 204 by 392; ultra asks the carrier for its best text setting and takes longer. Same price at every level. Pick superfine or ultra for small print or forms that must stay legible.",
+            "description": "Fax resolution. standard is 204 by 98 dpi, fine 204 by 196 (the default when omitted), superfine 204 by 392. ultra is the carrier's darkest text processing at superfine resolution (measured 2026-11-09: 204 by 391 dpi received) and takes longer. Same price at every level. Pick superfine for small print or forms; ultra when thin or faint print must come out black.",
             "examples": [
               "superfine"
             ],
             "title": "Quality"
+          },
+          "sender_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Station name the carrier prints in the fax header next to the sending number. Letters, digits, spaces and - _ ~ ! . + only, at most 128 characters. Defaults to null, which shows the number alone.",
+            "examples": [
+              "Acme Records"
+            ],
+            "title": "Sender Name"
+          },
+          "delete_after_send": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "true deletes the document and the transmitted copy the moment the fax ends in delivered, partial or failed. The job, the receipt and the carrier evidence stay. Defaults to false: the document is kept for the retention period.",
+            "examples": [
+              true
+            ],
+            "title": "Delete After Send"
           }
         },
         "required": [
@@ -1349,6 +1381,23 @@
                 "default": "fine",
                 "title": "Quality",
                 "type": "string"
+              },
+              "sender_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Sender Name"
+              },
+              "delete_after_send": {
+                "default": false,
+                "title": "Delete After Send",
+                "type": "boolean"
               },
               "authorization_required": {
                 "title": "Authorization Required",
@@ -1790,6 +1839,23 @@
                 "title": "Quality",
                 "type": "string"
               },
+              "sender_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Sender Name"
+              },
+              "delete_after_send": {
+                "default": false,
+                "title": "Delete After Send",
+                "type": "boolean"
+              },
               "pages_sent": {
                 "title": "Pages Sent",
                 "type": "integer"
@@ -2229,6 +2295,23 @@
                 "title": "Quality",
                 "type": "string"
               },
+              "sender_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Sender Name"
+              },
+              "delete_after_send": {
+                "default": false,
+                "title": "Delete After Send",
+                "type": "boolean"
+              },
               "pages_sent": {
                 "title": "Pages Sent",
                 "type": "integer"
@@ -2612,6 +2695,23 @@
                 "default": "fine",
                 "title": "Quality",
                 "type": "string"
+              },
+              "sender_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Sender Name"
+              },
+              "delete_after_send": {
+                "default": false,
+                "title": "Delete After Send",
+                "type": "boolean"
               },
               "pages_sent": {
                 "title": "Pages Sent",
@@ -3067,6 +3167,23 @@
                 "default": "fine",
                 "title": "Quality",
                 "type": "string"
+              },
+              "sender_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Sender Name"
+              },
+              "delete_after_send": {
+                "default": false,
+                "title": "Delete After Send",
+                "type": "boolean"
               },
               "pages_sent": {
                 "title": "Pages Sent",
@@ -4651,5 +4768,5 @@
       }
     }
   ],
-  "version": "0.4.2"
+  "version": "0.4.3"
 }

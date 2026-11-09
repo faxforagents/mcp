@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.3 (2026-11-09)
+
+`quote_fax` takes `sender_name` (the station name in the fax header) and `delete_after_send`. The tool definitions, guide and output schemas follow API 1.12.0. The resolution text names the measured figures.
+
 ## 0.4.2 (2026-11-09)
 
 `quote_fax` takes `quality`: standard, fine (the default), superfine or ultra. The quote text names the level. Same price at every level. Needs API 1.11.0.
