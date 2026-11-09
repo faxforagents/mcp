@@ -4,7 +4,8 @@
 # hosted tools snapshot is the server's own text, taken as is.
 #
 # The price card (price_version launch-v1, 2026-10-28): $0.039 per page sent, $0.019 per page
-# received, $2 per number per month, $19 per month workspace. Any other dollar amount in copy is stale
+# received, $2 per number per month, $19 per month workspace. $5.00 is the auto-send default per fax
+# for connected apps (API 1.10.1, the guide names it). Any other dollar amount in copy is stale
 # or invented. Claims the product does not make: HIPAA, "the first", "cheapest". Competitors are never
 # named. CHANGELOG.md is exempt from the price rule (dated entries quote the card as it stood).
 set -u
@@ -23,7 +24,7 @@ flag() {
 prices=$(printf '%s\n' "$FILES" | grep -vE '^test/' | xargs grep -noE '\$[0-9][0-9,]*(\.[0-9]+)?.?' 2>/dev/null \
     | grep -vE '\$[0-9]+[")}]$' \
     | sed -E 's/([0-9])[^0-9]$/\1/' \
-    | grep -vE ':\$(0\.039|0\.019|2|2\.00|19|19\.00)$' || true)
+    | grep -vE ':\$(0\.039|0\.019|2|2\.00|19|19\.00|5\.00)$' || true)
 if [ -n "$prices" ]; then
     printf '%s\n' "$prices" >&2
     flag "a dollar amount that is not on the price card (0.039, 0.019, 2, 19)"
