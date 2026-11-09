@@ -1,6 +1,6 @@
 /** Copied from the hosted mcp/guide.py. Only the package version and stdio key name differ. */
 
-import { VERSION } from './version.js';
+import { VERSION } from "./version.js";
 
 export const SECTIONS: Record<string, string> = {
   overview: `Fax for Agents MCP server ${VERSION}: start here.
@@ -29,7 +29,8 @@ Refresh cached tool lists before calling the renamed tool.`,
 2. get_fax_document(document_id): the document by the id prepare_fax returned: page count, sha256,
    validation warnings and signed preview URLs. Documents are listed through the REST API
    (GET /v1/documents); the tool reads one id.
-3. quote_fax(document_id, to, cover?): the exact price for that document hash to that number.
+3. quote_fax(document_id, to, cover?, quality?): the exact price for that document hash to that
+   number. quality picks the resolution (standard, fine, superfine, ultra; fine by default, same price).
    The cover sheet, when you pass one, is a billable page and the quote says so. A quote lives
    10 minutes and is used by exactly one send. The quote carries the policy verdict under
    policy: decision (allow or deny), the first failing rule, and approval_required, which says
@@ -162,7 +163,7 @@ field is a field the fax does not state clearly. Ask a person instead of guessin
 a person are stored beside the extraction and never change it.`,
 };
 
-export const GUIDE_TEXT = Object.values(SECTIONS).join('\n\n');
+export const GUIDE_TEXT = Object.values(SECTIONS).join("\n\n");
 
 export function section(name: string): string | undefined {
   const key = name.trim().toLowerCase();

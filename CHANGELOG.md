@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+`quote_fax` takes `quality`: standard, fine (the default), superfine or ultra. The quote text names the level. Same price at every level. Needs API 1.11.0.
+
 Add a tool.store MCPB bundle with all 15 tools and required API key configuration.
 `npm run pack:tool-store` builds the server, validates the manifest strictly and packs the bundle locally.
 

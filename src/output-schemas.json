@@ -147,6 +147,11 @@
               ],
               "title": "Provider Ref"
             },
+            "quality": {
+              "default": "fine",
+              "title": "Quality",
+              "type": "string"
+            },
             "quote_id": {
               "anyOf": [
                 {
@@ -1414,6 +1419,11 @@
               ],
               "title": "Provider Ref"
             },
+            "quality": {
+              "default": "fine",
+              "title": "Quality",
+              "type": "string"
+            },
             "quote_id": {
               "anyOf": [
                 {
@@ -2039,6 +2049,11 @@
               ],
               "title": "Provider Ref"
             },
+            "quality": {
+              "default": "fine",
+              "title": "Quality",
+              "type": "string"
+            },
             "quote_id": {
               "anyOf": [
                 {
@@ -2118,6 +2133,7 @@
         }
       },
       "additionalProperties": false,
+      "description": "An optional idempotency filter returns the job referenced by a retained REST replay record.",
       "properties": {
         "details": {
           "default": null,
@@ -2660,6 +2676,11 @@
               "title": "Price Version",
               "type": "string"
             },
+            "quality": {
+              "default": "fine",
+              "title": "Quality",
+              "type": "string"
+            },
             "route": {
               "title": "Route",
               "type": "string"
@@ -2722,6 +2743,19 @@
               ],
               "title": "Decision",
               "type": "string"
+            },
+            "managed": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "connected_apps when the organization's auto-send setting (a managed policy) decided.",
+              "title": "Managed"
             },
             "policy_id": {
               "anyOf": [
@@ -3483,6 +3517,11 @@
                 }
               ],
               "title": "Provider Ref"
+            },
+            "quality": {
+              "default": "fine",
+              "title": "Quality",
+              "type": "string"
             },
             "quote_id": {
               "anyOf": [
