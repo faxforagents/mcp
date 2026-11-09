@@ -55,7 +55,7 @@
     "prepare_fax": {
       "name": "prepare_fax",
       "title": "Prepare fax",
-      "description": "Create a fax document from text, Markdown, HTML or a completed REST upload. Use before quote_fax. Use get_fax_document to inspect an existing document. Validates and stores a PDF, returning its id, sha256, page count and preview status. Text inputs create a new document per call. Uploads are consumed once. No sending or charges. Scope: document:write.",
+      "description": "Create a fax document from text, Markdown, HTML or a completed REST upload. Use before quote_fax. Use get_fax_document to inspect an existing document. Validates and stores a PDF, returning its id, sha256, page count and preview status. Text inputs create a new document without a replay token. Uploads are consumed once. An optional idempotency_key replays the same request for 24 hours. No sending or charges. Scope: document:write.",
       "inputSchema": {
         "properties": {
           "text": {
@@ -138,6 +138,23 @@
               "results.pdf"
             ],
             "title": "Filename"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional REST replay token. Reuse it with the same payload for 24 hours. Changed payloads conflict. Omit it to keep calls unkeyed.",
+            "examples": [
+              "action-2026-11-04"
+            ],
+            "title": "Idempotency Key"
           }
         },
         "title": "prepare_faxArguments",
@@ -184,7 +201,7 @@
     "quote_fax": {
       "name": "quote_fax",
       "title": "Quote fax",
-      "description": "Price one prepared document for one fax destination. Use after prepare_fax and before send_approved_fax. Use get_fax_capabilities for general routes and prices. Creates a new quote each call without sending or charging. Returns USD micro-units, billable pages, a ten-minute expiry and the policy's verdict with its first failing rule and approval requirement. A cover adds one billable page. Scope: fax:quote.",
+      "description": "Price one prepared document for one fax destination. Use after prepare_fax and before send_approved_fax. Use get_fax_capabilities for general routes and prices. Creates a quote without sending or charging. An optional idempotency_key replays the same request for 24 hours. Returns USD micro-units, billable pages, a ten-minute expiry and the policy's verdict with its first failing rule and approval requirement. A cover adds one billable page. Scope: fax:quote.",
       "inputSchema": {
         "properties": {
           "document_id": {
@@ -262,6 +279,61 @@
               }
             },
             "title": "Cover"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional REST replay token. Reuse it with the same payload for 24 hours. Changed payloads conflict. Omit it to keep calls unkeyed.",
+            "examples": [
+              "action-2026-11-04"
+            ],
+            "title": "Idempotency Key"
+          },
+          "from_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional sender number you own, in E.164 format. Defaults to the shared pool.",
+            "examples": [
+              "+12025550123"
+            ],
+            "title": "From Number"
+          },
+          "quality": {
+            "anyOf": [
+              {
+                "enum": [
+                  "standard",
+                  "fine",
+                  "superfine",
+                  "ultra"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Fax resolution. standard is 204 by 98 dpi, fine 204 by 196 (the default when omitted), superfine 204 by 392; ultra asks the carrier for its best text setting and takes longer. Same price at every level. Pick superfine or ultra for small print or forms that must stay legible.",
+            "examples": [
+              "superfine"
+            ],
+            "title": "Quality"
           }
         },
         "required": [
@@ -353,7 +425,7 @@
       "annotations": {
         "title": "Send approved fax",
         "readOnlyHint": false,
-        "destructiveHint": true,
+        "destructiveHint": false,
         "idempotentHint": true,
         "openWorldHint": true
       }
@@ -434,6 +506,23 @@
               "fax_0123456789abcdef0123456789abcdef"
             ],
             "title": "Cursor"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional send replay token. Finds its job while the REST replay record exists. An empty result cannot prove no fax was sent.",
+            "examples": [
+              "send-results-2026-11-04"
+            ],
+            "title": "Idempotency Key"
           }
         },
         "title": "list_faxesArguments",
@@ -489,15 +578,15 @@
       "annotations": {
         "title": "Cancel fax",
         "readOnlyHint": false,
-        "destructiveHint": true,
-        "idempotentHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
         "openWorldHint": true
       }
     },
     "request_human_review": {
       "name": "request_human_review",
       "title": "Request human review",
-      "description": "Ask a person to approve a quoted send or help with a fax. With quote_id, binds approval to the document hash, destination, sender, amount and expiry. Without quote_id, creates a help request with an optional fax_id. Use get_review_status to poll the human decision, then send_approved_fax after approval. Stores a request and attempts an email notification, without sending a fax or charging. Returns the request id and status. Pending duplicates can be reused, but repeats after closure can create new requests. Grants no approval itself. Scope: approval:request.",
+      "description": "Ask a person to approve a quoted send or help with a fax. With quote_id, binds approval to the document hash, destination, sender, amount and expiry. Without quote_id, creates a help request with an optional fax_id. Use get_review_status to poll the human decision, then send_approved_fax after approval. Stores a request and attempts an email notification, without sending a fax or charging. Returns the request id and status. Pending duplicates can be reused, but repeats after closure can create new requests. An optional idempotency_key replays the same request for 24 hours. Grants no approval itself. Scope: approval:request.",
       "inputSchema": {
         "properties": {
           "message": {
@@ -541,6 +630,23 @@
               "fax_0123456789abcdef0123456789abcdef"
             ],
             "title": "Fax Id"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional REST replay token. Reuse it with the same payload for 24 hours. Changed payloads conflict. Omit it to keep calls unkeyed.",
+            "examples": [
+              "action-2026-11-04"
+            ],
+            "title": "Idempotency Key"
           }
         },
         "required": [

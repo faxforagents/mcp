@@ -22,6 +22,13 @@ The server exposes 15 tools. get_document is now get_fax_document, with no alias
 Refresh cached tool lists before calling the renamed tool.`,
   send: `Sending, in order (each tool says which key scope it needs):
 
+prepare_fax, quote_fax and request_human_review accept an optional idempotency_key.
+Use a different key for each mutation, and reuse that key with identical arguments after a timeout.
+REST replays the original response for 24 hours. Changed payloads conflict.
+Omitting the token keeps existing behavior.
+list_faxes(idempotency_key=...) finds a send's job while its REST replay record exists.
+An empty result cannot prove no fax was sent. Never replace an uncertain send with a new key.
+
 1. prepare_fax: turn text, Markdown or HTML into a PDF document, or register a file you uploaded
    through the REST API (upload_id). The upload is a PDF, PNG, JPG or TIFF, and an image becomes
    gray letter pages. It validates the PDF (encrypted or unreadable files are refused before
@@ -30,8 +37,8 @@ Refresh cached tool lists before calling the renamed tool.`,
    validation warnings and signed preview URLs. Documents are listed through the REST API
    (GET /v1/documents); the tool reads one id.
 3. quote_fax(document_id, to, cover?, quality?): the exact price for that document hash to that
-   number. quality picks the resolution (standard, fine, superfine, ultra; fine by default, same price).
-   The cover sheet, when you pass one, is a billable page and the quote says so. A quote lives
+   number. The cover sheet, when you pass one, is a billable page and the quote says so. quality
+   picks the resolution (standard, fine, superfine, ultra; fine by default, same price). A quote lives
    10 minutes and is used by exactly one send. The quote carries the policy verdict under
    policy: decision (allow or deny), the first failing rule, and approval_required, which says
    whether a person must approve it. It is the same evaluation the server runs at send time.
@@ -109,14 +116,22 @@ an agent key never has policy:admin).
 
 A policy version names: allowed destinations (exact numbers or country prefixes), allowed sender
 numbers, max pages and max amount per job, daily and monthly caps (jobs and amount), allowed
-document sources (uploaded or rendered), allowed environments, an expiry, and the agents or keys
-it applies to. A change is a new version; a job records the version it was sent under.
+document sources (uploaded or rendered), allowed environments, an expiry, and the agents, keys or
+connected apps (OAuth grants, such as a ChatGPT connection) it applies to. A change is a new
+version; a job records the version it was sent under.
 
 - quote_fax carries the verdict under policy: allow or deny with the first failing rule, and
   approval_required. It is the evaluation the server runs at send time; the quote itself sends
   nothing. A dry run without a quote (document_id and to) is the REST route
   POST /v1/policy-evaluations (scope policy:read).
 - When a quote is allowed by a policy, send_approved_fax(quote_id) sends without an approval.
+- By default a connected app (an OAuth connection such as ChatGPT or Claude, or an API key flagged
+  as a connected app) sends with no approval per fax inside the organization's auto-send setting:
+  $5.00 per fax and 20 faxes a day, in both environments, until an owner changes it (dashboard
+  Settings, Connected apps, "Let connected apps send without asking", or the checkbox on the consent
+  screen). quote_fax then says "allowed by your organization's auto-send setting". Above a limit, or
+  when the owner turned it off, the quote says deny and names the rule, and a person decides
+  (request_human_review). A hosted integration the server marks as needing a person still needs one.
 - Nothing you write in a prompt, a purpose, a client_reference or a cover sheet reaches the
   policy engine. Text that says "ignore the budget" changes nothing; the rule still decides.`,
   agents: `Agent identities: an organization registers each agent as a named principal with its own
