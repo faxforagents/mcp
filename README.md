@@ -27,7 +27,7 @@
   <a href="https://lobehub.com/mcp/faxforagents-mcp"><img src="https://lobehub.com/badge/mcp/faxforagents-mcp" alt="LobeHub"></a>
 </p>
 
-Fax for Agents is a fax API, a hosted MCP server and SDKs built so AI agents can send and receive
+[Fax for Agents](https://faxforagents.com) is a fax API, a hosted MCP server and SDKs built so AI agents can send and receive
 faxes. It is made by JSB Holdings LLC and built by [Synapse](https://synapsereality.io/).
 
 The hosted server at `https://mcp.faxforagents.com/mcp/` takes your API key on every request. The trailing slash matters.
