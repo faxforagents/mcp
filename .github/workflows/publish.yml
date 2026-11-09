@@ -52,7 +52,17 @@ jobs:
       # npm >= 11.5.1 is required for OIDC trusted publishing.
       - run: npm install -g npm@latest
 
+      # Since 2026-11-09 this repository's OIDC tokens carry the immutable subject format
+      # (repo:owner@id/name@id), which GitHub does not let a repository turn off and which the npm
+      # registry does not match yet: the token exchange answers "package not found" and npm then
+      # publishes unauthenticated, so the PUT fails with 404 (npm/cli issue 9969). Until npm accepts
+      # that format the step publishes with the granular NPM_TOKEN secret (publish only, this package,
+      # bypass 2FA, short expiry). Provenance still comes from the id-token permission. When the secret
+      # is absent the step falls back to the OIDC exchange, so removing the secret restores trusted
+      # publishing the day npm fixes it.
       - name: Publish to npm (skip if already published)
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           PKG=$(node -p "require('./package.json').version")
           if [ "$(npm view faxforagents-mcp@$PKG version 2>/dev/null)" = "$PKG" ]; then
