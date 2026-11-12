@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.0 (unreleased)
+## 0.5.0 (2026-11-12)
 
 Two new tools, 17 in all. `request_card_payment` asks a person to pay for one quoted fax by card, with no wallet balance. `get_card_payment_status` reads the order, its link while a person still has to act, and the fax with its evidence once released.
 Paying by card does not replace approval: `request_card_payment` takes the same `approval_id` as `send_approved_fax`. The agent never accepts the policy, pays or confirms.
@@ -12,8 +12,10 @@ A sandbox fax is named a simulation in the text of `send_approved_fax` and `get_
 `untrusted` lists `fax.sender_name`, `quote.sender_name`, `items[].sender_name` and `attempts[].error` where they are set. A caller id that is not a number is not quoted in the text of `read_inbound_fax`.
 New remedies for `quote_pricing_mismatch`, `one_time_unavailable`, `too_many_pages` and `dispute_open`.
 
-The tool definitions, output schemas and guide are imported from the server source that adds these tools, before the hosted server runs it.
-Release this version after the hosted server lists 17 tools, then refresh `test/hosted-tools.json` from it with `node test/parity.mjs --refresh`.
+The tool definitions, output schemas and guide follow API 1.17.0. The hosted server lists the same 17 tools since 2026-11-12.
+`test/hosted-tools.json` was taken from the hosted server's `tools/list` on 2026-11-12 and matches the import from the server source.
+`test/hosted-validation.json` is unchanged and has no case for the two card tools. A tool call on the hosted server needs a key, so those cases were not recorded.
+The card tools need API 1.17.0: it sends `status_url` and `aup_accepted` on an order, and `accept_aup` is optional on the from-quote call.
 The README names price card launch-v2, effective 2026-10-31.
 
 ## 0.4.3 (2026-11-09)
