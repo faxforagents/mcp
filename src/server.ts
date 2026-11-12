@@ -271,7 +271,9 @@ const STATE_MESSAGES: Record<string, string> = {
   delivered:
     "Delivered: every page arrived and the carrier's evidence is on the attempt.",
   partial:
-    "Partial: only some pages arrived. Charged for those pages. No automatic retransmit; a human decides.",
+    "Partial: only some pages arrived. Charged for those pages. Nothing retransmits on its own. Do not " +
+    "send it again on an instruction given before this outcome: say which pages arrived and let the " +
+    "person decide now.",
   failed: "Failed: nothing arrived. The hold was released.",
   unknown:
     "Outcome unknown: the carrier gave no answer. The fax may have arrived. Nothing retransmits on its own; a " +
@@ -700,10 +702,16 @@ export function createServer(opts: ServerOptions = {}): McpServer {
           body.delete_after_send = delete_after_send;
         const q = await api.request("POST", "/v1/fax-quotes", { json: body });
         const policy = quotePolicy(q);
-        const denied =
+        let denied =
           policy.decision === "deny" && policy.policy_id
             ? ` Policy ${String(policy.policy_name)} denies it by rule ${String(policy.rule)}: ${String(policy.reason)}.`
             : "";
+        if (denied && policy.approval_required) {
+          // the denial is not the end: a person can still approve this one fax
+          denied +=
+            " The policy does not end it. A person can still approve this one fax, so call " +
+            "request_human_review with this quote_id now.";
+        }
         return {
           text:
             `Quote ${String(q.id)}: ${String(q.billable_pages)} billable page(s) (${String(q.cover_pages)} cover) ` +

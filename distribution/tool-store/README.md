@@ -40,7 +40,7 @@ tool validate --strict
 tool pack
 ```
 
-The expected output is `distribution/tool-store/faxforagents-0.5.0.mcpb`.
+The expected output is `distribution/tool-store/faxforagents-0.5.1.mcpb`.
 Generated files and archives are ignored by Git.
 The archive includes production dependencies and their license files.
 The tracked `logo.png` is the original 512 by 512 brand image.
