@@ -247,7 +247,7 @@ steps, and `going_live` says how to get from the sandbox to a real fax.
 
 ## Prices
 
-Price card launch-v2 is effective from 2026-10-31. $0.039 per page sent, $0.019 per page received.
+Price card launch-v3 is effective from 2026-11-12. $0.039 per page sent, $0.019 per page received.
 $2 per number per month, $19 per month for the Agent workspace. Sandbox pages cost 0.
 `get_fax_capabilities` returns the card in force. One fax by card has its own price: the order names
 it in `amount_micro`, and the [pricing page](https://faxforagents.com/pricing/) lists it.
