@@ -1,4 +1,7 @@
-/** Copied from the hosted mcp/guide.py. Only the package version and stdio key name differ. */
+/**
+ * Copied from the hosted mcp/guide.py. The package version and the stdio key name differ. The states
+ * section says a busy or unanswered fax was tried three times in all, as the limits page does.
+ */
 
 import { VERSION } from './version.js';
 
@@ -45,7 +48,8 @@ An empty result cannot prove no fax was sent. Never replace an uncertain send wi
 3. quote_fax(document_id, to, cover?, quality?): the exact price for that document hash to that
    number. The cover sheet, when you pass one, is a billable page and the quote says so. quality
    picks the resolution (standard, fine, superfine, ultra; fine by default, same price). sender_name
-   is the station name in the fax header. delete_after_send removes the document and the transmitted
+   names the sender to the carrier and in the line a fax without a cover prints at the top of page
+   one (your organization's name when omitted). delete_after_send removes the document and the transmitted
    copy when the fax ends; the receipt and the evidence stay. A quote lives
    10 minutes and is used by exactly one send. The quote carries the policy verdict under
    policy: decision (allow or deny), the first failing rule, and approval_required, which says
@@ -74,7 +78,7 @@ human reconcile. cancel_fax works while the fax is queued; once sending it is be
 - partial: the call dropped after some pages; pages_sent says how many. Those pages were
   charged, the rest released. No automatic retransmit: a human decides whether to resend.
 - failed: nothing arrived (failure_code says why: busy, no_answer, invalid_number, canceled).
-  The hold was released. Busy and no answer were already retried up to three times.
+  The hold was released. Busy and no answer were already tried three times in all.
 - unknown: the carrier gave no outcome (timeout or missing callback). The fax may have arrived.
   Nothing retransmits on its own; the hold stays until a reconcile. Say exactly that.`,
   errors: `error_code values and what to do:
