@@ -2,7 +2,7 @@
 
 Build the local stdio bundle from the repository root with `npm run pack:tool-store`.
 
-The bundle contains all 15 tools.
+The bundle contains all 17 tools.
 It requires a Fax for Agents API key from the [dashboard](https://app.faxforagents.com).
 
 ## Build
@@ -40,7 +40,7 @@ tool validate --strict
 tool pack
 ```
 
-The expected output is `distribution/tool-store/faxforagents-0.4.3.mcpb`.
+The expected output is `distribution/tool-store/faxforagents-0.5.0.mcpb`.
 Generated files and archives are ignored by Git.
 The archive includes production dependencies and their license files.
 The tracked `logo.png` is the original 512 by 512 brand image.

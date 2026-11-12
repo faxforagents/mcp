@@ -23,7 +23,7 @@
   <a href="https://github.com/faxforagents/mcp/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/faxforagents/mcp/ci.yml?branch=main&label=ci" alt="CI"></a>
   <a href="https://github.com/faxforagents/mcp/blob/main/LICENSE"><img src="https://img.shields.io/badge/licence-MIT-1f6feb" alt="MIT licence"></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-20%2B-339933" alt="Node 20+"></a>
-  <a href="https://faxforagents.com/mcp/"><img src="https://img.shields.io/badge/MCP-15%20tools-6b4fbb" alt="MCP"></a>
+  <a href="https://faxforagents.com/mcp/"><img src="https://img.shields.io/badge/MCP-17%20tools-6b4fbb" alt="MCP"></a>
   <a href="https://lobehub.com/mcp/faxforagents-mcp"><img src="https://lobehub.com/badge/mcp/faxforagents-mcp" alt="LobeHub"></a>
 </p>
 
@@ -31,7 +31,7 @@
 faxes. It is made by JSB Holdings LLC and built by [Synapse](https://synapsereality.io/).
 
 The hosted server at `https://mcp.faxforagents.com/mcp/` takes your API key on every request. The trailing slash matters.
-This package implements the same 15 tool names locally over stdio and calls the REST API.
+This package implements the same 17 tool names locally over stdio and calls the REST API.
 It reads `FAXFORAGENTS_API_KEY` from the environment and sends it to the API as a bearer credential.
 It also serves guide resources and two prompts for sending and receiving faxes.
 
@@ -168,7 +168,7 @@ As a client entry, the same image:
 
 ## Tools
 
-The 15 tool definitions are checked against a snapshot exported from the hosted Python source.
+The 17 tool definitions are checked against a snapshot exported from the hosted Python source.
 
 | Tool | Does | Scope |
 |---|---|---|
@@ -182,6 +182,8 @@ The 15 tool definitions are checked against a snapshot exported from the hosted 
 | `list_faxes` | List outbound faxes your organization sent, newest first. | `fax:read` |
 | `get_fax_balance` | Read available and held wallet funds in the credential's environment. | `billing:read` |
 | `cancel_fax` | Request cancellation of one outbound fax. | `fax:cancel` |
+| `request_card_payment` | Ask a person to pay for one quoted fax by card, with no wallet balance. | `fax:send` |
+| `get_card_payment_status` | Read one card payment order: whether a person paid, what was charged and the fax it sent. | `fax:read` |
 | `request_human_review` | Ask a person to approve a quoted send or help with a fax. | `approval:request` |
 | `get_review_status` | Read the human approval decision for one review request. | `approval:read` |
 | `list_inbox` | List received faxes on your organization's numbers, newest first. | `inbox:read` |
@@ -199,7 +201,7 @@ accepted the fax. Every string the carrier supplied is named under `untrusted`.
 
 The guide is also a resource. `faxforagents://guide` is the whole manual as `text/markdown`, and
 `faxforagents://guide/{section}` is one section (`overview`, `send`, `states`, `errors`, `approvals`,
-`policies`, `agents`, `inbox`, `ocr`). Neither needs a key.
+`policies`, `agents`, `inbox`, `ocr`, `one_time`, `going_live`). Neither needs a key.
 
 Two prompts walk a client through the product. `send_a_fax` takes `to` and an optional `summary` and
 orders the steps: `prepare_fax`, `quote_fax`, `request_human_review` and `get_review_status`,
@@ -228,11 +230,27 @@ The approval path is `request_human_review` with the `quote_id`, then a person d
 never approve its own send. `unknown` and `partial`
 never retransmit on their own.
 
+## One fax by card
+
+`request_card_payment` turns a live quote into an order that a person pays by card, with no wallet
+balance. It is for a send the wallet does not cover, or for a person who wants to pay for one fax only.
+The tool returns `status_url`. Give that link to the person. They accept the acceptable use policy and
+the terms there and pay on a hosted page. The agent cannot accept, pay or confirm, and nothing is sent
+before the person pays.
+
+Paying by card does not replace approval. The tool takes the same `approval_id` as `send_approved_fax`,
+or a delegated policy has to allow the send. `get_card_payment_status` reads the order: `next` is
+`checkout`, `confirm`, `wait` or `done`, and once the fax was released the answer carries the fax and
+the carrier's evidence. The card is authorized at payment and charged only for pages the carrier
+reports as arrived. Live keys only, United States and Canada. The guide section `one_time` has the
+steps, and `going_live` says how to get from the sandbox to a real fax.
+
 ## Prices
 
-Price card launch-v1 is effective from 2026-10-28. $0.039 per page sent, $0.019 per page received.
+Price card launch-v2 is effective from 2026-10-31. $0.039 per page sent, $0.019 per page received.
 $2 per number per month, $19 per month for the Agent workspace. Sandbox pages cost 0.
-`get_fax_capabilities` returns the card in force.
+`get_fax_capabilities` returns the card in force. One fax by card has its own price: the order names
+it in `amount_micro`, and the [pricing page](https://faxforagents.com/pricing/) lists it.
 
 ## Working on this repository
 

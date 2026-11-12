@@ -4,7 +4,7 @@
     "get_guide": {
       "name": "get_guide",
       "title": "Get guide",
-      "description": "Read the Fax for Agents manual and tool workflow. Start here for sending, approvals, inbox, OCR and error remedies. Use get_fax_capabilities for account-specific limits and routes. Returns static text and section names without authentication, side effects or charges. Repeated reads are safe.",
+      "description": "Read the Fax for Agents manual and tool workflow. Start here for sending, approvals, inbox, OCR, card payment and error remedies. Use get_fax_capabilities for account-specific limits and routes. Returns static text and section names without authentication, side effects or charges. Repeated reads are safe.",
       "inputSchema": {
         "properties": {
           "section": {
@@ -17,7 +17,7 @@
               }
             ],
             "default": null,
-            "description": "Manual section name. Optional, defaults to null for the whole guide. Use overview, send, states, errors, approvals, policies, agents, inbox or ocr. Matching ignores case and surrounding spaces and accepts a section-name substring.",
+            "description": "Manual section name. Optional, defaults to null for the whole guide. Use overview, send, states, errors, approvals, policies, agents, inbox, ocr, one_time or going_live. Matching ignores case and surrounding spaces and accepts a section-name substring.",
             "examples": [
               "send"
             ],
@@ -38,7 +38,7 @@
     "get_fax_capabilities": {
       "name": "get_fax_capabilities",
       "title": "Get fax capabilities",
-      "description": "Read account limits, routes, formats, prices and credential scopes. Use before preparing a fax. Use quote_fax for one send's price and policy verdict, or get_fax_balance for available funds. Returns capabilities and account identity without changes or charges. Repeated reads are safe. Scope: account:read.",
+      "description": "Read account limits, routes, formats, prices and credential scopes. Use before preparing a fax. Use quote_fax for one send's price and policy verdict, or get_fax_balance for available funds. Returns capabilities and account identity without changes or charges. extraction_pricing holds the per-page price of extract_fax_data. Repeated reads are safe. Scope: account:read.",
       "inputSchema": {
         "properties": {},
         "title": "get_fax_capabilitiesArguments",
@@ -571,7 +571,7 @@
     "get_fax_balance": {
       "name": "get_fax_balance",
       "title": "Get fax balance",
-      "description": "Read available and held wallet funds in the credential's environment. Use before sending or extraction to check funds. Use quote_fax for a send's price and get_fax_capabilities for rates. Returns balance in integer USD micro-units. Repeated reads are safe and free. It cannot top up or change funds. Scope: billing:read.",
+      "description": "Read available and held wallet funds in the credential's environment. Use before sending or extraction to check funds. Use quote_fax for a send's price and get_fax_capabilities for rates. Returns balance in integer USD micro-units and top_up_url, the page where a person adds funds. Repeated reads are safe and free. It cannot top up or change funds. Scope: billing:read.",
       "inputSchema": {
         "properties": {},
         "title": "get_fax_balanceArguments",
@@ -613,6 +613,141 @@
         "destructiveHint": false,
         "idempotentHint": true,
         "openWorldHint": true
+      }
+    },
+    "request_card_payment": {
+      "name": "request_card_payment",
+      "title": "Request card payment",
+      "description": "Ask a person to pay for one quoted fax by card, with no wallet balance. Use after quote_fax when the wallet does not cover the send, or when the person wants to pay for one fax only. Use send_approved_fax for a wallet send. The same authorization as send_approved_fax applies: an approval_id from get_review_status, or a delegated policy that allows the send. Paying by card replaces neither, and without one the answer is approval_required. Creates a one-time order at the card price of the rate card, which differs from the quote's per-page amount. Adds a cover page with cover_from_name. Returns the order id, its status, the price and status_url. A person opens status_url, accepts the acceptable use policy and the terms there, and pays by card. You cannot pay it yourself, and nothing is sent until they pay. The card is authorized at payment and charged only for pages the carrier reports as arrived. The quote then belongs to the order. United States and Canada, live keys only, within the page limit get_fax_capabilities reports under one_time. Identical requests replay for 24 hours when the idempotency key matches. Poll get_card_payment_status. Scope: fax:send.",
+      "inputSchema": {
+        "properties": {
+          "quote_id": {
+            "description": "Unexpired, unused quote id returned by quote_fax with a live key. Format: quote_ followed by 32 lowercase hexadecimal characters. Required, no default. The quote supplies the document, the destination and the cover.",
+            "examples": [
+              "quote_0123456789abcdef0123456789abcdef"
+            ],
+            "pattern": "^quote_[0-9a-f]{32}$",
+            "title": "Quote Id",
+            "type": "string"
+          },
+          "cover_from_name": {
+            "description": "Name of the person or business sending the fax, printed on the cover page this order adds. Plain text, 2 to 120 characters. Required, no default. It is not the station name that quote_fax takes as sender_name.",
+            "examples": [
+              "Dana Whitfield"
+            ],
+            "title": "Cover From Name",
+            "type": "string"
+          },
+          "approval_id": {
+            "anyOf": [
+              {
+                "pattern": "^apr_[0-9a-f]{32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Approved, unused request id returned by get_review_status for this quote. Format: apr_ followed by 32 lowercase hexadecimal characters. Defaults to null. Required when the quote needs human approval and no delegated policy allows the send, as for send_approved_fax.",
+            "examples": [
+              "apr_0123456789abcdef0123456789abcdef"
+            ],
+            "title": "Approval Id"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Email address of the person who pays, at most 254 characters. The receipt goes there. An address no member of the organization signed in with gets a confirmation link to click before the fax is sent. Defaults to null, which uses the organization's own address. Use an address the person gave you. Never invent one.",
+            "examples": [
+              "dana@example.com"
+            ],
+            "title": "Email"
+          },
+          "delete_after_send": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "true deletes the document and the transmitted copy the moment the fax ends in delivered, partial or failed. The order, the receipt and the carrier evidence stay. Defaults to null, which keeps the quote's own choice.",
+            "examples": [
+              true
+            ],
+            "title": "Delete After Send"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Retry token for this request, at most 255 characters. Defaults to null, which uses mcp:card:{quote_id}. Empty strings also use that default. Reuse the same token and arguments for 24-hour replay. Changed arguments conflict.",
+            "examples": [
+              "card-results-2026-11-12"
+            ],
+            "title": "Idempotency Key"
+          }
+        },
+        "required": [
+          "quote_id",
+          "cover_from_name"
+        ],
+        "title": "request_card_paymentArguments",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Request card payment",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    "get_card_payment_status": {
+      "name": "get_card_payment_status",
+      "title": "Get card payment status",
+      "description": "Read one card payment order made by request_card_payment: whether a person has paid, what was charged and the fax it sent. Use get_fax_status for a wallet fax and get_review_status for a human approval decision. Returns the order with next: checkout, confirm, wait or done. While a person still has to pay or confirm, it returns status_url again, the link to give them. Once the fax was released, it also returns the fax with its delivery state and the carrier's evidence. Evidence is not legal proof of acceptance. It cannot pay, confirm or send. Repeated polls are safe and free. Scope: fax:read.",
+      "inputSchema": {
+        "properties": {
+          "order_id": {
+            "description": "Card payment order id from request_card_payment. Format: oto_ followed by 32 lowercase hexadecimal characters. Required, no default. This is an order, not a fax id or an approval request.",
+            "examples": [
+              "oto_0123456789abcdef0123456789abcdef"
+            ],
+            "pattern": "^oto_[0-9a-f]{32}$",
+            "title": "Order Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "title": "get_card_payment_statusArguments",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Get card payment status",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
       }
     },
     "request_human_review": {

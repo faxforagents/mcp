@@ -3,11 +3,13 @@
 # not on the card. Provenance: faxforagents/openapi scripts/truthcheck.sh (2026-10-28). spec/ is the
 # hosted tools snapshot is the server's own text, taken as is.
 #
-# The price card (price_version launch-v1, 2026-10-28): $0.039 per page sent, $0.019 per page
+# The price card (price_version launch-v2, effective 2026-10-31): $0.039 per page sent, $0.019 per page
 # received, $2 per number per month, $19 per month workspace. $5.00 is the auto-send default per fax
 # for connected apps (API 1.10.1, the guide names it). Any other dollar amount in copy is stale
 # or invented. Claims the product does not make: HIPAA, "the first", "cheapest". Competitors are never
 # named. CHANGELOG.md is exempt from the price rule (dated entries quote the card as it stood).
+# One fax by card (published 2026-11-11): $2.49 for up to 5 pages to a US or Canadian number, cover
+# included, $0.49 per extra page. A file that states either amount states that date too (rule 6).
 set -u
 cd "$(dirname "$0")/.." || exit 1
 
@@ -24,10 +26,10 @@ flag() {
 prices=$(printf '%s\n' "$FILES" | grep -vE '^test/' | xargs grep -noE '\$[0-9][0-9,]*(\.[0-9]+)?.?' 2>/dev/null \
     | grep -vE '\$[0-9]+[")}]$' \
     | sed -E 's/([0-9])[^0-9]$/\1/' \
-    | grep -vE ':\$(0\.039|0\.019|2|2\.00|19|19\.00|5\.00)$' || true)
+    | grep -vE ':\$(0\.039|0\.019|2|2\.00|19|19\.00|2\.49|0\.49|5\.00)$' || true)
 if [ -n "$prices" ]; then
     printf '%s\n' "$prices" >&2
-    flag "a dollar amount that is not on the price card (0.039, 0.019, 2, 19)"
+    flag "a dollar amount that is not on the price card (0.039, 0.019, 2, 19, and 2.49, 0.49 for one fax by card)"
 fi
 
 # 2) Claims the product does not make.
@@ -60,10 +62,17 @@ fi
 
 # 5) Anchors that have to be present wherever prices are described.
 if printf '%s\n' "$FILES" | xargs grep -lq '\$0\.039' 2>/dev/null; then
-    if ! printf '%s\n' "$FILES" | xargs grep -q '2026-10-28' 2>/dev/null; then
-        flag "a price is stated without its date (2026-10-28)"
+    if ! printf '%s\n' "$FILES" | xargs grep -q '2026-10-31' 2>/dev/null; then
+        flag "a price is stated without its date (2026-10-31)"
     fi
 fi
+
+# 6) A one-time amount is stated only in a file that also states the day it was published.
+for f in $(printf '%s\n' "$FILES" | xargs grep -lE '\$(2\.49|0\.49)' 2>/dev/null); do
+    if ! grep -q '2026-11-11' "$f"; then
+        flag "$f states a one-time price without its date (2026-11-11)"
+    fi
+done
 
 if [ "$fail" -eq 0 ]; then
     echo "truthcheck: OK"

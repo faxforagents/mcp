@@ -10,6 +10,7 @@ const ID_PREFIXES: Record<string, string> = {
   quote_id: 'quote',
   approval_id: 'apr',
   fax_id: 'fax',
+  order_id: 'oto',
   review_request_id: 'apr',
   inbox_id: 'inb',
   inbox_item_id: 'inb',

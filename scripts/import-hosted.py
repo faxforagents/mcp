@@ -25,8 +25,8 @@ tools = [
     tool.model_dump(by_alias=True, exclude_none=True)
     for tool in asyncio.run(server.list_tools())
 ]
-assert len(tools) == 15
-assert "get_fax_document" in {tool["name"] for tool in tools}
+assert len(tools) == 17
+assert {"get_fax_document", "request_card_payment", "get_card_payment_status"} <= {tool["name"] for tool in tools}
 assert "get_document" not in {tool["name"] for tool in tools}
 
 

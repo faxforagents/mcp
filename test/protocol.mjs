@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Protocol smoke test. Drives the built server over stdio as an MCP client would and asserts the
- * handshake, the 15 tools, the no-key path, the guide resources and the two prompts. Runs WITHOUT a key
+ * handshake, the 17 tools, the no-key path, the guide resources and the two prompts. Runs WITHOUT a key
  * on purpose: that path is what every new user and every indexer hits first, and it has to degrade to
  * a message. Provenance: livetennisapi-mcp test/protocol.mjs (2026-10-28).
  */
@@ -19,6 +19,8 @@ const EXPECTED_TOOLS = [
   "list_faxes",
   "get_fax_balance",
   "cancel_fax",
+  "request_card_payment",
+  "get_card_payment_status",
   "request_human_review",
   "get_review_status",
   "list_inbox",
@@ -41,6 +43,8 @@ const SECTIONS = [
   "agents",
   "inbox",
   "ocr",
+  "one_time",
+  "going_live",
 ];
 
 const requests = [
@@ -188,8 +192,8 @@ for (const cap of ["tools", "resources", "prompts"]) {
 const tools = reply(2)?.result?.tools;
 if (!Array.isArray(tools)) fail("no tools/list result");
 const names = tools.map((t) => t.name);
-if (names.length !== 15)
-  fail(`expected 15 tools, got ${names.length}: ${names.join(", ")}`);
+if (names.length !== 17)
+  fail(`expected 17 tools, got ${names.length}: ${names.join(", ")}`);
 if (names.join() !== EXPECTED_TOOLS.join())
   fail(`tool names or order differ: ${names.join(", ")}`);
 for (const t of tools) {
