@@ -53,7 +53,7 @@ const local = parse().find((m) => m.id === 2)?.result?.tools;
 const fail = (msg) => { console.error('FAIL:', msg); process.exit(1); };
 if (!local) fail('no local tools/list');
 
-assert.equal(hosted.length, 15, 'snapshot tool count');
+assert.equal(hosted.length, 17, 'snapshot tool count');
 assert.deepEqual(local, hosted, 'full tool definitions must match the source snapshot');
 const plugin = JSON.parse(readFileSync(new URL('../lhm.plugin.json', import.meta.url), 'utf8'));
 assert.deepEqual(plugin.tools, hosted, 'plugin tools must match the source snapshot');

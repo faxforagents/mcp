@@ -88,7 +88,7 @@ client's MCP configuration file.
 ## Verify the installation
 
 1. Restart the MCP client, or reload its MCP servers.
-2. Confirm the `faxforagents` server shows as connected and lists 15 tools. Clients that show resources
+2. Confirm the `faxforagents` server shows as connected and lists 17 tools. Clients that show resources
    and prompts list the guide (`faxforagents://guide` and one resource per section) and the prompts
    `send_a_fax` and `handle_received_fax`.
 3. Call `get_fax_capabilities`. It reports the provider (`sandbox` for a test key), the routes and the

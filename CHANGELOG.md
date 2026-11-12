@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.0 (unreleased)
+
+Two new tools, 17 in all. `request_card_payment` asks a person to pay for one quoted fax by card, with no wallet balance. `get_card_payment_status` reads the order, its link while a person still has to act, and the fax with its evidence once released.
+Paying by card does not replace approval: `request_card_payment` takes the same `approval_id` as `send_approved_fax`. The agent never accepts the policy, pays or confirms.
+The guide gains the sections `one_time` and `going_live`, also as resources.
+
+A sandbox fax is named a simulation in the text of `send_approved_fax` and `get_fax_status`.
+`insufficient_balance` carries the link where a person adds funds and, when the server offers it, the card path for that exact send.
+`get_fax_balance` says that an agent cannot add funds and returns the top-up link when the API names it. `get_fax_capabilities` names the price of `extract_fax_data` when the API returns it.
+`untrusted` lists `fax.sender_name`, `quote.sender_name`, `items[].sender_name` and `attempts[].error` where they are set. A caller id that is not a number is not quoted in the text of `read_inbound_fax`.
+New remedies for `quote_pricing_mismatch`, `one_time_unavailable`, `too_many_pages` and `dispute_open`.
+
+The tool definitions, output schemas and guide are imported from the server source that adds these tools, before the hosted server runs it.
+Release this version after the hosted server lists 17 tools, then refresh `test/hosted-tools.json` from it with `node test/parity.mjs --refresh`.
+The README names price card launch-v2, effective 2026-10-31.
+
 ## 0.4.3 (2026-11-09)
 
 `quote_fax` takes `sender_name` (the station name in the fax header) and `delete_after_send`. The tool definitions, guide and output schemas follow API 1.12.0. The resolution text names the measured figures.

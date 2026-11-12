@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "faxforagents",
   "display_name": "Fax for Agents",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "description": "Send and receive faxes with document preparation, exact quotes, human approvals and delivery evidence.",
   "author": {
     "name": "JSB Holdings LLC",
@@ -46,15 +46,15 @@
   "tools": [
     {
       "name": "get_guide",
-      "description": "Read the Fax for Agents manual and tool workflow. Start here for sending, approvals, inbox, OCR and error remedies. Use get_fax_capabilities for account-specific limits and routes. Returns static text and section names without authentication, side effects or charges. Repeated reads are safe."
+      "description": "Read the Fax for Agents manual and tool workflow. Start here for sending, approvals, inbox, OCR, card payment and error remedies. Use get_fax_capabilities for account-specific limits and routes. Returns static text and section names without authentication, side effects or charges. Repeated reads are safe."
     },
     {
       "name": "get_fax_capabilities",
-      "description": "Read account limits, routes, formats, prices and credential scopes. Use before preparing a fax. Use quote_fax for one send's price and policy verdict, or get_fax_balance for available funds. Returns capabilities and account identity without changes or charges. Repeated reads are safe. Scope: account:read."
+      "description": "Read account limits, routes, formats, prices and credential scopes. Use before preparing a fax. Use quote_fax for one send's price and policy verdict, or get_fax_balance for available funds. Returns capabilities and account identity without changes or charges. extraction_pricing holds the per-page price of extract_fax_data. Repeated reads are safe. Scope: account:read."
     },
     {
       "name": "prepare_fax",
-      "description": "Create a fax document from text, Markdown, HTML or a completed REST upload. Use before quote_fax. Use get_fax_document to inspect an existing document. Validates and stores a PDF, returning its id, sha256, page count and preview status. Text inputs create a new document per call. Uploads are consumed once. No sending or charges. Scope: document:write."
+      "description": "Create a fax document from text, Markdown, HTML or a completed REST upload. Use before quote_fax. Use get_fax_document to inspect an existing document. Validates and stores a PDF, returning its id, sha256, page count and preview status. Text inputs create a new document without a replay token. Uploads are consumed once. An optional idempotency_key replays the same request for 24 hours. No sending or charges. Scope: document:write."
     },
     {
       "name": "get_fax_document",
@@ -62,7 +62,7 @@
     },
     {
       "name": "quote_fax",
-      "description": "Price one prepared document for one fax destination. Use after prepare_fax and before send_approved_fax. Use get_fax_capabilities for general routes and prices. Creates a new quote each call without sending or charging. Returns USD micro-units, billable pages, a ten-minute expiry and the policy's verdict with its first failing rule and approval requirement. A cover adds one billable page. Scope: fax:quote."
+      "description": "Price one prepared document for one fax destination. Use after prepare_fax and before send_approved_fax. Use get_fax_capabilities for general routes and prices. Creates a quote without sending or charging. An optional idempotency_key replays the same request for 24 hours. Returns USD micro-units, billable pages, a ten-minute expiry and the policy's verdict with its first failing rule and approval requirement. A cover adds one billable page. Scope: fax:quote."
     },
     {
       "name": "send_approved_fax",
@@ -78,15 +78,23 @@
     },
     {
       "name": "get_fax_balance",
-      "description": "Read available and held wallet funds in the credential's environment. Use before sending or extraction to check funds. Use quote_fax for a send's price and get_fax_capabilities for rates. Returns balance in integer USD micro-units. Repeated reads are safe and free. It cannot top up or change funds. Scope: billing:read."
+      "description": "Read available and held wallet funds in the credential's environment. Use before sending or extraction to check funds. Use quote_fax for a send's price and get_fax_capabilities for rates. Returns balance in integer USD micro-units and top_up_url, the page where a person adds funds. Repeated reads are safe and free. It cannot top up or change funds. Scope: billing:read."
     },
     {
       "name": "cancel_fax",
       "description": "Request cancellation of one outbound fax. Use get_fax_status first to check delivery state. Queued cancellation releases the hold. Active cancellation contacts the carrier on a best-effort basis and cannot recall transmitted pages. Returns the fax, or not_cancelable for terminal states. Repeated active calls can contact the carrier again. Already transmitted pages remain billable. Scope: fax:cancel."
     },
     {
+      "name": "request_card_payment",
+      "description": "Ask a person to pay for one quoted fax by card, with no wallet balance. Use after quote_fax when the wallet does not cover the send, or when the person wants to pay for one fax only. Use send_approved_fax for a wallet send. The same authorization as send_approved_fax applies: an approval_id from get_review_status, or a delegated policy that allows the send. Paying by card replaces neither, and without one the answer is approval_required. Creates a one-time order at the card price of the rate card, which differs from the quote's per-page amount. Adds a cover page with cover_from_name. Returns the order id, its status, the price and status_url. A person opens status_url, accepts the acceptable use policy and the terms there, and pays by card. You cannot pay it yourself, and nothing is sent until they pay. The card is authorized at payment and charged only for pages the carrier reports as arrived. The quote then belongs to the order. United States and Canada, live keys only, within the page limit get_fax_capabilities reports under one_time. Identical requests replay for 24 hours when the idempotency key matches. Poll get_card_payment_status. Scope: fax:send."
+    },
+    {
+      "name": "get_card_payment_status",
+      "description": "Read one card payment order made by request_card_payment: whether a person has paid, what was charged and the fax it sent. Use get_fax_status for a wallet fax and get_review_status for a human approval decision. Returns the order with next: checkout, confirm, wait or done. While a person still has to pay or confirm, it returns status_url again, the link to give them. Once the fax was released, it also returns the fax with its delivery state and the carrier's evidence. Evidence is not legal proof of acceptance. It cannot pay, confirm or send. Repeated polls are safe and free. Scope: fax:read."
+    },
+    {
       "name": "request_human_review",
-      "description": "Ask a person to approve a quoted send or help with a fax. With quote_id, binds approval to the document hash, destination, sender, amount and expiry. Without quote_id, creates a help request with an optional fax_id. Use get_review_status to poll the human decision, then send_approved_fax after approval. Stores a request and attempts an email notification, without sending a fax or charging. Returns the request id and status. Pending duplicates can be reused, but repeats after closure can create new requests. Grants no approval itself. Scope: approval:request."
+      "description": "Ask a person to approve a quoted send or help with a fax. With quote_id, binds approval to the document hash, destination, sender, amount and expiry. Without quote_id, creates a help request with an optional fax_id. Use get_review_status to poll the human decision, then send_approved_fax after approval. Stores a request and attempts an email notification, without sending a fax or charging. Returns the request id and status. Pending duplicates can be reused, but repeats after closure can create new requests. An optional idempotency_key replays the same request for 24 hours. Grants no approval itself. Scope: approval:request."
     },
     {
       "name": "get_review_status",

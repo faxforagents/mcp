@@ -92,7 +92,8 @@ function refusal(exc: ApiRefusal): Payload {
     not_found: "No such id in your organization, or it was deleted.",
     approval_required:
       "No approval and no policy allows this send. Call request_human_review with the quote_id, poll " +
-      "get_review_status until a person approves it, then send_approved_fax with the approval_id." +
+      "get_review_status until a person approves it, then send_approved_fax with the approval_id. " +
+      "Paying by card does not replace the approval: request_card_payment takes the same approval_id." +
       (policy ? ` Policy: ${String(policy.reason)}.` : ""),
     approval_expired:
       "The approval expired with its quote. Quote again and request a new approval.",
@@ -113,9 +114,26 @@ function refusal(exc: ApiRefusal): Payload {
       "The person has to confirm their identity again (passkey) before deciding.",
     insufficient_balance:
       `The wallet does not cover this fax (available ${String(d.available_micro)} micro, needed ` +
-      `${String(d.needed_micro)}). A human tops up; an agent cannot.`,
+      `${String(d.needed_micro)}). A human tops up; an agent cannot.` +
+      topUpPointer(d.top_up_url) +
+      cardPointer(d.one_time_offer),
+    dispute_open:
+      "Live sends are paused while a card dispute on this account is open. A person settles the " +
+      "dispute with support. An agent cannot. Test keys keep working.",
     quote_expired: "The quote expired (10 minutes). Call quote_fax again.",
-    quote_consumed: `This quote already created fax ${String(d.fax_job_id)}. Read it with get_fax_status instead of sending again.`,
+    quote_consumed: d.one_time_order_id
+      ? `This quote already became card payment order ${String(d.one_time_order_id)}. Read it with ` +
+        "get_card_payment_status instead of asking again."
+      : `This quote already created fax ${String(d.fax_job_id)}. Read it with get_fax_status instead of sending again.`,
+    quote_pricing_mismatch:
+      `This quote belongs to card payment order ${String(d.one_time_order_id)}: the order sends it ` +
+      "once a person has paid. Read it with get_card_payment_status.",
+    one_time_unavailable:
+      "Paying for one fax by card is not open on this server. The prepaid wallet is: a person tops " +
+      "it up, then send_approved_fax sends the quote.",
+    too_many_pages:
+      `The document has ${String(d.pages)} pages and one fax paid by card carries at most ` +
+      `${String(d.max_document_pages)}. Use the prepaid wallet for it.`,
     not_cancelable: `The fax is already ${String(d.state)}; it cannot be canceled.`,
     rate_limited: `Rate limit reached. Retry in about ${exc.retryAfter ?? "a few"} seconds with the same idempotency_key.`,
     sandbox_only: "Sandbox tools take a test key (ffa_test_...).",
@@ -127,6 +145,123 @@ function refusal(exc: ApiRefusal): Payload {
     details: exc.details,
     isError: HARD_REFUSALS.has(exc.code),
   };
+}
+
+/** Integer micro-USD as a dollar figure for prose. The data keeps the integer (the hosted `dollars`). */
+const usd = (micro: unknown) => `$${(Number(micro) / 1_000_000).toFixed(2)}`;
+
+/** The sentence a wallet refusal gains when the server says this exact send can be paid by card instead
+ * (`details.one_time_offer`). Nothing without the offer (the hosted `card_pointer`). */
+function cardPointer(offer: unknown): string {
+  if (!offer || typeof offer !== "object" || Array.isArray(offer)) return "";
+  const o = offer as Json;
+  if (o.amount_micro === null || o.amount_micro === undefined) return "";
+  const approval = o.approval_id ? ` and approval_id=${String(o.approval_id)}` : "";
+  return (
+    ` Or a person can pay for this one fax by card, ${usd(o.amount_micro)} for ` +
+    `${String(o.document_pages)} page(s). Call request_card_payment with this quote_id${approval} ` +
+    "and give them the link it returns."
+  );
+}
+
+/** Where a person funds the wallet, when the API names the page (the hosted `top_up_pointer`). */
+function topUpPointer(url: unknown): string {
+  if (typeof url !== "string" || !/^https?:\/\//.test(url)) return "";
+  return ` Give the person this link to add funds: ${url}`;
+}
+
+/** A caller id as a carrier can deliver it: digits with an optional plus. Anything else a sender put in
+ * that field stays in the data, under untrusted, and out of the prose (the hosted `caller_id`). */
+function callerId(value: unknown): string {
+  return typeof value === "string" && /^\+?[0-9]{3,15}$/.test(value) ? value : "unknown";
+}
+
+/** What a sandbox job is, said before anything else about it: a test key sends nothing, whatever the
+ * number and whatever state the simulator scripts (the hosted `simulated`). */
+function simulated(job: Json): string {
+  return (
+    `a simulation. Nothing was transmitted to ${String(job.to)} and no real fax machine received ` +
+    "anything. A real fax takes a live key (get_guide section going_live)."
+  );
+}
+
+const ORDER_MESSAGES: Record<string, string> = {
+  draft: "waiting for payment. A person opens the link and pays by card. You cannot pay it.",
+  checkout_open: "waiting for payment. A person opens the link and pays by card. You cannot pay it.",
+  awaiting_confirmation:
+    "the card is authorized, not charged. The person has to click the link in the confirmation mail " +
+    "before the fax is sent.",
+  authorized: "the card is authorized, not charged. The fax is being released. Read again.",
+  released: "the fax was released to the carrier. The card is charged only for pages that arrive.",
+  capturing: "the card charge for the pages that arrived is in progress, not confirmed yet.",
+  canceling: "the card authorization is being given back, not confirmed yet.",
+  captured: "the card was charged for the pages that arrived.",
+  released_hold: "nothing was charged. The card authorization was given back.",
+  expired: "expired. Nothing was charged.",
+  refused: "refused. Nothing was charged.",
+  settle_failed:
+    "the card settlement did not complete and an operator is looking at it. Do not ask for another " +
+    "payment. Tell the person.",
+};
+
+/** What a tool returns of an order under `one_time_send`. Not the job (returned beside it), not the bare
+ * status token (the link carries it), and not the payer's address or the card (the hosted `ORDER_KEYS`). */
+const ORDER_KEYS = [
+  "id", "status", "next", "environment", "source", "email_verified", "aup_accepted", "sender_name", "to",
+  "route", "cover", "document_pages", "document_sha256", "document_id", "delete_after_send",
+  "document_deleted", "price", "amount_micro", "captured_micro", "refunded_micro", "checkout_expires_at",
+  "authorized_at", "confirm_deadline_at", "capture_deadline_at", "released_at", "settled_at", "quote_id",
+  "fax_job_id", "failure_code", "created_at", "updated_at",
+] as const;
+const ORDER_UNTRUSTED = ["one_time_send.sender_name", "one_time_send.cover"];
+
+function orderOnly(order: Json): Json {
+  return Object.fromEntries(ORDER_KEYS.map((k) => [k, order[k] ?? null]));
+}
+
+/** What the person does at `status_url`, by where the order stands (the hosted `pay_link_note`). */
+function payLinkNote(order: Json): string {
+  if (order.next === "checkout") {
+    const accept =
+      (order.aup_accepted ?? true) ? "" : " accept the acceptable use policy and the terms,";
+    return ` Give the person status_url: they open it,${accept} and pay by card. You cannot pay it yourself.`;
+  }
+  if (order.next === "confirm") return " The person can follow the order at status_url.";
+  return "";
+}
+
+/** The prose for one card payment order: where the money stands, then the fax in the words every other
+ * tool uses for it. Never delivered without the job's evidence (the hosted `describe_order`). */
+export function describeOrder(order: Json, job: Json | null): string {
+  const status = String(order.status);
+  let text = `Card payment order ${String(order.id)} (${usd(order.amount_micro ?? 0)}): `;
+  text += ORDER_MESSAGES[status] ?? status;
+  if (status === "captured") text += ` Charged: ${usd(order.captured_micro ?? 0)}.`;
+  if (order.failure_code && ["released_hold", "expired", "refused", "settle_failed"].includes(status))
+    text += ` Reason: ${String(order.failure_code)}.`;
+  if (order.status_url) text += payLinkNote(order);
+  if (job) text += " " + describeJob(job) + describeEvidence(job);
+  return text;
+}
+
+/** The `untrusted` paths of one job under `fax`: every string a customer typed (the hosted `job_paths`). */
+function jobPaths(job: Json, reference = true): string[] {
+  return [
+    ...(reference ? ["fax.client_reference"] : []),
+    ...(job.sender_name ? ["fax.sender_name"] : []),
+  ];
+}
+
+/** The carrier's side of a job and its attempts: the evidence, string by string, and the error text a
+ * provider or the system wrote on a failed attempt (the hosted `attempt_paths`). */
+function attemptPaths(job: Json, attempts: Json[]): string[] {
+  const out = [...evidencePaths("fax.evidence", job.evidence)];
+  for (const a of attempts) {
+    for (const p of evidencePaths("attempts[].evidence", a.evidence))
+      if (!out.includes(p)) out.push(p);
+  }
+  if (attempts.some((a) => a.error)) out.push("attempts[].error");
+  return out;
 }
 
 const STATE_MESSAGES: Record<string, string> = {
@@ -263,6 +398,8 @@ export function describeJob(job: Json): string {
     msg += ` Reason: ${String(job.failure_code)}.`;
   if (state === "partial")
     msg += ` Pages sent: ${String(job.pages_sent)} of ${String(job.billable_pages)}.`;
+  if (job.environment === "test")
+    return `Sandbox fax ${String(job.id)}: ${simulated(job)} Simulated outcome: ${msg}`;
   return `Fax ${String(job.id)} to ${String(job.to)}: ${msg}`;
 }
 
@@ -430,10 +567,20 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         const me = await api.request("GET", "/v1/me");
         const routes = (caps.routes as string[]).join(", ");
         const scopes = (me.scopes as string[]).join(", ");
+        const ocr =
+          caps.extraction_pricing && typeof caps.extraction_pricing === "object"
+            ? (caps.extraction_pricing as Json)
+            : {};
+        const extraction =
+          ocr.page_micro !== null && ocr.page_micro !== undefined
+            ? ` extract_fax_data costs ${String(ocr.page_micro)} micro a page, plus ` +
+              `${String(ocr.escalated_page_micro)} for a page read again, up to ${String(ocr.max_pages)} pages` +
+              (caps.environment === "test" ? " (free in the sandbox)." : ".")
+            : "";
         return {
           text:
             `${String(caps.provider)} provider, ${String(caps.environment)} environment, routes ${routes}, ` +
-            `up to ${String(caps.max_pages)} pages. Key scopes: ${scopes}.`,
+            `up to ${String(caps.max_pages)} pages. Key scopes: ${scopes}.${extraction}`,
           data: { capabilities: caps, me },
         };
       }),
@@ -563,7 +710,10 @@ export function createServer(opts: ServerOptions = {}): McpServer {
             `to ${String(q.to)} for ${String(q.amount_micro)} micro (${dollars(Number(q.amount_micro))}), ` +
             `${String(q.quality ?? "fine")} resolution, expires ${String(q.expires_at)}; ${describeQuotePath(q)}.${denied}`,
           data: { quote: q, policy },
-          untrusted: cover ? ["quote.cover"] : [],
+          untrusted: [
+            ...(cover ? ["quote.cover"] : []),
+            ...(q.sender_name ? ["quote.sender_name"] : []),
+          ],
         };
       }),
   );
@@ -593,12 +743,16 @@ export function createServer(opts: ServerOptions = {}): McpServer {
           : job.policy_version_id
             ? ` under policy version ${String(job.policy_version_id)}`
             : "";
+        const lead =
+          job.environment === "test"
+            ? `Sandbox fax ${String(job.id)} queued${how}: ${simulated(job)}`
+            : `Fax ${String(job.id)} queued to ${String(job.to)}${how}`;
         return {
           text:
-            `Fax ${String(job.id)} queued to ${String(job.to)}${how} (${String(job.billable_pages)} page(s), ` +
+            `${lead} (${String(job.billable_pages)} page(s), ` +
             `${String(job.amount_micro)} micro held). Not delivered yet: poll get_fax_status.`,
           data: { fax: job, idempotency_key: idem },
-          untrusted: client_reference ? ["fax.client_reference"] : [],
+          untrusted: jobPaths(job, Boolean(client_reference)),
         };
       }),
   );
@@ -623,14 +777,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         );
         // the evidence is what the carrier reported (station ids, numbers, status text): data, and every
         // string in it is named so a client can mask each one
-        const untrusted = [
-          "fax.client_reference",
-          ...evidencePaths("fax.evidence", job.evidence),
-        ];
-        for (const a of items) {
-          for (const p of evidencePaths("attempts[].evidence", a.evidence))
-            if (!untrusted.includes(p)) untrusted.push(p);
-        }
+        const untrusted = [...jobPaths(job), ...attemptPaths(job, items)];
         return {
           text: describeJob(job) + describeEvidence(job),
           data: { fax: job, attempts: items },
@@ -665,6 +812,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         const untrusted = items.length ? ["items[].client_reference"] : [];
         if (items.some((j) => j.evidence !== null && j.evidence !== undefined))
           untrusted.push("items[].evidence");
+        if (items.some((j) => j.sender_name)) untrusted.push("items[].sender_name");
         return {
           text: head + ".",
           data: { items, next_cursor: page.next_cursor ?? null },
@@ -682,10 +830,16 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     async () =>
       run(async (api) => {
         const b = await api.request("GET", "/v1/balance");
+        const sandbox =
+          b.environment === "test"
+            ? " This is the sandbox wallet: test credit, nothing real is sent or charged."
+            : "";
         return {
           text:
             `${String(b.environment)} wallet: ${String(b.available_micro)} micro available ` +
-            `($${(Number(b.available_micro) / 1_000_000).toFixed(2)}), ${String(b.held_micro)} micro held.`,
+            `(${usd(b.available_micro)}), ${String(b.held_micro)} micro held.${sandbox}` +
+            " You cannot add funds." +
+            topUpPointer(b.top_up_url),
           data: { balance: b },
         };
       }),
@@ -706,7 +860,83 @@ export function createServer(opts: ServerOptions = {}): McpServer {
           job.state === "failed" && job.failure_code === "canceled"
             ? `Fax ${String(job.id)} canceled before sending; the hold was released.`
             : `Cancel requested for fax ${String(job.id)} (state ${String(job.state)}); pages already sent cannot be recalled.`;
-        return { text, data: { fax: job } };
+        return { text, data: { fax: job }, untrusted: jobPaths(job) };
+      }),
+  );
+
+  dispatch.registerTool(
+    "request_card_payment",
+    {
+      outputSchema: outputSchema("request_card_payment"),
+      inputSchema: {
+        quote_id: z.string(),
+        cover_from_name: z.string(),
+        approval_id: opt(),
+        email: opt(),
+        delete_after_send: z.boolean().nullable().optional(),
+        idempotency_key: opt(),
+      },
+    },
+    async ({ quote_id, cover_from_name, approval_id, email, delete_after_send, idempotency_key }) =>
+      run(async (api) => {
+        const idem = idempotency_key || `mcp:card:${quote_id}`;
+        // no accept_aup: the person who pays accepts the policy on the order's page, never the agent
+        const payload: Json = { quote_id, sender_name: cover_from_name };
+        if (approval_id) payload.approval_id = approval_id;
+        if (email) payload.email = email;
+        if (delete_after_send !== null && delete_after_send !== undefined)
+          payload.delete_after_send = delete_after_send;
+        const order = await api.request("POST", "/v1/one-time-sends/from-quote", {
+          json: payload,
+          headers: { "Idempotency-Key": idem },
+        });
+        const confirm = order.email_verified
+          ? ""
+          : " After paying they also click the link mailed to them, which proves the address.";
+        return {
+          text:
+            `Card payment order ${String(order.id)} is ${String(order.status)}: ` +
+            `${usd(order.amount_micro)} for ${String(order.document_pages)} page(s) to ` +
+            `${String(order.to)}. Nothing is sent or charged yet.${payLinkNote(order)}${confirm} Poll ` +
+            `get_card_payment_status(order_id=${String(order.id)}).`,
+          data: {
+            one_time_send: orderOnly(order),
+            status_url: order.status_url ?? null,
+            idempotency_key: idem,
+          },
+          untrusted: ORDER_UNTRUSTED,
+        };
+      }),
+  );
+
+  dispatch.registerTool(
+    "get_card_payment_status",
+    {
+      outputSchema: outputSchema("get_card_payment_status"),
+      inputSchema: { order_id: z.string() },
+    },
+    async ({ order_id }) =>
+      run(async (api) => {
+        const order = await api.request("GET", `/v1/one-time-sends/${order_id}`);
+        const untrusted = [...ORDER_UNTRUSTED];
+        const job =
+          order.fax && typeof order.fax === "object" && !Array.isArray(order.fax)
+            ? withAgentEvidence(order.fax as Json)
+            : null;
+        let items: Json[] = [];
+        if (job) {
+          const attempts = await api.request("GET", `/v1/faxes/${String(job.id)}/attempts`);
+          items = ((attempts.items as Json[] | undefined) ?? []).map(withAgentEvidence);
+          untrusted.push(...jobPaths(job), ...attemptPaths(job, items));
+        }
+        // the link only while a person still has something to do there
+        const link =
+          order.next === "checkout" || order.next === "confirm" ? (order.status_url ?? null) : null;
+        return {
+          text: describeOrder({ ...order, status_url: link }, job),
+          data: { one_time_send: orderOnly(order), status_url: link, fax: job, attempts: items },
+          untrusted,
+        };
       }),
   );
 
@@ -849,7 +1079,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
             "No text has been extracted; call extract_fax_data to read it.";
         return {
           text:
-            `Inbox item ${String(item.id)}: ${String(item.pages)} page(s) from ${String(item.from ?? "unknown")} ` +
+            `Inbox item ${String(item.id)}: ${String(item.pages)} page(s) from ${callerId(item.from)} ` +
             `to ${String(item.to)}, received ${String(item.received_at)}. ` +
             note,
           data: { item, extraction },
@@ -970,7 +1200,7 @@ function registerGuideResources(server: McpServer): void {
       title: "Fax for Agents guide",
       description:
         "The manual for Fax for Agents: how it works, the send flow, fax states, error codes, " +
-        "approvals, policies, agents, the inbox and OCR. Works without a key.",
+        "approvals, policies, agents, the inbox, OCR and one fax paid by card. Works without a key.",
       mimeType: "text/markdown",
     },
     async (uri) => ({
@@ -1052,7 +1282,8 @@ Do it in this order and stop when a step refuses.
 2. quote_fax(document_id, to="${to}"): the exact price and the policy verdict: policy.decision (allow or deny, with the first failing rule) and policy.approval_required.
 3. If approval is required, call request_human_review(message, quote_id), then poll get_review_status(review_request_id) until it is approved and carries an approval_id. You cannot approve it yourself. When policy.decision is allow, a delegated policy lets the send go as is.
 4. send_approved_fax(quote_id, approval_id?) with one idempotency_key. The answer is queued, never delivered.
-5. get_fax_status(fax_id) until the state is delivered, partial, failed or unknown. Only delivered with evidence counts as delivered. On partial or unknown do not send again: tell the person and let a human reconcile.`,
+5. get_fax_status(fax_id) until the state is delivered, partial, failed or unknown. Only delivered with evidence counts as delivered. On partial or unknown do not send again: tell the person and let a human reconcile.
+In the sandbox all of this is a simulation. Nothing reaches the number, and the answers say so. Tell the person the same. If the wallet does not cover a live send, the refusal carries the link where a person adds funds. It names request_card_payment when one fax can be paid by card.`,
           },
         },
       ],
