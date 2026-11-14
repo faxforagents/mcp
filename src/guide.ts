@@ -1,7 +1,4 @@
-/**
- * Copied from the hosted mcp/guide.py. The package version and the stdio key name differ. The states
- * section says a busy or unanswered fax was tried three times in all, as the limits page does.
- */
+/** Copied from the hosted mcp/guide.py. Only the package version and stdio key name differ. */
 
 import { VERSION } from './version.js';
 
@@ -54,6 +51,8 @@ An empty result cannot prove no fax was sent. Never replace an uncertain send wi
    10 minutes and is used by exactly one send. The quote carries the policy verdict under
    policy: decision (allow or deny), the first failing rule, and approval_required, which says
    whether a person must approve it. It is the same evaluation the server runs at send time.
+   With a test key under no policy the decision is allow and policy_id is null: the sandbox
+   sends without an approval.
 4. send_approved_fax(quote_id, approval_id?): queues the fax. The answer says queued, never
    delivered: a fax is delivered only when the carrier's evidence is on the attempt. A quote that
    needs authorization is sent with an approval_id (see approvals) or under a delegated policy
@@ -78,7 +77,7 @@ human reconcile. cancel_fax works while the fax is queued; once sending it is be
 - partial: the call dropped after some pages; pages_sent says how many. Those pages were
   charged, the rest released. No automatic retransmit: a human decides whether to resend.
 - failed: nothing arrived (failure_code says why: busy, no_answer, invalid_number, canceled).
-  The hold was released. Busy and no answer were already tried three times in all.
+  The hold was released. Busy and no answer were already tried up to three times in all.
 - unknown: the carrier gave no outcome (timeout or missing callback). The fax may have arrived.
   Nothing retransmits on its own; the hold stays until a reconcile. Say exactly that.`,
   errors: `error_code values and what to do:
@@ -86,7 +85,10 @@ human reconcile. cancel_fax works while the fax is queued; once sending it is be
 - invalid_token: the key was rejected. Over HTTP send Authorization: Bearer ffa_test_... (or
   X-API-Key) on every request; over stdio set FAXFORAGENTS_API_KEY in the client's environment.
 - scope_missing (details.scope): ask the key's owner for a key with that scope.
-- not_found: not an id of your organization, or it was deleted.
+- invalid_input: an argument is missing, has the wrong type or is not one the tool takes. The
+  message names it and, for a near miss, the argument that was meant. Nothing was done.
+- not_found: not an id of your organization, or it was deleted. quote_fax says which of
+  document_id and from_number it was.
 - invalid_destination / unsupported_destination: fix the number (E.164), or the route is not on
   the rate card or is excluded by policy. get_fax_capabilities lists the routes in force.
 - unsupported_format, encrypted_pdf, conversion_failed, page_limit_exceeded: fix the input

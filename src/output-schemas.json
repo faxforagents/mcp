@@ -1865,6 +1865,7 @@
               "type": "array"
             },
             "scopes": {
+              "description": "Every scope the platform defines, the list a new key is made from. It is not what the calling credential holds: GET /v1/me returns that under scopes.",
               "items": {
                 "type": "string"
               },
@@ -1960,7 +1961,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "What the server offers. capabilities.scopes is every scope the platform defines, not what this credential holds."
         },
         "details": {
           "default": null,
@@ -1988,7 +1990,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "The calling credential. me.scopes is what it may do."
         },
         "message": {
           "title": "Message",
@@ -4249,6 +4252,7 @@
               "type": "boolean"
             },
             "decision": {
+              "description": "allow: send_approved_fax takes this quote as it is. deny: no policy allows it, and approval_required says whether a person can still approve it. With a test key and no policy the decision is allow and policy_id is null: the sandbox needs no approval.",
               "enum": [
                 "allow",
                 "deny"

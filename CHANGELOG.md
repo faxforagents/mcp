@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.5.3 (2026-11-14)
+
+The stdio server follows the hosted server at API 1.20.5.
+
+An argument a tool does not list is refused. The answer is `invalid_input` with `isError` true, and nothing is done.
+The message names the argument and, for a near miss, the one that was meant: `from` for `from_number`, `status` for `state`, `id` for the tool's one id.
+`details.unknown_arguments` and `details.accepted_arguments` carry the names. A value is never repeated, and at most five names are.
+Such an argument was dropped without a word before. A quote with `from` came from the shared pool, and a list with `status` returned every fax.
+Four names a workflow client adds to every call are still dropped: `sessionId`, `action`, `chatInput` and `toolCallId`.
+Every input schema in the tool list says `additionalProperties: false`.
+
+`quote_fax` with a test key and no policy reports `policy.decision: "allow"` and `policy_id: null`.
+The reason is `sandbox: a test API key sends without an approval, and no policy was evaluated`. It said `deny` beside `approval_required: false`, and the send was accepted.
+A quote under no policy that a person must approve keeps `deny`. Its reason is now the API's own: `no policy applies to this agent, key or connected app`.
+`policy` carries `managed`, which is `connected_apps` when the organization's auto-send setting decided.
+
+A `not_found` of `quote_fax` says which id was not found. The API names it in `details.field`.
+For `document_id` the message says to prepare the document again. For `from_number` it says to leave it out and send from the shared pool.
+Other tools keep the short answer.
+
+`get_fax_capabilities` says whose scopes are whose. `me.scopes` is what the API key can do. `capabilities.scopes` is every scope that exists.
+The answer without an API key says keys are created in the dashboard, under API keys. It named a command line tool that this package does not ship.
+The guide has the sandbox verdict in `send`, and `invalid_input` and the named `not_found` in `errors`. It says a busy or unanswered fax was tried up to three times in all.
+The `send_a_fax` prompt says a send goes as it is under a delegated policy or with a test key.
+
+The tool list was taken from the hosted server's `tools/list` at API 1.20.5 on 2026-11-14. It equals the definitions imported from the source.
+`scripts/import-hosted.py` also writes what the hosted source answers for 20 calls with unknown arguments. `test/validation.mjs` compares each answer word for word.
+`test/inputs.mjs` sends every tool a name it does not list. `test/tools-output.mjs` covers the verdict, the named `not_found` and the two refusals on a fake API.
+The README writes the hosted address as `https://mcp.faxforagents.com/mcp/` and no longer says the trailing slash matters.
+
 ## 0.5.2 (2026-11-14)
 
 Five inputs in the tool list were dropped by the server. A call that named one got the answer of a call without it. They now reach the REST API.

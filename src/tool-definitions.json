@@ -25,7 +25,8 @@
           }
         },
         "title": "get_guideArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Get guide",
@@ -38,11 +39,12 @@
     "get_fax_capabilities": {
       "name": "get_fax_capabilities",
       "title": "Get fax capabilities",
-      "description": "Read account limits, routes, formats, prices and credential scopes. Use before preparing a fax. Use quote_fax for one send's price and policy verdict, or get_fax_balance for available funds. Returns capabilities and account identity without changes or charges. extraction_pricing holds the per-page price of extract_fax_data. Repeated reads are safe. Scope: account:read.",
+      "description": "Read account limits, routes, formats, prices and credential scopes. Use before preparing a fax. Use quote_fax for one send's price and policy verdict, or get_fax_balance for available funds. Returns capabilities and account identity without changes or charges. me.scopes is what this credential may do. capabilities.scopes is every scope the platform defines, not what this credential holds. extraction_pricing holds the per-page price of extract_fax_data. Repeated reads are safe. Scope: account:read.",
       "inputSchema": {
         "properties": {},
         "title": "get_fax_capabilitiesArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Get fax capabilities",
@@ -158,7 +160,8 @@
           }
         },
         "title": "prepare_faxArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Prepare fax",
@@ -188,7 +191,8 @@
           "document_id"
         ],
         "title": "get_fax_documentArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Get fax document",
@@ -373,7 +377,8 @@
           "to"
         ],
         "title": "quote_faxArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Quote fax",
@@ -452,7 +457,8 @@
           "quote_id"
         ],
         "title": "send_approved_faxArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Send approved fax",
@@ -482,7 +488,8 @@
           "fax_id"
         ],
         "title": "get_fax_statusArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Get fax status",
@@ -558,7 +565,8 @@
           }
         },
         "title": "list_faxesArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "List faxes",
@@ -575,7 +583,8 @@
       "inputSchema": {
         "properties": {},
         "title": "get_fax_balanceArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Get fax balance",
@@ -605,7 +614,8 @@
           "fax_id"
         ],
         "title": "cancel_faxArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Cancel fax",
@@ -710,7 +720,8 @@
           "cover_from_name"
         ],
         "title": "request_card_paymentArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Request card payment",
@@ -740,7 +751,8 @@
           "order_id"
         ],
         "title": "get_card_payment_statusArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Get card payment status",
@@ -820,7 +832,8 @@
           "message"
         ],
         "title": "request_human_reviewArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Request human review",
@@ -850,7 +863,8 @@
           "review_request_id"
         ],
         "title": "get_review_statusArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Get review status",
@@ -893,7 +907,8 @@
           }
         },
         "title": "list_inboxArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "List inbox",
@@ -923,7 +938,8 @@
           "inbox_id"
         ],
         "title": "read_inbound_faxArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Read inbound fax",
@@ -1012,7 +1028,8 @@
           }
         },
         "title": "extract_fax_dataArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "annotations": {
         "title": "Extract fax data",

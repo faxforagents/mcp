@@ -159,7 +159,8 @@
           }
         },
         "title": "get_guideArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "additionalProperties": false,
@@ -252,11 +253,12 @@
     {
       "name": "get_fax_capabilities",
       "title": "Get fax capabilities",
-      "description": "Read account limits, routes, formats, prices and credential scopes. Use before preparing a fax. Use quote_fax for one send's price and policy verdict, or get_fax_balance for available funds. Returns capabilities and account identity without changes or charges. extraction_pricing holds the per-page price of extract_fax_data. Repeated reads are safe. Scope: account:read.",
+      "description": "Read account limits, routes, formats, prices and credential scopes. Use before preparing a fax. Use quote_fax for one send's price and policy verdict, or get_fax_balance for available funds. Returns capabilities and account identity without changes or charges. me.scopes is what this credential may do. capabilities.scopes is every scope the platform defines, not what this credential holds. extraction_pricing holds the per-page price of extract_fax_data. Repeated reads are safe. Scope: account:read.",
       "inputSchema": {
         "properties": {},
         "title": "get_fax_capabilitiesArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -319,6 +321,7 @@
                 "type": "object"
               },
               "scopes": {
+                "description": "Every scope the platform defines, the list a new key is made from. It is not what the calling credential holds: GET /v1/me returns that under scopes.",
                 "items": {
                   "type": "string"
                 },
@@ -478,7 +481,8 @@
                 "type": "null"
               }
             ],
-            "default": null
+            "default": null,
+            "description": "What the server offers. capabilities.scopes is every scope the platform defines, not what this credential holds."
           },
           "me": {
             "anyOf": [
@@ -489,7 +493,8 @@
                 "type": "null"
               }
             ],
-            "default": null
+            "default": null,
+            "description": "The calling credential. me.scopes is what it may do."
           }
         },
         "required": [
@@ -613,7 +618,8 @@
           }
         },
         "title": "prepare_faxArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -831,7 +837,8 @@
           "document_id"
         ],
         "title": "get_fax_documentArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -1304,7 +1311,8 @@
           "to"
         ],
         "title": "quote_faxArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -1498,6 +1506,7 @@
             "description": "The policy verdict for one quote: the server's own evaluation of this exact send.",
             "properties": {
               "decision": {
+                "description": "allow: send_approved_fax takes this quote as it is. deny: no policy allows it, and approval_required says whether a person can still approve it. With a test key and no policy the decision is allow and policy_id is null: the sandbox needs no approval.",
                 "enum": [
                   "allow",
                   "deny"
@@ -1750,7 +1759,8 @@
           "quote_id"
         ],
         "title": "send_approved_faxArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -2260,7 +2270,8 @@
           "fax_id"
         ],
         "title": "get_fax_statusArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -2925,7 +2936,8 @@
           }
         },
         "title": "list_faxesArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -3427,7 +3439,8 @@
       "inputSchema": {
         "properties": {},
         "title": "get_fax_balanceArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -3569,7 +3582,8 @@
           "fax_id"
         ],
         "title": "cancel_faxArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -4142,7 +4156,8 @@
           "cover_from_name"
         ],
         "title": "request_card_paymentArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -4598,7 +4613,8 @@
           "order_id"
         ],
         "title": "get_card_payment_statusArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -5626,7 +5642,8 @@
           "message"
         ],
         "title": "request_human_reviewArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -5885,7 +5902,8 @@
           "review_request_id"
         ],
         "title": "get_review_statusArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -6170,7 +6188,8 @@
           }
         },
         "title": "list_inboxArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -6357,7 +6376,8 @@
           "inbox_id"
         ],
         "title": "read_inbound_faxArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -6682,7 +6702,8 @@
           }
         },
         "title": "extract_fax_dataArguments",
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false
       },
       "outputSchema": {
         "$defs": {
@@ -6946,5 +6967,5 @@
       }
     }
   ],
-  "version": "0.5.2"
+  "version": "0.5.3"
 }

@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-11-12",
+  "captured_at": "2026-11-14",
   "source": "https://mcp.faxforagents.com/mcp/ tools/list",
   "tools": [
     {
@@ -31,7 +31,8 @@
           }
         },
         "type": "object",
-        "title": "get_guideArguments"
+        "title": "get_guideArguments",
+        "additionalProperties": false
       },
       "name": "get_guide",
       "outputSchema": {
@@ -124,11 +125,12 @@
         "readOnlyHint": true,
         "title": "Get fax capabilities"
       },
-      "description": "Read account limits, routes, formats, prices and credential scopes. Use before preparing a fax. Use quote_fax for one send's price and policy verdict, or get_fax_balance for available funds. Returns capabilities and account identity without changes or charges. extraction_pricing holds the per-page price of extract_fax_data. Repeated reads are safe. Scope: account:read.",
+      "description": "Read account limits, routes, formats, prices and credential scopes. Use before preparing a fax. Use quote_fax for one send's price and policy verdict, or get_fax_balance for available funds. Returns capabilities and account identity without changes or charges. me.scopes is what this credential may do. capabilities.scopes is every scope the platform defines, not what this credential holds. extraction_pricing holds the per-page price of extract_fax_data. Repeated reads are safe. Scope: account:read.",
       "inputSchema": {
         "properties": {},
         "type": "object",
-        "title": "get_fax_capabilitiesArguments"
+        "title": "get_fax_capabilitiesArguments",
+        "additionalProperties": false
       },
       "name": "get_fax_capabilities",
       "outputSchema": {
@@ -184,7 +186,8 @@
                 "type": "null"
               }
             ],
-            "default": null
+            "default": null,
+            "description": "What the server offers. capabilities.scopes is every scope the platform defines, not what this credential holds."
           },
           "me": {
             "anyOf": [
@@ -195,7 +198,8 @@
                 "type": "null"
               }
             ],
-            "default": null
+            "default": null,
+            "description": "The calling credential. me.scopes is what it may do."
           }
         },
         "required": [
@@ -263,6 +267,7 @@
                 "type": "object"
               },
               "scopes": {
+                "description": "Every scope the platform defines, the list a new key is made from. It is not what the calling credential holds: GET /v1/me returns that under scopes.",
                 "items": {
                   "type": "string"
                 },
@@ -485,7 +490,8 @@
           }
         },
         "type": "object",
-        "title": "prepare_faxArguments"
+        "title": "prepare_faxArguments",
+        "additionalProperties": false
       },
       "name": "prepare_fax",
       "outputSchema": {
@@ -703,7 +709,8 @@
           "document_id"
         ],
         "type": "object",
-        "title": "get_fax_documentArguments"
+        "title": "get_fax_documentArguments",
+        "additionalProperties": false
       },
       "name": "get_fax_document",
       "outputSchema": {
@@ -1176,7 +1183,8 @@
           "to"
         ],
         "type": "object",
-        "title": "quote_faxArguments"
+        "title": "quote_faxArguments",
+        "additionalProperties": false
       },
       "name": "quote_fax",
       "outputSchema": {
@@ -1443,6 +1451,7 @@
             "description": "The policy verdict for one quote: the server's own evaluation of this exact send.",
             "properties": {
               "decision": {
+                "description": "allow: send_approved_fax takes this quote as it is. deny: no policy allows it, and approval_required says whether a person can still approve it. With a test key and no policy the decision is allow and policy_id is null: the sandbox needs no approval.",
                 "enum": [
                   "allow",
                   "deny"
@@ -1622,7 +1631,8 @@
           "quote_id"
         ],
         "type": "object",
-        "title": "send_approved_faxArguments"
+        "title": "send_approved_faxArguments",
+        "additionalProperties": false
       },
       "name": "send_approved_fax",
       "outputSchema": {
@@ -2132,7 +2142,8 @@
           "fax_id"
         ],
         "type": "object",
-        "title": "get_fax_statusArguments"
+        "title": "get_fax_statusArguments",
+        "additionalProperties": false
       },
       "name": "get_fax_status",
       "outputSchema": {
@@ -2797,7 +2808,8 @@
           }
         },
         "type": "object",
-        "title": "list_faxesArguments"
+        "title": "list_faxesArguments",
+        "additionalProperties": false
       },
       "name": "list_faxes",
       "outputSchema": {
@@ -3299,7 +3311,8 @@
       "inputSchema": {
         "properties": {},
         "type": "object",
-        "title": "get_fax_balanceArguments"
+        "title": "get_fax_balanceArguments",
+        "additionalProperties": false
       },
       "name": "get_fax_balance",
       "outputSchema": {
@@ -3441,7 +3454,8 @@
           "fax_id"
         ],
         "type": "object",
-        "title": "cancel_faxArguments"
+        "title": "cancel_faxArguments",
+        "additionalProperties": false
       },
       "name": "cancel_fax",
       "outputSchema": {
@@ -4014,7 +4028,8 @@
           "cover_from_name"
         ],
         "type": "object",
-        "title": "request_card_paymentArguments"
+        "title": "request_card_paymentArguments",
+        "additionalProperties": false
       },
       "name": "request_card_payment",
       "outputSchema": {
@@ -4470,7 +4485,8 @@
           "order_id"
         ],
         "type": "object",
-        "title": "get_card_payment_statusArguments"
+        "title": "get_card_payment_statusArguments",
+        "additionalProperties": false
       },
       "name": "get_card_payment_status",
       "outputSchema": {
@@ -5498,7 +5514,8 @@
           "message"
         ],
         "type": "object",
-        "title": "request_human_reviewArguments"
+        "title": "request_human_reviewArguments",
+        "additionalProperties": false
       },
       "name": "request_human_review",
       "outputSchema": {
@@ -5757,7 +5774,8 @@
           "review_request_id"
         ],
         "type": "object",
-        "title": "get_review_statusArguments"
+        "title": "get_review_statusArguments",
+        "additionalProperties": false
       },
       "name": "get_review_status",
       "outputSchema": {
@@ -6042,7 +6060,8 @@
           }
         },
         "type": "object",
-        "title": "list_inboxArguments"
+        "title": "list_inboxArguments",
+        "additionalProperties": false
       },
       "name": "list_inbox",
       "outputSchema": {
@@ -6229,7 +6248,8 @@
           "inbox_id"
         ],
         "type": "object",
-        "title": "read_inbound_faxArguments"
+        "title": "read_inbound_faxArguments",
+        "additionalProperties": false
       },
       "name": "read_inbound_fax",
       "outputSchema": {
@@ -6554,7 +6574,8 @@
           }
         },
         "type": "object",
-        "title": "extract_fax_dataArguments"
+        "title": "extract_fax_dataArguments",
+        "additionalProperties": false
       },
       "name": "extract_fax_data",
       "outputSchema": {

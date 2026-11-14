@@ -7,7 +7,9 @@
  * the built server and asks the same server about every property of every tool:
  *   - a value of the wrong type is refused and the refusal names the property and its advertised type,
  *   - the advertised example is accepted, and null where the schema allows null,
- *   - a string over maxLength, a value outside the enum and a malformed id are refused.
+ *   - a string over maxLength, a value outside the enum and a malformed id are refused,
+ *   - a name the tool does not advertise is refused by name, with the names it takes, and every input
+ *     schema says additionalProperties false.
  * An input the handler ignores fails the first check: nothing refuses the wrong type.
  * The server also compares the two lists of names when it registers a tool and does not start when they
  * differ. This test prints what the server said in that case.
@@ -87,6 +89,15 @@ for (const tool of tools) {
   const accepted = (result) => result.structuredContent?.error_code === 'invalid_token' || result.structuredContent?.ok === true;
   const show = (result) => JSON.stringify(result.structuredContent ?? result.content ?? result).slice(0, 200);
 
+  // The tool list says what the call enforces: the schema closes the object, and a name it does not
+  // advertise is refused by name before any advertised input is judged.
+  if (tool.inputSchema?.additionalProperties !== false) failures.push(`${tool.name}: the input schema does not say additionalProperties false`);
+  const names = Object.keys(advertised).sort();
+  const stranger = await call('not_an_input', 1);
+  const strangerMessage = `This tool does not take the argument not_an_input. It takes: ${names.join(', ') || 'none'}. Nothing was done. Correct the argument and try again.`;
+  if (!refused(stranger) || stranger.structuredContent.message !== strangerMessage) failures.push(`${tool.name}: an argument it does not advertise was not refused as "${strangerMessage}". It answered ${show(stranger)}`);
+  else if (JSON.stringify(stranger.structuredContent.details) !== JSON.stringify({ unknown_arguments: ['not_an_input'], accepted_arguments: names })) failures.push(`${tool.name}: the refusal of an unknown argument does not carry the names in details: ${show(stranger)}`);
+
   for (const [name, property] of Object.entries(advertised)) {
     properties++;
     const where = `${tool.name}.${name}`;
@@ -140,4 +151,4 @@ for (const tool of tools) {
 }
 
 finish();
-console.log(`inputs OK: ${properties} advertised inputs of ${tools.length} tools are taken by their handlers (${checks} calls: types, examples, null, limits, enums, id formats)`);
+console.log(`inputs OK: ${properties} advertised inputs of ${tools.length} tools are taken by their handlers and no other name is (${checks} calls: types, examples, null, limits, enums, id formats, unknown arguments)`);

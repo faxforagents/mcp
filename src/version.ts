@@ -1,2 +1,2 @@
 // Kept equal to package.json by test/protocol.mjs.
-export const VERSION = '0.5.2';
+export const VERSION = '0.5.3';

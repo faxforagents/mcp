@@ -3,6 +3,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema, ErrorCode, McpError, typ
 import { z } from 'zod';
 import definitions from './tool-definitions.json' with { type: 'json' };
 import { advertisedOutputSchema } from './output-schema.js';
+import { unknownArguments } from './unknown-arguments.js';
 
 const ID_PREFIXES: Record<string, string> = {
   upload_id: 'up',
@@ -67,6 +68,9 @@ export function toolDispatch(server: McpServer) {
     listed.set(name, () => registered.enabled ? advertised : undefined);
     calls.set(name, async (args) => {
       if (!registered.enabled) throw new McpError(ErrorCode.InvalidParams, `Tool ${name} disabled`);
+      // An argument the tool list does not name is refused by name before anything else is judged.
+      const unknown = unknownArguments(args, definition.inputSchema.properties ?? {});
+      if (unknown) return unknown;
       const parsed = input.safeParse(args);
       let response: CallToolResult;
       if (!parsed.success) {
