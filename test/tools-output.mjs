@@ -75,6 +75,10 @@ const OWN_NUMBER = '+12025550123';
 const DENIED_DOC = 'doc_' + 'b'.repeat(32);
 const REFUSED_DOC = 'doc_' + 'c'.repeat(32);
 const PARTIAL_ID = 'fax_' + 'a'.repeat(32);
+// A live quote under no policy that a person has to approve, and the two ids a quote's 404 can name.
+const LIVE_DOC = 'doc_' + 'd'.repeat(32);
+const GONE_DOC = 'doc_' + 'e'.repeat(32);
+const NOT_OURS = '+14155550199';
 const DENIED_QUOTE = {
   ...QUOTE,
   authorization_required: true,
@@ -93,6 +97,9 @@ const api = createServer((req, res) => {
     if (req.url === '/v1/documents' && req.method === 'POST') return json(201, DOC);
     if (req.url === '/v1/fax-quotes' && req.method === 'POST' && seen.at(-1).body?.document_id === DENIED_DOC) return json(201, DENIED_QUOTE);
     if (req.url === '/v1/fax-quotes' && req.method === 'POST' && seen.at(-1).body?.document_id === REFUSED_DOC) return json(201, { ...DENIED_QUOTE, authorization_required: false });
+    if (req.url === '/v1/fax-quotes' && req.method === 'POST' && seen.at(-1).body?.document_id === LIVE_DOC) return json(201, { ...QUOTE, environment: 'live', authorization_required: true });
+    if (req.url === '/v1/fax-quotes' && req.method === 'POST' && seen.at(-1).body?.document_id === GONE_DOC) return json(404, { error: { code: 'not_found', message: 'Document not found.', details: { field: 'document_id' } } });
+    if (req.url === '/v1/fax-quotes' && req.method === 'POST' && seen.at(-1).body?.from === NOT_OURS) return json(404, { error: { code: 'not_found', message: 'Sender number not found.', details: { field: 'from' } } });
     if (req.url === '/v1/fax-quotes' && req.method === 'POST' && req.headers['idempotency-key'] === 'quote-other-body') return json(409, { error: { code: 'idempotency_key_conflict', message: 'This Idempotency-Key was used with a different request.' } });
     if (req.url === '/v1/fax-quotes' && req.method === 'POST') return json(201, { ...QUOTE, from: seen.at(-1).body.from ?? null });
     if (req.url === `/v1/faxes/${PARTIAL_ID}`) return json(200, { ...FAX, id: PARTIAL_ID, state: 'partial', pages_sent: 1 });
@@ -222,6 +229,8 @@ const [caps, prep, quote, send, sendAgain, status, list, balance, cancel, approv
 ]);
 
 if (!/sandbox provider, test environment, routes us_ca/.test(sc(caps, 'caps').message)) fail('capabilities message');
+// The key's own scopes are me.scopes. capabilities.scopes is the platform's list (hosted wording since API 1.20.5).
+if (!sc(caps).message.includes("This key's scopes (me.scopes): fax:send, fax:read. capabilities.scopes lists every scope that exists, not this key's.")) fail(`capabilities scopes wording: ${sc(caps).message}`);
 if (!caps.structuredContent || caps.isError) fail(`capabilities validated: ${JSON.stringify(caps).slice(0, 300)}`);
 if (sc(prep, 'prepare').ok !== true || !sc(prep).untrusted?.includes('document.filename')) fail('prepare_fax envelope');
 if (!/Nothing was sent; quote it next/.test(sc(prep).message)) fail('prepare_fax wording');
@@ -244,9 +253,12 @@ if (!/A human must decide; you cannot approve it/.test(ap.message) || ap.review_
 if (!ap.untrusted?.includes('review_request.message') || ap.approval_request !== undefined) fail('approval mode envelope');
 const approvalPosts = seen.filter((x) => x.url === '/v1/approval-requests' && x.method === 'POST');
 if (approvalPosts[0].body.quote_id !== 'quote_' + '3'.repeat(32) || approvalPosts[0].body.kind !== undefined) fail('approval mode posts the quote-bound request');
-// quote_fax carries the policy verdict: no policy on this key, no approval needed in the sandbox.
+// quote_fax carries the policy verdict. A test key under no policy is allowed, with the sandbox reason and
+// no policy id: the send takes the quote as it is. It said deny beside approval_required false up to 0.5.2.
 const qp = sc(quote).policy;
-if (!qp || qp.decision !== 'deny' || qp.policy_id !== null || qp.approval_required !== false) fail(`quote policy: ${JSON.stringify(qp)}`);
+const SANDBOX_ALLOW = { decision: 'allow', rule: null, reason: 'sandbox: a test API key sends without an approval, and no policy was evaluated', policy_id: null, policy_version_id: null, policy_name: null, version: null, managed: null, approval_required: false };
+if (JSON.stringify(qp) !== JSON.stringify(SANDBOX_ALLOW)) fail(`quote policy of a test key under no policy: ${JSON.stringify(qp)}`);
+if (!/sandbox, not charged: a test key sends it as is/.test(sc(quote).message) || /den(y|ies)/.test(sc(quote).message)) fail(`sandbox quote wording: ${sc(quote).message}`);
 // get_review_status: an approved send request carries the approval_id; a closed help request authorizes nothing;
 // a person's reason is named under untrusted and never quoted.
 const rv = sc(policy, 'review');
@@ -466,6 +478,40 @@ if (inputCalls.some((x) => x.url === '/v1/faxes' && x.method === 'POST')) fail('
 if (sc(prepLatin, 'prepare latin-1 key').ok !== true || !keyed(docPosts, 'caf\u00e9-17')) fail(`a Latin-1 key is sent as it is: ${JSON.stringify(docPosts.map((x) => x.headers['idempotency-key']))}`);
 if (sc(listAnyText, 'list filter with any text').ok !== true || sc(listAnyText).items?.length !== 0) fail('the list_faxes filter takes text a header could not carry');
 
+// 0.5.3, the hosted behaviour at API 1.20.5. A quote under no policy that a person must approve keeps the
+// engine's denial. A quote's 404 says which id was not found. An argument a tool does not list is refused.
+const beforeQa = seen.length;
+const [liveQuote, goneDoc, notOurs, goneFax, restName, listFilter, clientNames] = await session('ffa_test_ok', [
+  ['quote_fax', { document_id: LIVE_DOC, to: '+12025550123' }],
+  ['quote_fax', { document_id: GONE_DOC, to: '+15550000001' }],
+  ['quote_fax', { document_id: DOC.id, to: '+15550000001', from_number: NOT_OURS }],
+  ['get_fax_status', { fax_id: 'fax_' + '0'.repeat(32) }],
+  ['quote_fax', { document_id: DOC.id, to: '+15550000001', from: NOT_OURS }],
+  ['list_faxes', { status: 'failed', limit: 1 }],
+  ['get_fax_balance', { sessionId: 's', action: 'a', chatInput: 'hi', toolCallId: 't' }],
+]);
+const qaCalls = seen.slice(beforeQa);
+const lq = sc(liveQuote, 'live quote under no policy').policy;
+if (lq.decision !== 'deny' || lq.reason !== 'no policy applies to this agent, key or connected app' || lq.policy_id !== null || lq.approval_required !== true) fail(`a live quote under no policy: ${JSON.stringify(lq)}`);
+if (!/approval is required: a person must approve it/.test(sc(liveQuote).message)) fail(`live quote wording: ${sc(liveQuote).message}`);
+const gd = sc(goneDoc, 'quote of a deleted document');
+if (gd.error_code !== 'not_found' || gd.message !== 'document_id is not a document of your organization, or it was deleted. Prepare the document again with prepare_fax.' || gd.details?.field !== 'document_id' || goneDoc.isError) fail(`quote not_found names document_id: ${JSON.stringify(gd)}`);
+const no = sc(notOurs, 'quote from a number of another organization');
+if (no.error_code !== 'not_found' || no.message !== 'from_number is not a fax number of your organization. Leave from_number out to send from the shared pool.' || no.details?.field !== 'from') fail(`quote not_found names from_number: ${JSON.stringify(no)}`);
+if (sc(goneFax, 'status of an unknown fax').message !== 'No such id in your organization, or it was deleted.') fail('a tool with one id keeps the short not_found answer');
+const rn = sc(restName, 'quote with the REST name of the sender');
+if (rn.error_code !== 'invalid_input' || restName.isError !== true || !rn.message.startsWith('This tool does not take the argument from (did you mean from_number?). It takes: cover, ') || rn.details?.unknown_arguments?.join() !== 'from' || !rn.details.accepted_arguments.includes('from_number')) fail(`from is refused by name: ${JSON.stringify(rn)}`);
+if (JSON.stringify(restName).includes(NOT_OURS)) fail('the value of a refused argument was repeated');
+const lf = sc(listFilter, 'list with the REST name of the filter');
+if (lf.error_code !== 'invalid_input' || !lf.message.includes('status (did you mean state?)') || 'items' in lf) fail(`status is refused by name: ${JSON.stringify(lf)}`);
+if (qaCalls.filter((x) => x.url === '/v1/fax-quotes').length !== 3 || qaCalls.some((x) => x.url.startsWith('/v1/faxes?'))) fail('a call with an unknown argument reached the API');
+if (sc(clientNames, 'balance with the names a workflow client adds').ok !== true || !qaCalls.some((x) => x.url === '/v1/balance')) fail('the four names a workflow client adds must be dropped, not refused');
+
+// Without a key the hint names the variable and the dashboard, and no command line tool.
+const [noKey] = await session('', [['get_fax_balance', {}]]);
+const nk = sc(noKey, 'no key');
+if (nk.error_code !== 'invalid_token' || nk.message !== 'No API key configured. Set FAXFORAGENTS_API_KEY in the environment of the MCP client that launches faxforagents-mcp (never on the command line). Keys are created in the dashboard, under API keys.') fail(`no-key hint: ${nk.message}`);
+
 const [rejected] = await session('ffa_test_wrong', [['get_fax_balance', {}]]);
 const rj = sc(rejected, 'rejected');
 if (rj.error_code !== 'invalid_token' || rejected.isError !== true) fail('invalid_token is a hard refusal');
@@ -474,4 +520,4 @@ const [down] = await session('ffa_test_ok', [['get_fax_balance', {}]], 'http://1
 if (sc(down, 'down').error_code !== 'temporarily_unavailable' || down.isError) fail('unreachable API');
 
 api.close();
-console.log('tools-output OK: 17 tools, envelopes, refusals, evidence, review modes, extraction reuse boundaries and optional inputs');
+console.log('tools-output OK: 17 tools, envelopes, refusals, evidence, review modes, extraction reuse boundaries, optional inputs, the sandbox verdict, named not_found and unknown arguments');

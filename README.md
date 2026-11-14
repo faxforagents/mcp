@@ -31,7 +31,7 @@
 [Fax for Agents](https://faxforagents.com) is a fax API, a hosted MCP server and SDKs built so AI agents can send and receive
 faxes. It is made by JSB Holdings LLC and built by [Synapse](https://synapsereality.io/).
 
-The hosted server at `https://mcp.faxforagents.com/mcp/` takes your API key on every request. The trailing slash matters.
+The hosted server at `https://mcp.faxforagents.com/mcp/` takes your API key on every request.
 This package implements the same 17 tool names locally over stdio and calls the REST API.
 It reads `FAXFORAGENTS_API_KEY` from the environment and sends it to the API as a bearer credential.
 It also serves guide resources and two prompts for sending and receiving faxes.
@@ -274,13 +274,16 @@ npm run pack:mcpb                               # the Claude Desktop bundle
 This package implements tool behavior over REST. It does not forward calls to the hosted MCP endpoint.
 It validates arguments locally and formats REST responses as MCP results.
 Wrong argument types and malformed resource IDs return `ok=false`, `error_code=invalid_input` and `isError=true`.
+An argument the tool does not list gets the same answer. The message names it and, for a near miss, the argument that was meant (`from` for `from_number`, `status` for `state`).
+`details.unknown_arguments` and `details.accepted_arguments` carry the names. Four names a workflow client adds to every call are dropped instead: `sessionId`, `action`, `chatInput` and `toolCallId`.
 The message names the argument, its expected type or ID format, and the correction to make.
 Resource IDs require the correct prefix and exactly 32 lowercase hexadecimal characters.
 Well-formed unknown IDs reach the REST API and return `not_found`.
 Protocol errors, such as a non-object arguments container, remain JSON-RPC errors.
 Tests use hosted responses recorded on 2026-11-02 and a local fake REST API. They need no hosted credentials.
-The tool snapshot is the hosted server's `tools/list` of 2026-11-12, and it matched the live list at API 1.20.3 on 2026-11-14. Normal tests never contact the hosted server.
-The server does not start when a handler's inputs differ from the tool list. `test/inputs.mjs` calls every listed input over stdio. A wrong type has to be refused and the listed example accepted.
+The tool snapshot is the hosted server's `tools/list` of 2026-11-14 at API 1.20.5. Normal tests never contact the hosted server.
+`test/hosted-unknown-arguments.json` holds what the hosted source answers for 20 calls with unknown arguments. `test/validation.mjs` compares each one.
+The server does not start when a handler's inputs differ from the tool list. `test/inputs.mjs` calls every listed input over stdio. A wrong type has to be refused and the listed example accepted. An argument a tool does not list has to be refused by name.
 To import definitions before deployment, run the following with the product checkout's Python environment.
 
 ```bash

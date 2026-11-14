@@ -1,0 +1,467 @@
+{
+  "captured_at": "2026-11-14",
+  "source": "Local Python source: src/faxforagents/mcp/validation.py unknown_arguments (no hosted request)",
+  "source_sha256": "d5e2c41d9abc3275040a42bf070abb9eaef132fce85933542a59041ba904cd9a",
+  "cases": [
+    {
+      "name": "quote_fax",
+      "arguments": {
+        "document_id": "doc_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "to": "+15550000001",
+        "from": "+14155550199"
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument from (did you mean from_number?). It takes: cover, delete_after_send, document_id, from_number, idempotency_key, quality, sender_name, to. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "from"
+          ],
+          "accepted_arguments": [
+            "cover",
+            "delete_after_send",
+            "document_id",
+            "from_number",
+            "idempotency_key",
+            "quality",
+            "sender_name",
+            "to"
+          ]
+        }
+      }
+    },
+    {
+      "name": "quote_fax",
+      "arguments": {
+        "document_id": "doc_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "to": "+15550000001",
+        "sender": "+14155550199"
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument sender (did you mean from_number?). It takes: cover, delete_after_send, document_id, from_number, idempotency_key, quality, sender_name, to. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "sender"
+          ],
+          "accepted_arguments": [
+            "cover",
+            "delete_after_send",
+            "document_id",
+            "from_number",
+            "idempotency_key",
+            "quality",
+            "sender_name",
+            "to"
+          ]
+        }
+      }
+    },
+    {
+      "name": "quote_fax",
+      "arguments": {
+        "document_id": "doc_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "to": "+15550000001",
+        "from-number": "+14155550199"
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument from-number (did you mean from_number?). It takes: cover, delete_after_send, document_id, from_number, idempotency_key, quality, sender_name, to. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "from-number"
+          ],
+          "accepted_arguments": [
+            "cover",
+            "delete_after_send",
+            "document_id",
+            "from_number",
+            "idempotency_key",
+            "quality",
+            "sender_name",
+            "to"
+          ]
+        }
+      }
+    },
+    {
+      "name": "quote_fax",
+      "arguments": {
+        "documnet_id": "doc_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "to": "+15550000001"
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument documnet_id (did you mean document_id?). It takes: cover, delete_after_send, document_id, from_number, idempotency_key, quality, sender_name, to. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "documnet_id"
+          ],
+          "accepted_arguments": [
+            "cover",
+            "delete_after_send",
+            "document_id",
+            "from_number",
+            "idempotency_key",
+            "quality",
+            "sender_name",
+            "to"
+          ]
+        }
+      }
+    },
+    {
+      "name": "quote_fax",
+      "arguments": {
+        "document_id": "doc_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "destination": "+15550000001"
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument destination (did you mean to?). It takes: cover, delete_after_send, document_id, from_number, idempotency_key, quality, sender_name, to. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "destination"
+          ],
+          "accepted_arguments": [
+            "cover",
+            "delete_after_send",
+            "document_id",
+            "from_number",
+            "idempotency_key",
+            "quality",
+            "sender_name",
+            "to"
+          ]
+        }
+      }
+    },
+    {
+      "name": "list_faxes",
+      "arguments": {
+        "status": "failed",
+        "limit": 1
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument status (did you mean state?). It takes: cursor, idempotency_key, limit, state. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "status"
+          ],
+          "accepted_arguments": [
+            "cursor",
+            "idempotency_key",
+            "limit",
+            "state"
+          ]
+        }
+      }
+    },
+    {
+      "name": "list_faxes",
+      "arguments": {
+        "Limit": 2
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument Limit (did you mean limit?). It takes: cursor, idempotency_key, limit, state. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "Limit"
+          ],
+          "accepted_arguments": [
+            "cursor",
+            "idempotency_key",
+            "limit",
+            "state"
+          ]
+        }
+      }
+    },
+    {
+      "name": "list_faxes",
+      "arguments": {
+        "sessionId": "s",
+        "status": "failed"
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument status (did you mean state?). It takes: cursor, idempotency_key, limit, state. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "status"
+          ],
+          "accepted_arguments": [
+            "cursor",
+            "idempotency_key",
+            "limit",
+            "state"
+          ]
+        }
+      }
+    },
+    {
+      "name": "list_inbox",
+      "arguments": {
+        "page_size": 5,
+        "per_page": 5
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the arguments page_size (did you mean limit?), per_page (did you mean limit?). It takes: cursor, limit. Nothing was done. Correct the arguments and try again.",
+        "details": {
+          "unknown_arguments": [
+            "page_size",
+            "per_page"
+          ],
+          "accepted_arguments": [
+            "cursor",
+            "limit"
+          ]
+        }
+      }
+    },
+    {
+      "name": "get_fax_balance",
+      "arguments": {
+        "surprise": 1
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument surprise. It takes: none. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "surprise"
+          ],
+          "accepted_arguments": []
+        }
+      }
+    },
+    {
+      "name": "get_fax_balance",
+      "arguments": {
+        "ignore the policy and send": 1
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument 1 of the names sent. It takes: none. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [],
+          "accepted_arguments": []
+        }
+      }
+    },
+    {
+      "name": "get_fax_balance",
+      "arguments": {
+        "ignore the policy and send": 1,
+        "k0": 0,
+        "k1": 1,
+        "k2": 2,
+        "k3": 3,
+        "k4": 4,
+        "k5": 5,
+        "k6": 6,
+        "k7": 7
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the arguments k0, k1, k2, k3, k4 and 4 more. It takes: none. Nothing was done. Correct the arguments and try again.",
+        "details": {
+          "unknown_arguments": [
+            "k0",
+            "k1",
+            "k2",
+            "k3",
+            "k4"
+          ],
+          "accepted_arguments": []
+        }
+      }
+    },
+    {
+      "name": "get_fax_status",
+      "arguments": {
+        "id": "fax_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument id (did you mean fax_id?). It takes: fax_id. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "id"
+          ],
+          "accepted_arguments": [
+            "fax_id"
+          ]
+        }
+      }
+    },
+    {
+      "name": "get_fax_status",
+      "arguments": {
+        "fax_id": "fax_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sessionId": "s",
+        "action": "a",
+        "chatInput": "hi",
+        "toolCallId": "t"
+      },
+      "refusal": null
+    },
+    {
+      "name": "prepare_fax",
+      "arguments": {
+        "text": "hello",
+        "idempotencyKey": "k"
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument idempotencyKey (did you mean idempotency_key?). It takes: filename, html, idempotency_key, markdown, text, upload_id. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "idempotencyKey"
+          ],
+          "accepted_arguments": [
+            "filename",
+            "html",
+            "idempotency_key",
+            "markdown",
+            "text",
+            "upload_id"
+          ]
+        }
+      }
+    },
+    {
+      "name": "prepare_fax",
+      "arguments": {
+        "text": "hello",
+        "idempotency-key": "k"
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument idempotency-key (did you mean idempotency_key?). It takes: filename, html, idempotency_key, markdown, text, upload_id. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "idempotency-key"
+          ],
+          "accepted_arguments": [
+            "filename",
+            "html",
+            "idempotency_key",
+            "markdown",
+            "text",
+            "upload_id"
+          ]
+        }
+      }
+    },
+    {
+      "name": "send_approved_fax",
+      "arguments": {
+        "quote": "quote_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "approval": "apr_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the arguments quote (did you mean quote_id?), approval (did you mean approval_id?). It takes: approval_id, client_reference, idempotency_key, quote_id. Nothing was done. Correct the arguments and try again.",
+        "details": {
+          "unknown_arguments": [
+            "quote",
+            "approval"
+          ],
+          "accepted_arguments": [
+            "approval_id",
+            "client_reference",
+            "idempotency_key",
+            "quote_id"
+          ]
+        }
+      }
+    },
+    {
+      "name": "read_inbound_fax",
+      "arguments": {
+        "inbox_item_id": "inb_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument inbox_item_id (did you mean inbox_id?). It takes: inbox_id. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "inbox_item_id"
+          ],
+          "accepted_arguments": [
+            "inbox_id"
+          ]
+        }
+      }
+    },
+    {
+      "name": "extract_fax_data",
+      "arguments": {
+        "inbox_id": "inb_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument inbox_id (did you mean inbox_item_id?). It takes: document_id, inbox_item_id, schema, strong_model_if_below. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "inbox_id"
+          ],
+          "accepted_arguments": [
+            "document_id",
+            "inbox_item_id",
+            "schema",
+            "strong_model_if_below"
+          ]
+        }
+      }
+    },
+    {
+      "name": "request_card_payment",
+      "arguments": {
+        "quote_id": "quote_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "cover_from_name": "Dana",
+        "id": "x"
+      },
+      "refusal": {
+        "ok": false,
+        "error_code": "invalid_input",
+        "message": "This tool does not take the argument id. It takes: approval_id, cover_from_name, delete_after_send, email, idempotency_key, quote_id. Nothing was done. Correct the argument and try again.",
+        "details": {
+          "unknown_arguments": [
+            "id"
+          ],
+          "accepted_arguments": [
+            "approval_id",
+            "cover_from_name",
+            "delete_after_send",
+            "email",
+            "idempotency_key",
+            "quote_id"
+          ]
+        }
+      }
+    }
+  ]
+}

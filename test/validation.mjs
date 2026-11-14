@@ -7,6 +7,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 const fixtures = JSON.parse(readFileSync(new URL('./hosted-validation.json', import.meta.url))).cases;
+const unknownCases = JSON.parse(readFileSync(new URL('./hosted-unknown-arguments.json', import.meta.url))).cases;
 const notFound = fixtures.find((f) => f.structuredContent.error_code === 'not_found').structuredContent;
 const seen = [];
 const api = createServer((req, res) => {
@@ -94,7 +95,28 @@ try {
   assert.match(nested.result.structuredContent.message, /cover.subject requires a value of type string/);
   const decimal = await request('tools/call', { name: 'list_faxes', arguments: { limit: 1.5 } });
   assert.match(decimal.result.structuredContent.message, /limit requires a value of type integer/);
-  console.log(`validation OK: ${fixtures.length} hosted fixtures over raw stdio and SDK, ${edgeCases} ID boundaries, protocol and type boundaries`);
+  // An argument a tool does not declare: the hosted source's answer, word for word, and no REST call.
+  // The one case with only the names a workflow client adds passes its arguments and reaches REST.
+  assert.equal(unknownCases.length, 20);
+  for (const fixture of unknownCases) {
+    const before = seen.length;
+    const response = await request('tools/call', { name: fixture.name, arguments: fixture.arguments });
+    assert.equal(response.error, undefined);
+    const where = `${fixture.name} ${JSON.stringify(Object.keys(fixture.arguments))}`;
+    if (fixture.refusal === null) {
+      assert.notEqual(response.result.structuredContent.error_code, 'invalid_input', where);
+      assert.equal(seen.length - before, 1, `${where}: client names are dropped and the call goes on`);
+      continue;
+    }
+    assert.deepEqual(response.result.structuredContent, fixture.refusal, where);
+    assert.equal(response.result.isError, true, where);
+    assert.equal(response.result.content[0].text, fixture.refusal.message, where);
+    assert.equal(seen.length - before, 0, `${where}: a refused call reaches no REST route`);
+    for (const value of Object.values(fixture.arguments)) {
+      if (typeof value === 'string' && value.length > 3) assert.ok(!JSON.stringify(response.result).includes(value), `${where}: an argument's value is never repeated`);
+    }
+  }
+  console.log(`validation OK: ${fixtures.length} hosted fixtures over raw stdio and SDK, ${edgeCases} ID boundaries, ${unknownCases.length} unknown-argument answers, protocol and type boundaries`);
 } finally {
   await client.close();
   lines.close();

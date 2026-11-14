@@ -30,7 +30,7 @@ export { VERSION };
 
 export const STDIO_HINT =
   "No API key configured. Set FAXFORAGENTS_API_KEY in the environment of the MCP client that launches " +
-  "faxforagents-mcp (never on the command line). Keys are created in the dashboard or with the ffa CLI.";
+  "faxforagents-mcp (never on the command line). Keys are created in the dashboard, under API keys.";
 
 const HARD_REFUSALS = new Set([
   "invalid_token",
@@ -89,7 +89,7 @@ function refusal(exc: ApiRefusal): Payload {
       "The API key was rejected. Send a live ffa_live_... or ffa_test_... key as Authorization: Bearer (HTTP) " +
       "or FAXFORAGENTS_API_KEY (stdio).",
     scope_missing: `This key lacks the scope ${String(d.scope ?? "required")}. Ask the key's owner for a key that has it.`,
-    not_found: "No such id in your organization, or it was deleted.",
+    not_found: notFoundRemedy(d.field),
     approval_required:
       "No approval and no policy allows this send. Call request_human_review with the quote_id, poll " +
       "get_review_status until a person approves it, then send_approved_fax with the approval_id. " +
@@ -145,6 +145,25 @@ function refusal(exc: ApiRefusal): Payload {
     details: exc.details,
     isError: HARD_REFUSALS.has(exc.code),
   };
+}
+
+/** The tool argument behind the REST field a 404 names in `details.field`, and what to do about it. A
+ * call with two ids (quote_fax takes a document and a sender) says which one was not found (the hosted
+ * `NOT_FOUND_FIELDS`). */
+const NOT_FOUND_FIELDS: Record<string, string> = {
+  document_id:
+    "document_id is not a document of your organization, or it was deleted. Prepare the document " +
+    "again with prepare_fax.",
+  from:
+    "from_number is not a fax number of your organization. Leave from_number out to send from the " +
+    "shared pool.",
+};
+
+function notFoundRemedy(field: unknown): string {
+  const name = String(field);
+  return Object.hasOwn(NOT_FOUND_FIELDS, name)
+    ? NOT_FOUND_FIELDS[name]!
+    : "No such id in your organization, or it was deleted.";
 }
 
 /** Integer micro-USD as a dollar figure for prose. The data keeps the integer (the hosted `dollars`). */
@@ -309,6 +328,8 @@ export function describeQuotePath(quote: Json): string {
       ? (quote.policy_evaluation as Json)
       : null;
   if (ev && ev.decision === "allow") {
+    if (ev.managed === "connected_apps")
+      return "allowed by your organization's auto-send setting: send_approved_fax sends it as is";
     const name = ev.policy_name ?? ev.policy_id ?? "unnamed";
     return `allowed by policy ${String(name)} v${String(ev.version)}: send_approved_fax sends it as is`;
   }
@@ -317,23 +338,33 @@ export function describeQuotePath(quote: Json): string {
   return "no approval needed: send_approved_fax sends it as is";
 }
 
+/** Why a quote under no policy is sent as it is (the hosted `no_approval_reason`). */
+function noApprovalReason(quote: Json): string {
+  if (quote.environment === "test")
+    return "sandbox: a test API key sends without an approval, and no policy was evaluated";
+  return "no approval is needed for this credential, and no policy was evaluated";
+}
+
 /** The delegated policy's verdict for one quote, as quote_fax reports it under `policy`: the server's own
- * evaluation stored on the quote (the hosted `quote_policy`), or the engine's no-policy decision when the key is
- * under none. `approval_required` is the quote's own answer: a sandbox quote needs no approval even though no
- * policy allows it. */
+ * evaluation stored on the quote (the hosted `quote_policy`). A key under no policy that still needs a
+ * person gets the engine's no-policy denial. A quote that no policy evaluated and that needs no approval
+ * is one the send accepts as it is, a test key in the sandbox: its verdict is `allow` with the reason,
+ * never `deny` beside `approval_required: false`. `policy_id` stays null, which is how a reader tells it
+ * from a policy's allow. */
 export function quotePolicy(quote: Json): Json {
-  const ev =
+  const stored =
     quote.policy_evaluation && typeof quote.policy_evaluation === "object"
       ? (quote.policy_evaluation as Json)
-      : {
+      : null;
+  const ev: Json =
+    stored ??
+    (quote.authorization_required
+      ? {
           decision: "deny",
           rule: null,
-          reason: "no policy applies to this key",
-          policy_id: null,
-          policy_version_id: null,
-          policy_name: null,
-          version: null,
-        };
+          reason: "no policy applies to this agent, key or connected app",
+        }
+      : { decision: "allow", rule: null, reason: noApprovalReason(quote) });
   return {
     decision: ev.decision ?? null,
     rule: ev.rule ?? null,
@@ -342,6 +373,7 @@ export function quotePolicy(quote: Json): Json {
     policy_version_id: ev.policy_version_id ?? null,
     policy_name: ev.policy_name ?? null,
     version: ev.version ?? null,
+    managed: ev.managed ?? null,
     approval_required: Boolean(quote.authorization_required),
   };
 }
@@ -603,7 +635,8 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         return {
           text:
             `${String(caps.provider)} provider, ${String(caps.environment)} environment, routes ${routes}, ` +
-            `up to ${String(caps.max_pages)} pages. Key scopes: ${scopes}.${extraction}`,
+            `up to ${String(caps.max_pages)} pages. This key's scopes (me.scopes): ${scopes}. ` +
+            `capabilities.scopes lists every scope that exists, not this key's.${extraction}`,
           data: { capabilities: caps, me },
         };
       }),
@@ -1333,7 +1366,7 @@ function registerPrompts(server: McpServer): void {
 Do it in this order and stop when a step refuses.
 1. prepare_fax: turn the content into a document (text, markdown, html or a completed upload_id). Nothing is sent.
 2. quote_fax(document_id, to="${to}"): the exact price and the policy verdict: policy.decision (allow or deny, with the first failing rule) and policy.approval_required.
-3. If approval is required, call request_human_review(message, quote_id), then poll get_review_status(review_request_id) until it is approved and carries an approval_id. You cannot approve it yourself. When policy.decision is allow, a delegated policy lets the send go as is.
+3. If approval is required, call request_human_review(message, quote_id), then poll get_review_status(review_request_id) until it is approved and carries an approval_id. You cannot approve it yourself. When policy.decision is allow, the send goes as it is. A delegated policy allows it, or the API key is a test key in the sandbox.
 4. send_approved_fax(quote_id, approval_id?) with one idempotency_key. The answer is queued, never delivered.
 5. get_fax_status(fax_id) until the state is delivered, partial, failed or unknown. Only delivered with evidence counts as delivered. On partial or unknown do not send again: tell the person and let a human reconcile.
 In the sandbox all of this is a simulation. Nothing reaches the number, and the answers say so. Tell the person the same. If the wallet does not cover a live send, the refusal carries the link where a person adds funds. It names request_card_payment when one fax can be paid by card.`,
