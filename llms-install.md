@@ -113,6 +113,8 @@ Version 0.4.0 renames `get_document` to `get_fax_document` with no alias. Refres
 | `list_faxes` | List outbound faxes your organization sent, newest first. | `fax:read` |
 | `get_fax_balance` | Read available and held wallet funds in the credential's environment. | `billing:read` |
 | `cancel_fax` | Request cancellation of one outbound fax. | `fax:cancel` |
+| `request_card_payment` | Ask a person to pay for one quoted fax by card, with no wallet balance. | `fax:send` |
+| `get_card_payment_status` | Read one card payment order: whether a person paid, what was charged and the fax it sent. | `fax:read` |
 | `request_human_review` | Ask a person to approve a quoted send or help with a fax. | `approval:request` |
 | `get_review_status` | Read the human approval decision for one review request. | `approval:read` |
 | `list_inbox` | List received faxes on your organization's numbers, newest first. | `inbox:read` |
