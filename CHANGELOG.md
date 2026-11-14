@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.5.2 (2026-11-14)
+
+Five inputs in the tool list were dropped by the server. A call that named one got the answer of a call without it. They now reach the REST API.
+
+`prepare_fax`, `quote_fax` and `request_human_review` take `idempotency_key`. It is sent as the `Idempotency-Key` header of the REST call.
+The API replays the first answer for 24 hours. The same key with another payload is answered `idempotency_key_conflict`.
+These three tools have no default key. Without a key, or with an empty one, the call is unkeyed as before.
+`quote_fax` takes `from_number`, a sender number the organization owns. It is the `from` field of `POST /v1/fax-quotes`. Without it the shared pool sends.
+`list_faxes` takes `idempotency_key` as a filter, the query parameter of that name on `GET /v1/faxes`. It finds the job a send created under that key.
+`send_approved_fax` sends `mcp:{quote_id}` when it is called without a key. The lookup reads the API's replay record, so an empty result does not prove that no fax was sent.
+
+`quote_fax` accepts null for `quality`, `sender_name` and `delete_after_send`, as the tool list says. It refused null before.
+A wrong type in `quality` or `delete_after_send` returns the `invalid_input` answer that names the argument. It returned a bare error text before.
+An `idempotency_key` over 255 characters is refused with `invalid_input` on the five tools that list the limit. `request_card_payment` is one of them.
+A tool that sends `idempotency_key` as a header refuses a value an HTTP header cannot carry, with `invalid_input` and the reason. Printable ASCII and Latin-1 pass.
+On `send_approved_fax` and `request_card_payment` such a value used to read as an unreachable API.
+`quote_fax` no longer checks the length of `sender_name` itself. The API refuses a name over 128 characters and its answer comes back.
+The tool.store manifest has the `read_inbound_fax` description that 0.5.1 changed. The pack script compares the two.
+
+The server compares each handler's inputs with the tool list when it starts, and stops when they differ.
+`test/inputs.mjs` calls all 45 listed inputs of the 17 tools with a wrong type and with the listed example. It also tries null, a string over the limit, a value outside the enum and a malformed id where the schema names one.
+`test/tools-output.mjs` follows the five inputs to the REST call on a fake API.
+
+The tool list is unchanged. It matched the hosted server's `tools/list` at API 1.20.3 on 2026-11-14.
+
 ## 0.5.1 (2026-11-12)
 
 The tool list matches the hosted server at API 1.18.0. No tool, argument or output field was added or removed.

@@ -28,9 +28,21 @@ function expectedType(schema: z.ZodType): string {
   if (schema instanceof z.ZodOptional || schema instanceof z.ZodNullable) return expectedType(schema.unwrap() as z.ZodType);
   if (schema instanceof z.ZodDefault) return expectedType(schema.removeDefault() as z.ZodType);
   if (schema instanceof z.ZodNumber) return schema.isInt ? 'integer' : 'number';
-  if (schema instanceof z.ZodString) return 'string';
+  // An enum is advertised as a string with allowed values, and the hosted refusal names that type.
+  if (schema instanceof z.ZodString || schema instanceof z.ZodEnum) return 'string';
+  if (schema instanceof z.ZodBoolean) return 'boolean';
   if (schema instanceof z.ZodRecord || schema instanceof z.ZodObject) return 'object';
   throw new Error('Unsupported tool argument schema');
+}
+
+/** The handler has to take every input the tool list advertises, and nothing else. Zod drops an argument its
+ * shape does not name, so an advertised input the handler forgot would be ignored without a word. Thrown at
+ * registration: the server does not start and `npm test` fails. */
+function assertSameInputs(name: string, advertised: Record<string, unknown>, shape: z.ZodRawShape): void {
+  const missing = Object.keys(advertised).filter((key) => !Object.hasOwn(shape, key));
+  const extra = Object.keys(shape).filter((key) => !Object.hasOwn(advertised, key));
+  if (missing.length) throw new Error(`${name}: the tool list advertises ${missing.join(', ')} and the handler does not take it`);
+  if (extra.length) throw new Error(`${name}: the handler takes ${extra.join(', ')} and the tool list does not advertise it`);
 }
 
 /** The object schema zod builds from a raw shape. Zod 4 maps the shape, so the callback and the SDK share this one name. */
@@ -49,6 +61,7 @@ export function toolDispatch(server: McpServer) {
     const input: Input<S> = z.object(config.inputSchema);
     const definition = (definitions.tools as Record<string, Omit<Tool, 'outputSchema'>>)[name];
     if (!definition) throw new Error(`no tool definition for ${name}`);
+    assertSameInputs(name, definition.inputSchema.properties ?? {}, config.inputSchema);
     const advertised = { ...definition, outputSchema: advertisedOutputSchema(name) } as Tool;
     const registered = server.registerTool<z.ZodObject<z.ZodRawShape>, Input<S>>(name, { ...definition, inputSchema: input, outputSchema: config.outputSchema }, callback);
     listed.set(name, () => registered.enabled ? advertised : undefined);
@@ -61,7 +74,10 @@ export function toolDispatch(server: McpServer) {
         const argument = issue.path.join('.');
         const field = config.inputSchema[String(issue.path[0])]! as z.ZodType;
         const expected = issue.path.length > 1 && issue.code === 'invalid_type' ? issue.expected : expectedType(field);
-        response = invalidInput(`${argument} requires a value of type ${expected}. Correct the argument and try again.`);
+        // A rule a shape adds with refine() says in its own words what the value has to be.
+        response = issue.code === 'custom'
+          ? invalidInput(`${argument} ${issue.message} Correct the argument and try again.`)
+          : invalidInput(`${argument} requires a value of type ${expected}. Correct the argument and try again.`);
       } else {
         for (const [argument, value] of Object.entries(parsed.data)) {
           const prefix = ID_PREFIXES[argument];

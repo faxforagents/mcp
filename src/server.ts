@@ -479,6 +479,27 @@ function sameThreshold(options: unknown, asked: number): boolean {
 
 const opt = () => z.string().nullable().optional();
 
+/** An idempotency key travels as an HTTP header, and fetch can only send tab, printable ASCII and Latin-1
+ * there. Any other character made the request fail before it left, which read as an outage. It is refused
+ * with the reason instead. */
+const HEADER_VALUE = /^[\t\x20-\x7e\x80-\xff]*$/;
+const sendable = (key: z.ZodString) =>
+  key
+    .refine((value) => HEADER_VALUE.test(value), {
+      message:
+        "must contain only characters an HTTP header can carry: printable ASCII or Latin-1, no line breaks.",
+    })
+    .nullable()
+    .optional();
+
+/** An idempotency key as the API takes it: at most 255 characters. */
+const idem = () => sendable(z.string().max(255));
+
+/** The header Idempotency-Key of prepare_fax, quote_fax and request_human_review, sent only when the caller
+ * gave a key. These tools have no default key: a call without one stays unkeyed (the hosted `MutationKey`). */
+const replay = (key: string | null | undefined) =>
+  key ? { headers: { "Idempotency-Key": key } } : {};
+
 export interface ServerOptions {
   apiKey?: string;
   baseUrl?: string;
@@ -598,9 +619,10 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         html: opt(),
         upload_id: opt(),
         filename: opt(),
+        idempotency_key: idem(),
       },
     },
-    async ({ text, markdown, html, upload_id, filename }) =>
+    async ({ text, markdown, html, upload_id, filename, idempotency_key }) =>
       run(async (api) => {
         const given = Object.fromEntries(
           Object.entries({ text, markdown, html, upload_id }).filter(
@@ -616,6 +638,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         }
         const doc = await api.request("POST", "/v1/documents", {
           json: { ...given, filename },
+          ...replay(idempotency_key),
         });
         return {
           text:
@@ -664,22 +687,22 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         document_id: z.string(),
         to: z.string(),
         cover: z.record(z.string(), z.string()).nullable().optional(),
+        idempotency_key: idem(),
+        from_number: opt(),
         quality: z
           .enum(["standard", "fine", "superfine", "ultra"])
+          .nullable()
           .optional()
           .describe(
             "Fax resolution. standard is 204 by 98 dpi, fine 204 by 196 (the default when omitted), superfine 204 by 392. " +
               "ultra is the carrier's darkest text processing at superfine resolution (measured 2026-11-09: 204 by 391 dpi). Same price.",
           ),
-        sender_name: z
-          .string()
-          .max(128)
-          .optional()
-          .describe(
-            "Station name the carrier prints in the fax header next to the sending number. Letters, digits, spaces and - _ ~ ! . + only.",
-          ),
+        sender_name: opt().describe(
+          "Station name the carrier prints in the fax header next to the sending number. Letters, digits, spaces and - _ ~ ! . + only.",
+        ),
         delete_after_send: z
           .boolean()
+          .nullable()
           .optional()
           .describe(
             "true deletes the document and the transmitted copy when the fax ends. The receipt and the evidence stay.",
@@ -690,17 +713,28 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       document_id,
       to,
       cover,
+      idempotency_key,
+      from_number,
       quality,
       sender_name,
       delete_after_send,
     }) =>
       run(async (api) => {
-        const body: Json = { document_id, to, cover };
-        if (quality) body.quality = quality;
-        if (sender_name) body.sender_name = sender_name;
-        if (delete_after_send !== undefined)
-          body.delete_after_send = delete_after_send;
-        const q = await api.request("POST", "/v1/fax-quotes", { json: body });
+        // The API client leaves a null or omitted field out of the body, so the API applies its own default.
+        // from_number is the API's from field: a sender number the organization owns.
+        const body: Json = {
+          document_id,
+          to,
+          cover,
+          from: from_number,
+          quality,
+          sender_name,
+          delete_after_send,
+        };
+        const q = await api.request("POST", "/v1/fax-quotes", {
+          json: body,
+          ...replay(idempotency_key),
+        });
         const policy = quotePolicy(q);
         let denied =
           policy.decision === "deny" && policy.policy_id
@@ -733,7 +767,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       inputSchema: {
         quote_id: z.string(),
         approval_id: opt(),
-        idempotency_key: opt(),
+        idempotency_key: sendable(z.string()),
         client_reference: opt(),
       },
     },
@@ -802,15 +836,19 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         state: opt(),
         limit: z.number().int().default(20),
         cursor: opt(),
+        // A filter in the query string, where any character can travel: only the advertised length applies.
+        idempotency_key: z.string().max(255).nullable().optional(),
       },
     },
-    async ({ state, limit, cursor }) =>
+    async ({ state, limit, cursor, idempotency_key }) =>
       run(async (api) => {
+        // The API finds the job a send created under that key.
         const page = await api.request("GET", "/v1/faxes", {
           params: {
             state,
             limit: Math.max(1, Math.min(limit ?? 20, 100)),
             cursor,
+            idempotency_key,
           },
         });
         const items = ((page.items as Json[]) ?? []).map(withAgentEvidence);
@@ -882,7 +920,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         approval_id: opt(),
         email: opt(),
         delete_after_send: z.boolean().nullable().optional(),
-        idempotency_key: opt(),
+        idempotency_key: idem(),
       },
     },
     async ({ quote_id, cover_from_name, approval_id, email, delete_after_send, idempotency_key }) =>
@@ -952,9 +990,14 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     "request_human_review",
     {
       outputSchema: outputSchema("request_human_review"),
-      inputSchema: { message: z.string(), quote_id: opt(), fax_id: opt() },
+      inputSchema: {
+        message: z.string(),
+        quote_id: opt(),
+        fax_id: opt(),
+        idempotency_key: idem(),
+      },
     },
-    async ({ message, quote_id, fax_id }) =>
+    async ({ message, quote_id, fax_id, idempotency_key }) =>
       run(async (api) => {
         const note = message.slice(0, 2000);
         if (quote_id) {
@@ -967,6 +1010,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
           }
           const req = await api.request("POST", "/v1/approval-requests", {
             json: { quote_id, message: note },
+            ...replay(idempotency_key),
           });
           const bound = (req.bound as Json | null) ?? {};
           return {
@@ -990,6 +1034,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
           };
         const req = await api.request("POST", "/v1/approval-requests", {
           json: { kind: "help", message: note, fax_job_id: fax_id },
+          ...replay(idempotency_key),
         });
         const asked =
           req.notified === false
