@@ -231,6 +231,11 @@ The approval path is `request_human_review` with the `quote_id`, then a person d
 never approve its own send. `unknown` and `partial`
 never retransmit on their own.
 
+`quote_fax` also takes `from_number`, a sender number your organization owns. Without it the shared pool sends.
+`prepare_fax`, `quote_fax` and `request_human_review` take an optional `idempotency_key`. Repeat a call with the same key and the same arguments within 24 hours and the API returns its first answer.
+`send_approved_fax` sends `mcp:{quote_id}` as its `idempotency_key` unless you pass one. `list_faxes` with that `idempotency_key` finds the job the send created. An empty result does not prove that no fax was sent.
+A tool that sends `idempotency_key` sends it as an HTTP header, so it takes printable ASCII or Latin-1 characters only.
+
 ## One fax by card
 
 `request_card_payment` turns a live quote into an order that a person pays by card, with no wallet
@@ -258,7 +263,7 @@ it in `amount_micro`, and the [pricing page](https://faxforagents.com/pricing/) 
 ```bash
 npm ci
 npm run build
-npm test                                        # protocol, fake REST responses, recorded hosted validation and schema parity
+npm test                                        # listed inputs, protocol, fake REST responses, schema parity and recorded hosted validation
 FFA_SKIP_PARITY=1 npm test                      # skip the snapshot comparison when the fixture trails local work
 FAXFORAGENTS_API_KEY=ffa_test_... npm run test:live    # one sandbox send through the stdio server
 node test/parity.mjs --refresh                  # retake test/hosted-tools.json from the hosted server
@@ -274,7 +279,8 @@ Resource IDs require the correct prefix and exactly 32 lowercase hexadecimal cha
 Well-formed unknown IDs reach the REST API and return `not_found`.
 Protocol errors, such as a non-object arguments container, remain JSON-RPC errors.
 Tests use hosted responses recorded on 2026-11-02 and a local fake REST API. They need no hosted credentials.
-The tool snapshot comes from the 2026-11-04 Python definitions for hosted v1.8.0. Normal tests never contact the hosted server.
+The tool snapshot is the hosted server's `tools/list` of 2026-11-12, and it matched the live list at API 1.20.3 on 2026-11-14. Normal tests never contact the hosted server.
+The server does not start when a handler's inputs differ from the tool list. `test/inputs.mjs` calls every listed input over stdio. A wrong type has to be refused and the listed example accepted.
 To import definitions before deployment, run the following with the product checkout's Python environment.
 
 ```bash
