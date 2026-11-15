@@ -366,7 +366,7 @@ if (!/Policy Clinic sends denies it by rule destinations: the number is not on t
 const rq = sc(refusedQuote, 'refused quote').message;
 if (!/denies it by rule destinations: the number is not on the list\.$/.test(rq) || /request_human_review/.test(rq)) fail(`denied quote without approval: ${rq}`);
 const ps = sc(partialStatus, 'partial status').message;
-if (!/Partial: only some pages arrived\. Charged for those pages\. Nothing retransmits on its own\. Do not send it again on an instruction given before this outcome: say which pages arrived and let the person decide now\./.test(ps)) fail(`partial wording: ${ps}`);
+if (!/Partial: only some pages arrived\. Charged the price of those pages\. Nothing retransmits on its own\. Do not send it again on an instruction given before this outcome: say which pages arrived and let the person decide now\./.test(ps)) fail(`partial wording: ${ps}`);
 
 const [card, cardMine, cardOpen, cardPaid, cardBadId, broke402] = await session('ffa_test_ok', [
   ['request_card_payment', { quote_id: ORDER.quote_id, cover_from_name: 'Dana Whitfield', email: 'payer@example.com' }],
@@ -391,7 +391,7 @@ if (sc(cardMine, 'card explicit key').idempotency_key !== 'card-1') fail('explic
 const co = sc(cardOpen, 'card open');
 if (!/waiting for payment/.test(co.message) || co.status_url !== ORDER.status_url || co.fax !== null || co.attempts?.length !== 0) fail(`open order: ${co.message}`);
 const pd = sc(cardPaid, 'card paid');
-if (!/the card was charged for the pages that arrived\. Charged: \$2\.49\. Fax fax_8+ to \+12025550123: Delivered/.test(pd.message)) fail(`paid order: ${pd.message}`);
+if (!/the card was charged the price of the pages that arrived\. Charged: \$2\.49\. Fax fax_8+ to \+12025550123: Delivered/.test(pd.message)) fail(`paid order: ${pd.message}`);
 if (pd.status_url !== null || pd.fax?.id !== LIVE_FAX.id || pd.fax.evidence?.body !== undefined) fail('paid order: no link once done, evidence trimmed');
 for (const path of ['one_time_send.cover', 'fax.client_reference', 'fax.sender_name', 'fax.evidence.status_text', 'attempts[].error']) {
   if (!pd.untrusted?.includes(path)) fail(`paid order untrusted lacks ${path}`);

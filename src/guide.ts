@@ -75,8 +75,8 @@ human reconcile. cancel_fax works while the fax is queued; once sending it is be
 - active: at the carrier. Wait.
 - delivered: every page arrived; the carrier's evidence is on the attempt (get_fax_status shows
   it). The hold was captured.
-- partial: the call dropped after some pages; pages_sent says how many. Those pages were
-  charged, the rest released. No automatic retransmit: a human decides whether to resend.
+- partial: the call dropped after some pages, and pages_sent says how many. The price of those
+  pages was charged, the rest released. No automatic retransmit: a human decides whether to resend.
 - failed: nothing arrived (failure_code says why: busy, no_answer, invalid_number, canceled).
   In the sandbox a one-page fax to +15550000003 fails with partial_delivery: the call dropped
   before its page.
@@ -236,9 +236,9 @@ or for a person who wants to pay for one fax only. A person pays. You never do.
    done. Once the fax is released the answer carries the fax and, when the carrier has reported,
    its evidence, exactly as get_fax_status does.
 
-Money: the card is held when the person pays and charged only after the carrier reports pages
-as arrived. A failed fax charges nothing and the hold is released. A partial fax is charged for
-the pages that arrived. captured_micro is the amount charged, set only once the
+Money: the card is held when the person pays. It is charged after the carrier's report, never
+before. A failed fax costs nothing and the hold is released. A fax that stops part way costs the
+price of the pages that arrived. captured_micro is the amount charged, set only once the
 payment provider confirmed it. An order nobody pays expires with nothing charged. A paid order
 nobody confirms within 48 hours is given back, also with nothing charged.
 

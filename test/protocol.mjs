@@ -316,6 +316,11 @@ for (const old of GONE)
     fail(`the guide still names ${old}`);
 if (!/request_human_review\(message, quote_id\)/.test(whole.content[0].text))
   fail("the guide does not explain the approval mode of request_human_review");
+// The payment rule of API 1.20.9, in the words of the hosted guide at 1.20.10.
+if (!/A fax that stops part way costs the\s+price of the pages that arrived\./.test(whole.content[0].text))
+  fail("the guide's one_time section does not state the payment rule");
+if (!/The price of those\s+pages was charged, the rest released\./.test(whole.content[0].text))
+  fail("the guide's states section does not say what a partial fax costs");
 
 // Resources: the whole guide and one resource per section, all text/markdown, readable without a key.
 const resources = reply(5)?.result?.resources;

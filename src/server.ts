@@ -261,9 +261,9 @@ const ORDER_MESSAGES: Record<string, string> = {
   released:
     "the fax was released to the carrier. A failed fax costs nothing, and a fax that stops part " +
     "way costs the price of the pages that arrive.",
-  capturing: "the card charge for the pages that arrived is in progress, not confirmed yet.",
+  capturing: "the card is being charged the price of the pages that arrived, not confirmed yet.",
   canceling: "the hold on the card is being released, not confirmed yet.",
-  captured: "the card was charged for the pages that arrived.",
+  captured: "the card was charged the price of the pages that arrived.",
   released_hold: "nothing was charged. The hold on the card was released.",
   expired: "expired. Nothing was charged.",
   refused: "refused. Nothing was charged.",
@@ -339,9 +339,9 @@ const STATE_MESSAGES: Record<string, string> = {
   delivered:
     "Delivered: every page arrived and the carrier's evidence is on the attempt.",
   partial:
-    "Partial: only some pages arrived. Charged for those pages. Nothing retransmits on its own. Do not " +
-    "send it again on an instruction given before this outcome: say which pages arrived and let the " +
-    "person decide now.",
+    "Partial: only some pages arrived. Charged the price of those pages. Nothing retransmits on its " +
+    "own. Do not send it again on an instruction given before this outcome: say which pages arrived " +
+    "and let the person decide now.",
   failed: "Failed: nothing arrived. The hold was released.",
   unknown:
     "Outcome unknown: the carrier gave no answer. The fax may have arrived. Nothing retransmits on its own; a " +
