@@ -247,8 +247,8 @@ before the person pays.
 Paying by card does not replace approval. The tool takes the same `approval_id` as `send_approved_fax`,
 or a delegated policy has to allow the send. `get_card_payment_status` reads the order: `next` is
 `checkout`, `confirm`, `wait` or `done`, and once the fax was released the answer carries the fax and
-the carrier's evidence. The card is held at payment and charged only for pages the carrier reports
-as arrived. Live keys only, United States and Canada. The guide section `one_time` has the
+the carrier's evidence. The card is held at payment. A failed fax costs nothing, and a fax that stops
+part way costs the price of the pages the carrier reports as arrived. Live keys only, United States and Canada. The guide section `one_time` has the
 steps, and `going_live` says how to get from the sandbox to a real fax.
 
 ## Prices
@@ -283,7 +283,7 @@ A refusal from the REST API names the tool's argument, as the hosted server's do
 This holds in `details.field`, `details.fields`, the `loc` of a validation error and a message that starts with the field. `test/argument-names.mjs` checks it.
 Protocol errors, such as a non-object arguments container, remain JSON-RPC errors.
 Tests use hosted responses recorded on 2026-11-02 and a local fake REST API. They need no hosted credentials.
-The tool snapshot is the hosted server's `tools/list` of 2026-11-15 at API 1.20.8. Normal tests never contact the hosted server.
+The tool snapshot is the hosted server's `tools/list` of 2026-11-15 at API 1.20.9. Normal tests never contact the hosted server.
 `test/hosted-unknown-arguments.json` holds what the hosted source answers for 20 calls with unknown arguments. `test/validation.mjs` compares each one.
 The server does not start when a handler's inputs differ from the tool list. `test/inputs.mjs` calls every listed input over stdio. A wrong type has to be refused and the listed example accepted. An argument a tool does not list has to be refused by name.
 To import definitions before deployment, run the following with the product checkout's Python environment.

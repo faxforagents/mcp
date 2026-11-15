@@ -258,7 +258,9 @@ const ORDER_MESSAGES: Record<string, string> = {
     "the card is held, not charged. The person has to click the link in the confirmation mail " +
     "before the fax is sent.",
   authorized: "the card is held, not charged. The fax is being released. Read again.",
-  released: "the fax was released to the carrier. The card is charged only for pages that arrive.",
+  released:
+    "the fax was released to the carrier. A failed fax costs nothing, and a fax that stops part " +
+    "way costs the price of the pages that arrive.",
   capturing: "the card charge for the pages that arrived is in progress, not confirmed yet.",
   canceling: "the hold on the card is being released, not confirmed yet.",
   captured: "the card was charged for the pages that arrived.",
