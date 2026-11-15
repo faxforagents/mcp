@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.5.5 (2026-11-15)
+
+The stdio server follows the hosted server at API 1.20.9.
+
+A refusal names the tool's argument, as the hosted server's has since 1.20.8. It named the REST API's field before.
+
+- `quote_fax`: `from_number`, where the API says `from`.
+- `request_card_payment`: `cover_from_name`, where the API says `sender_name`.
+- `request_human_review`: `fax_id`, where the API says `fax_job_id`.
+
+The name changes in `details.field`, in `details.fields` and in the `loc` of a validation error. A message that starts with the field changes too: "from must be E.164" from `quote_fax` reads "from_number must be E.164".
+The `not_found` of a sender number that is not yours carries `details.field: "from_number"`. It carried `from` before.
+A tool with no renamed argument passes the API's words on as they are.
+
+The card of a one-time order is held, not authorized. `get_card_payment_status`, the guide section `one_time` and the description of `request_card_payment` say so.
+`get_card_payment_status` and the description of `request_card_payment` also state the payment rule of API 1.20.9. A failed fax costs nothing, and a fax that stops part way costs the price of the pages that arrive.
+
+The guide says a one-page fax to the sandbox number `+15550000003` fails with `partial_delivery`. Its `errors` section says `details.field` names the tool's argument. Its `policies` section says to ask a person only when `approval_required` is true.
+
+The output schemas name the fields the API added at 1.20.8.
+
+- `quote_fax`: `quote.pricing`, and `quote.policy_evaluation` as the policy verdict with its `usage`.
+- `send_approved_fax`, `get_fax_status`, `list_faxes`, `cancel_fax` and `get_card_payment_status`: `approval_id`, `policy_version_id` and `route_paused` on the fax.
+- New descriptions for `details`, for a document's `converted_from` and `received`, and for `amount_micro` of a received fax and of a card order.
+
+0.5.4 differed from the hosted tool list in 55 places, 54 of them in the output schemas. 0.5.5 differs in none.
+The tool list was taken from the hosted server's `tools/list` on 2026-11-15, when it reported version 1.20.9.
+The list equals the definitions `scripts/import-hosted.py` imported from the product source at v1.20.9.
+`test/argument-names.mjs` checks eight refusals over stdio. `test/tools-output.mjs` gives its denied quote the whole verdict the API sends, with `managed` and `denials`.
+
 ## 0.5.4 (2026-11-15)
 
 The stdio server follows the hosted server at API 1.20.6. Tool names, inputs, descriptions and the guide did not change. The output schemas did.

@@ -64,7 +64,8 @@ An empty result cannot prove no fax was sent. Never replace an uncertain send wi
    station id, pages, timestamps, provider reference) on fax.evidence and on each attempt. It is
    what the carrier reported, not legal proof the recipient accepted it.
    Sandbox destinations: +15550000001 delivered, ...02 busy then delivered, ...03 partial,
-   ...04 no answer, ...05 outcome unknown, ...06 provider timeout, ...07 invalid number.
+   ...04 no answer, ...05 outcome unknown, ...06 provider timeout, ...07 invalid number. A
+   one-page fax to ...03 fails with partial_delivery.
 
 Never retry a send on unknown or partial: the fax may have arrived. Tell the person and let a
 human reconcile. cancel_fax works while the fax is queued; once sending it is best effort.`,
@@ -77,10 +78,13 @@ human reconcile. cancel_fax works while the fax is queued; once sending it is be
 - partial: the call dropped after some pages; pages_sent says how many. Those pages were
   charged, the rest released. No automatic retransmit: a human decides whether to resend.
 - failed: nothing arrived (failure_code says why: busy, no_answer, invalid_number, canceled).
+  In the sandbox a one-page fax to +15550000003 fails with partial_delivery: the call dropped
+  before its page.
   The hold was released. Busy and no answer were already tried up to three times in all.
 - unknown: the carrier gave no outcome (timeout or missing callback). The fax may have arrived.
   Nothing retransmits on its own; the hold stays until a reconcile. Say exactly that.`,
-  errors: `error_code values and what to do:
+  errors: `error_code values and what to do. A field a refusal names in details.field is the
+tool's argument, as you send it: from_number, never the REST API's name from.
 
 - invalid_token: the key was rejected. Over HTTP send Authorization: Bearer ffa_test_... (or
   X-API-Key) on every request; over stdio set FAXFORAGENTS_API_KEY in the client's environment.
@@ -148,6 +152,9 @@ version; a job records the version it was sent under.
   approval_required. It is the evaluation the server runs at send time; the quote itself sends
   nothing. A dry run without a quote (document_id and to) is the REST route
   POST /v1/policy-evaluations (scope policy:read).
+- Ask a person only when approval_required is true. The REST dry run answers deny with
+  under_policy false when no policy binds the key. With a test key, the quote is then sent in the
+  sandbox as it is. With a live key, a person has to approve it.
 - When a quote is allowed by a policy, send_approved_fax(quote_id) sends without an approval.
 - By default a connected app (an OAuth connection such as ChatGPT or Claude, or an API key flagged
   as a connected app) sends with no approval per fax inside the organization's auto-send setting:
@@ -229,9 +236,9 @@ or for a person who wants to pay for one fax only. A person pays. You never do.
    done. Once the fax is released the answer carries the fax and, when the carrier has reported,
    its evidence, exactly as get_fax_status does.
 
-Money: the card is authorized when the person pays and charged only after the carrier reports
-pages as arrived. A failed fax charges nothing and the authorization is given back. A partial fax
-is charged for the pages that arrived. captured_micro is the amount charged, set only once the
+Money: the card is held when the person pays and charged only after the carrier reports pages
+as arrived. A failed fax charges nothing and the hold is released. A partial fax is charged for
+the pages that arrived. captured_micro is the amount charged, set only once the
 payment provider confirmed it. An order nobody pays expires with nothing charged. A paid order
 nobody confirms within 48 hours is given back, also with nothing charged.
 
