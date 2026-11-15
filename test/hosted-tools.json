@@ -1397,18 +1397,22 @@
             "description": "What the deciding policy had counted before the send it was asked about, in UTC periods.",
             "properties": {
               "day_jobs": {
+                "description": "Sends this policy allowed so far in the current UTC day.",
                 "title": "Day Jobs",
                 "type": "integer"
               },
               "day_amount_micro": {
+                "description": "The amount of those sends in micro-USD, as priced when the policy allowed each one. A fax that fails later still counts.",
                 "title": "Day Amount Micro",
                 "type": "integer"
               },
               "month_jobs": {
+                "description": "Sends this policy allowed so far in the current UTC month.",
                 "title": "Month Jobs",
                 "type": "integer"
               },
               "month_amount_micro": {
+                "description": "The amount of this month's sends in micro-USD, counted the same way as the day's.",
                 "title": "Month Amount Micro",
                 "type": "integer"
               }
@@ -1484,6 +1488,7 @@
                     "type": "null"
                   }
                 ],
+                "description": "The name of that policy. Null when none binds.",
                 "title": "Policy Name"
               },
               "version": {
@@ -1495,6 +1500,7 @@
                     "type": "null"
                   }
                 ],
+                "description": "The number of that version: 1 for the policy's first rules, one more for each change. Null when none binds.",
                 "title": "Version"
               },
               "managed": {

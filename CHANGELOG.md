@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.5.6 (2026-11-15)
+
+The stdio server follows the hosted server at API 1.20.10. Tool names, inputs, descriptions and annotations did not change.
+
+Three answers state the payment rule of API 1.20.9 in the hosted server's words.
+`get_fax_status` on a partial fax says "Charged the price of those pages", where it said "Charged for those pages".
+`get_card_payment_status` says the card "is being charged the price of the pages that arrived" while the charge runs.
+Once it is done, the same tool says the card "was charged the price of the pages that arrived".
+
+The guide says it the same way. Its `one_time` section says a failed fax costs nothing and a fax that stops part way costs the price of the pages that arrived.
+Its `states` section says the price of the pages of a partial fax was charged.
+
+The output schema of `quote_fax` describes the four counters of the policy verdict's `usage`, and its `policy_name` and `version`.
+
+The tool.store manifest still carried the description of `request_card_payment` from before 0.5.5. It equals the tool list again, as `npm run pack:tool-store` requires.
+
+The tool list was taken from the hosted server's `tools/list` on 2026-11-15, when it reported version 1.20.10.
+The list equals the definitions `scripts/import-hosted.py` imported from the product source at v1.20.10.
+`STATE_MESSAGES` and `ORDER_MESSAGES` equal the hosted ones word for word. `test/protocol.mjs` checks the two guide sentences.
+
 ## 0.5.5 (2026-11-15)
 
 The stdio server follows the hosted server at API 1.20.9.
