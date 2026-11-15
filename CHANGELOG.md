@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.5.4 (2026-11-15)
+
+The stdio server follows the hosted server at API 1.20.6. Tool names, inputs, descriptions and the guide did not change. The output schemas did.
+
+The output schemas name the fields the API added at 1.20.6. The handlers pass the API's objects through, so the fields reach a client as they are.
+
+- `get_fax_balance`: `balance.held_jobs`, the fax jobs whose hold is still in place.
+- `quote_fax`: `quote.route_paused`, true while an operator has paused sends on the route.
+- `prepare_fax` and `get_fax_document`: `document.converted_from`, the name of an image that became the PDF, and `document.received`, the received fax the document came from.
+- `request_human_review` and `get_review_status`: `document`, `requested_by_name` and `decided_by_name` on the review request.
+- `get_fax_capabilities`: `default_scopes` and `admin_scopes`.
+- `send_approved_fax`, `get_fax_status`, `list_faxes`, `cancel_fax` and `get_card_payment_status`: six receipt fields of a one-time order on `one_time`.
+
+Every new field is optional. 0.5.3 differed from the hosted tool list in 48 places of the output schemas, and 0.5.4 differs in none.
+
+The tool list was taken from the hosted server's `tools/list` on 2026-11-15, when it reported version 1.20.7.
+The list equals the definitions `scripts/import-hosted.py` imported from the product source at v1.20.6.
+`llms-install.md` writes the hosted address as `https://mcp.faxforagents.com/mcp/` and no longer says to keep the trailing slash. Both forms answer the same.
+
 ## 0.5.3 (2026-11-14)
 
 The stdio server follows the hosted server at API 1.20.5.

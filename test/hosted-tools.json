@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-11-14",
+  "captured_at": "2026-11-15",
   "source": "https://mcp.faxforagents.com/mcp/ tools/list",
   "tools": [
     {
@@ -272,6 +272,22 @@
                   "type": "string"
                 },
                 "title": "Scopes",
+                "type": "array"
+              },
+              "default_scopes": {
+                "description": "The scopes a key gets when POST /v1/api-keys names none.",
+                "items": {
+                  "type": "string"
+                },
+                "title": "Default Scopes",
+                "type": "array"
+              },
+              "admin_scopes": {
+                "description": "The scopes that administer the organization: keys, webhooks, billing, members, policies, agents, approval decisions and number purchases. An agent's own key never carries one.",
+                "items": {
+                  "type": "string"
+                },
+                "title": "Admin Scopes",
                 "type": "array"
               },
               "approvals": {
@@ -619,6 +635,29 @@
                 "title": "Validation",
                 "type": "object"
               },
+              "converted_from": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Converted From"
+              },
+              "received": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/DocumentReceived"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
               "upload_id": {
                 "anyOf": [
                   {
@@ -676,6 +715,38 @@
               "deleted_at"
             ],
             "title": "Document",
+            "type": "object"
+          },
+          "DocumentReceived": {
+            "additionalProperties": true,
+            "description": "The received fax a document is the file of.",
+            "properties": {
+              "inbox_item_id": {
+                "title": "Inbox Item Id",
+                "type": "string"
+              },
+              "from": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "From"
+              },
+              "received_at": {
+                "title": "Received At",
+                "type": "string"
+              }
+            },
+            "required": [
+              "inbox_item_id",
+              "received_at"
+            ],
+            "title": "DocumentReceived",
             "type": "object"
           }
         },
@@ -851,6 +922,29 @@
                 "title": "Validation",
                 "type": "object"
               },
+              "converted_from": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Converted From"
+              },
+              "received": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/DocumentReceived"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
               "upload_id": {
                 "anyOf": [
                   {
@@ -952,6 +1046,38 @@
               "items"
             ],
             "title": "DocumentPages",
+            "type": "object"
+          },
+          "DocumentReceived": {
+            "additionalProperties": true,
+            "description": "The received fax a document is the file of.",
+            "properties": {
+              "inbox_item_id": {
+                "title": "Inbox Item Id",
+                "type": "string"
+              },
+              "from": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "From"
+              },
+              "received_at": {
+                "title": "Received At",
+                "type": "string"
+              }
+            },
+            "required": [
+              "inbox_item_id",
+              "received_at"
+            ],
+            "title": "DocumentReceived",
             "type": "object"
           },
           "PagePreview": {
@@ -1374,6 +1500,12 @@
               },
               "authorization_required": {
                 "title": "Authorization Required",
+                "type": "boolean"
+              },
+              "route_paused": {
+                "default": false,
+                "description": "An operator has paused sends on this quote's route. A fax sent now is accepted and stays queued until the route is resumed. Read when the quote is answered, not stored.",
+                "title": "Route Paused",
                 "type": "boolean"
               },
               "warnings": {
@@ -2103,6 +2235,87 @@
                   }
                 ],
                 "default": null
+              },
+              "sender_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: the sender's name.",
+                "title": "Sender Name"
+              },
+              "email": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: the address the order was made with.",
+                "title": "Email"
+              },
+              "authorized_at": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: when the card was held.",
+                "title": "Authorized At"
+              },
+              "settled_at": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: when the payment provider confirmed the charge, or the release.",
+                "title": "Settled At"
+              },
+              "failure_code": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: why the order ended unpaid.",
+                "title": "Failure Code"
+              },
+              "price": {
+                "anyOf": [
+                  {
+                    "additionalProperties": {
+                      "type": "integer"
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: flat_micro, included_pages and extra_page_micro the amount follows from.",
+                "title": "Price"
               }
             },
             "required": [
@@ -2723,6 +2936,87 @@
                   }
                 ],
                 "default": null
+              },
+              "sender_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: the sender's name.",
+                "title": "Sender Name"
+              },
+              "email": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: the address the order was made with.",
+                "title": "Email"
+              },
+              "authorized_at": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: when the card was held.",
+                "title": "Authorized At"
+              },
+              "settled_at": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: when the payment provider confirmed the charge, or the release.",
+                "title": "Settled At"
+              },
+              "failure_code": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: why the order ended unpaid.",
+                "title": "Failure Code"
+              },
+              "price": {
+                "anyOf": [
+                  {
+                    "additionalProperties": {
+                      "type": "integer"
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: flat_micro, included_pages and extra_page_micro the amount follows from.",
+                "title": "Price"
               }
             },
             "required": [
@@ -3284,6 +3578,87 @@
                   }
                 ],
                 "default": null
+              },
+              "sender_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: the sender's name.",
+                "title": "Sender Name"
+              },
+              "email": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: the address the order was made with.",
+                "title": "Email"
+              },
+              "authorized_at": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: when the card was held.",
+                "title": "Authorized At"
+              },
+              "settled_at": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: when the payment provider confirmed the charge, or the release.",
+                "title": "Settled At"
+              },
+              "failure_code": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: why the order ended unpaid.",
+                "title": "Failure Code"
+              },
+              "price": {
+                "anyOf": [
+                  {
+                    "additionalProperties": {
+                      "type": "integer"
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: flat_micro, included_pages and extra_page_micro the amount follows from.",
+                "title": "Price"
               }
             },
             "required": [
@@ -3398,6 +3773,12 @@
               },
               "held_micro": {
                 "title": "Held Micro",
+                "type": "integer"
+              },
+              "held_jobs": {
+                "default": 0,
+                "description": "How many fax jobs still have their hold in place: queued, sending, or ended unknown and waiting for a reconcile. Their holds add up to held_micro.",
+                "title": "Held Jobs",
                 "type": "integer"
               },
               "top_up_url": {
@@ -3914,6 +4295,87 @@
                   }
                 ],
                 "default": null
+              },
+              "sender_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: the sender's name.",
+                "title": "Sender Name"
+              },
+              "email": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: the address the order was made with.",
+                "title": "Email"
+              },
+              "authorized_at": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: when the card was held.",
+                "title": "Authorized At"
+              },
+              "settled_at": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: when the payment provider confirmed the charge, or the release.",
+                "title": "Settled At"
+              },
+              "failure_code": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: why the order ended unpaid.",
+                "title": "Failure Code"
+              },
+              "price": {
+                "anyOf": [
+                  {
+                    "additionalProperties": {
+                      "type": "integer"
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: flat_micro, included_pages and extra_page_micro the amount follows from.",
+                "title": "Price"
               }
             },
             "required": [
@@ -5386,6 +5848,87 @@
                   }
                 ],
                 "default": null
+              },
+              "sender_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: the sender's name.",
+                "title": "Sender Name"
+              },
+              "email": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: the address the order was made with.",
+                "title": "Email"
+              },
+              "authorized_at": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: when the card was held.",
+                "title": "Authorized At"
+              },
+              "settled_at": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: when the payment provider confirmed the charge, or the release.",
+                "title": "Settled At"
+              },
+              "failure_code": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: why the order ended unpaid.",
+                "title": "Failure Code"
+              },
+              "price": {
+                "anyOf": [
+                  {
+                    "additionalProperties": {
+                      "type": "integer"
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On a receipt: flat_micro, included_pages and extra_page_micro the amount follows from.",
+                "title": "Price"
               }
             },
             "required": [
@@ -5581,6 +6124,56 @@
         ],
         "type": "object",
         "$defs": {
+          "ApprovalDocument": {
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "filename": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The file's name; null when the document row is gone.",
+                "title": "Filename"
+              },
+              "page_count": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Page Count"
+              },
+              "state": {
+                "description": "available: the document is the one the request binds. deleted: it was deleted. changed: its sha256 is no longer the bound one. A send with this approval is refused in the last two.",
+                "enum": [
+                  "available",
+                  "deleted",
+                  "changed"
+                ],
+                "title": "State",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "filename",
+              "page_count",
+              "state"
+            ],
+            "title": "ApprovalDocument",
+            "type": "object"
+          },
           "ReviewRequest": {
             "additionalProperties": true,
             "description": "The approval request row as request_human_review returns it: kind send (bound to a quote) or help.",
@@ -5639,6 +6232,19 @@
                 "title": "Requested By",
                 "type": "string"
               },
+              "requested_by_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The requester as people read it: the key's label, the agent's name, the connected app's name or the person's address. null when the actor has no row in the organization any more.",
+                "title": "Requested By Name"
+              },
               "decided_by": {
                 "anyOf": [
                   {
@@ -5649,6 +6255,31 @@
                   }
                 ],
                 "title": "Decided By"
+              },
+              "decided_by_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The decider, named the same way.",
+                "title": "Decided By Name"
+              },
+              "document": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ApprovalDocument"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The document a send request binds (bound.document_id). null for a help request."
               },
               "reason": {
                 "anyOf": [
@@ -5854,6 +6485,56 @@
         ],
         "type": "object",
         "$defs": {
+          "ApprovalDocument": {
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "filename": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The file's name; null when the document row is gone.",
+                "title": "Filename"
+              },
+              "page_count": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Page Count"
+              },
+              "state": {
+                "description": "available: the document is the one the request binds. deleted: it was deleted. changed: its sha256 is no longer the bound one. A send with this approval is refused in the last two.",
+                "enum": [
+                  "available",
+                  "deleted",
+                  "changed"
+                ],
+                "title": "State",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "filename",
+              "page_count",
+              "state"
+            ],
+            "title": "ApprovalDocument",
+            "type": "object"
+          },
           "ReviewRequest": {
             "additionalProperties": true,
             "description": "The approval request row as request_human_review returns it: kind send (bound to a quote) or help.",
@@ -5912,6 +6593,19 @@
                 "title": "Requested By",
                 "type": "string"
               },
+              "requested_by_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The requester as people read it: the key's label, the agent's name, the connected app's name or the person's address. null when the actor has no row in the organization any more.",
+                "title": "Requested By Name"
+              },
               "decided_by": {
                 "anyOf": [
                   {
@@ -5922,6 +6616,31 @@
                   }
                 ],
                 "title": "Decided By"
+              },
+              "decided_by_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The decider, named the same way.",
+                "title": "Decided By Name"
+              },
+              "document": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ApprovalDocument"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The document a send request binds (bound.document_id). null for a help request."
               },
               "reason": {
                 "anyOf": [
