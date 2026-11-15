@@ -78,10 +78,55 @@ export function result(p: Payload): ToolResult {
   };
 }
 
-function refusal(exc: ApiRefusal): Payload {
-  const d = (
-    exc.details && typeof exc.details === "object" ? exc.details : {}
-  ) as Json;
+/** The REST field a tool argument is sent as, per tool, where the two names differ (the hosted
+ * `REST_FIELDS`). A refusal names the REST field in `details.field`, `details.fields` or the `loc` of a
+ * validation error, and its message often starts with it. The tool answers with the argument's name, the
+ * one an agent can send again: quote_fax says from_number, never the REST field from. */
+export const REST_FIELDS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  quote_fax: { from: "from_number" },
+  request_card_payment: { sender_name: "cover_from_name" },
+  request_human_review: { fax_job_id: "fax_id" },
+};
+
+type Renamed = Readonly<Record<string, string>>;
+
+/** The API's error details with every REST field name they carry written as the tool's argument (the
+ * hosted `argument_details`). */
+export function argumentDetails(details: unknown, renamed: Renamed): unknown {
+  if (!Object.keys(renamed).length) return details;
+  const name = (value: unknown) =>
+    typeof value === "string" && Object.hasOwn(renamed, value) ? renamed[value] : value;
+  if (Array.isArray(details)) {
+    // a request the API could not validate: [{"loc": ["body", "from"], "msg": "..."}]
+    return details.map((item) =>
+      item && typeof item === "object" && !Array.isArray(item) && Array.isArray((item as Json).loc)
+        ? { ...(item as Json), loc: ((item as Json).loc as unknown[]).map(name) }
+        : item,
+    );
+  }
+  if (details && typeof details === "object") {
+    const out: Json = { ...(details as Json) };
+    if (Object.hasOwn(out, "field")) out.field = name(out.field);
+    if (Array.isArray(out.fields)) out.fields = out.fields.map(name);
+    return out;
+  }
+  return details;
+}
+
+/** The API's message, with the tool's argument in place of the REST field it starts with (the hosted
+ * `argument_message`). "from must be E.164" reads "from_number must be E.164" from quote_fax. */
+export function argumentMessage(message: string, details: unknown, renamed: Renamed): string {
+  const rest =
+    details && typeof details === "object" && !Array.isArray(details) ? (details as Json).field : undefined;
+  if (typeof rest === "string" && Object.hasOwn(renamed, rest) && message.startsWith(`${rest} `)) {
+    return renamed[rest] + message.slice(rest.length);
+  }
+  return message;
+}
+
+function refusal(exc: ApiRefusal, renamed: Renamed = {}): Payload {
+  const details = argumentDetails(exc.details, renamed);
+  const d = (details && typeof details === "object" ? details : {}) as Json;
   const policy =
     d.policy && typeof d.policy === "object" ? (d.policy as Json) : null;
   const remedies: Record<string, string> = {
@@ -139,22 +184,24 @@ function refusal(exc: ApiRefusal): Payload {
     sandbox_only: "Sandbox tools take a test key (ffa_test_...).",
   };
   return {
-    text: remedies[exc.code] ?? exc.message,
+    text: Object.hasOwn(remedies, exc.code)
+      ? remedies[exc.code]!
+      : argumentMessage(exc.message, exc.details, renamed),
     ok: false,
     errorCode: exc.code,
-    details: exc.details,
+    details,
     isError: HARD_REFUSALS.has(exc.code),
   };
 }
 
-/** The tool argument behind the REST field a 404 names in `details.field`, and what to do about it. A
- * call with two ids (quote_fax takes a document and a sender) says which one was not found (the hosted
- * `NOT_FOUND_FIELDS`). */
+/** What to do about the argument a 404 names in `details.field`, which is already the tool's name for it
+ * (see `REST_FIELDS`). A call with two ids (quote_fax takes a document and a sender) says which one was
+ * not found (the hosted `NOT_FOUND_FIELDS`). */
 const NOT_FOUND_FIELDS: Record<string, string> = {
   document_id:
     "document_id is not a document of your organization, or it was deleted. Prepare the document " +
     "again with prepare_fax.",
-  from:
+  from_number:
     "from_number is not a fax number of your organization. Leave from_number out to send from the " +
     "shared pool.",
 };
@@ -208,14 +255,14 @@ const ORDER_MESSAGES: Record<string, string> = {
   draft: "waiting for payment. A person opens the link and pays by card. You cannot pay it.",
   checkout_open: "waiting for payment. A person opens the link and pays by card. You cannot pay it.",
   awaiting_confirmation:
-    "the card is authorized, not charged. The person has to click the link in the confirmation mail " +
+    "the card is held, not charged. The person has to click the link in the confirmation mail " +
     "before the fax is sent.",
-  authorized: "the card is authorized, not charged. The fax is being released. Read again.",
+  authorized: "the card is held, not charged. The fax is being released. Read again.",
   released: "the fax was released to the carrier. The card is charged only for pages that arrive.",
   capturing: "the card charge for the pages that arrived is in progress, not confirmed yet.",
-  canceling: "the card authorization is being given back, not confirmed yet.",
+  canceling: "the hold on the card is being released, not confirmed yet.",
   captured: "the card was charged for the pages that arrived.",
-  released_hold: "nothing was charged. The card authorization was given back.",
+  released_hold: "nothing was charged. The hold on the card was released.",
   expired: "expired. Nothing was charged.",
   refused: "refused. Nothing was charged.",
   settle_failed:
@@ -559,8 +606,11 @@ export function createServer(opts: ServerOptions = {}): McpServer {
   registerGuideResources(server);
   registerPrompts(server);
 
+  /** `renamed` is the tool's row of `REST_FIELDS`: a refusal names the tool's arguments, not the REST
+   * fields they were sent as. */
   const run = async (
     body: (api: Api) => Promise<Payload>,
+    renamed: Renamed = {},
   ): Promise<ToolResult> => {
     if (!key)
       return result({
@@ -573,7 +623,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     try {
       return result(await body(api));
     } catch (err) {
-      if (err instanceof ApiRefusal) return result(refusal(err));
+      if (err instanceof ApiRefusal) return result(refusal(err, renamed));
       if (err instanceof ApiUnreachable) {
         return result({
           text: `The API could not be reached (${err.kind}). Retry once, then report it.`,
@@ -790,7 +840,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
             ...(q.sender_name ? ["quote.sender_name"] : []),
           ],
         };
-      }),
+      }, REST_FIELDS.quote_fax),
   );
 
   dispatch.registerTool(
@@ -985,7 +1035,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
           },
           untrusted: ORDER_UNTRUSTED,
         };
-      }),
+      }, REST_FIELDS.request_card_payment),
   );
 
   dispatch.registerTool(
@@ -1079,7 +1129,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
           data: { review_request: req },
           untrusted: ["review_request.message"],
         };
-      }),
+      }, REST_FIELDS.request_human_review),
   );
 
   dispatch.registerTool(

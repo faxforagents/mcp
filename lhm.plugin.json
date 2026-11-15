@@ -188,7 +188,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -367,6 +367,7 @@
               },
               "one_time": {
                 "additionalProperties": true,
+                "description": "One fax paid by card on this server. enabled: orders are taken here. published: the price card offers the product. routes: the routes sold one fax at a time, empty while not enabled. max_document_pages: the most document pages one order takes. Prices are in GET /v1/one-time-sends/config.",
                 "title": "One Time",
                 "type": "object"
               }
@@ -469,7 +470,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -712,6 +713,7 @@
                   }
                 ],
                 "default": null,
+                "description": "The name of the image this PDF was converted from, as the person gave it. filename is the PDF's own name. Null for a document that was not an image.",
                 "title": "Converted From"
               },
               "received": {
@@ -723,7 +725,8 @@
                     "type": "null"
                   }
                 ],
-                "default": null
+                "default": null,
+                "description": "Set in the list (GET /v1/documents) on the file of a received fax, source inbound. It names the inbox item, the sender as the sending machine gave it, and the time. Null everywhere else."
               },
               "upload_id": {
                 "anyOf": [
@@ -842,7 +845,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -986,6 +989,7 @@
                   }
                 ],
                 "default": null,
+                "description": "The name of the image this PDF was converted from, as the person gave it. filename is the PDF's own name. Null for a document that was not an image.",
                 "title": "Converted From"
               },
               "received": {
@@ -997,7 +1001,8 @@
                     "type": "null"
                   }
                 ],
-                "default": null
+                "default": null,
+                "description": "Set in the list (GET /v1/documents) on the file of a received fax, source inbound. It names the inbox item, the sender as the sending machine gave it, and the time. Null everywhere else."
               },
               "upload_id": {
                 "anyOf": [
@@ -1203,7 +1208,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -1442,6 +1447,159 @@
       },
       "outputSchema": {
         "$defs": {
+          "PolicyUsage": {
+            "additionalProperties": true,
+            "description": "What the deciding policy had counted before the send it was asked about, in UTC periods.",
+            "properties": {
+              "day_jobs": {
+                "title": "Day Jobs",
+                "type": "integer"
+              },
+              "day_amount_micro": {
+                "title": "Day Amount Micro",
+                "type": "integer"
+              },
+              "month_jobs": {
+                "title": "Month Jobs",
+                "type": "integer"
+              },
+              "month_amount_micro": {
+                "title": "Month Amount Micro",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "day_jobs",
+              "day_amount_micro",
+              "month_jobs",
+              "month_amount_micro"
+            ],
+            "title": "PolicyUsage",
+            "type": "object"
+          },
+          "PolicyVerdict": {
+            "additionalProperties": true,
+            "description": "One evaluation of the delegated policies that bind a caller: the first policy that allows the plan,\nor every policy that denies it.",
+            "properties": {
+              "decision": {
+                "enum": [
+                  "allow",
+                  "deny"
+                ],
+                "title": "Decision",
+                "type": "string"
+              },
+              "rule": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The rule that failed first when a policy denied the plan. Null on allow, and when no policy binds the caller.",
+                "title": "Rule"
+              },
+              "reason": {
+                "description": "Why, in one sentence.",
+                "title": "Reason",
+                "type": "string"
+              },
+              "policy_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The policy that allowed the plan, or the first one that denied it. Null when none binds.",
+                "title": "Policy Id"
+              },
+              "policy_version_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The version of that policy that decided.",
+                "title": "Policy Version Id"
+              },
+              "policy_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Policy Name"
+              },
+              "version": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Version"
+              },
+              "managed": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "connected_apps when the organization's auto-send setting decided, else null.",
+                "title": "Managed"
+              },
+              "denials": {
+                "description": "Every policy that denied the plan, each with its policy_id, policy_version_id, decision, rule and reason. Empty on allow.",
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "title": "Denials",
+                "type": "array"
+              },
+              "usage": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/PolicyUsage"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "On allow: the deciding policy's counters for the day and the month before this send."
+              }
+            },
+            "required": [
+              "decision",
+              "rule",
+              "reason",
+              "policy_id",
+              "policy_version_id",
+              "policy_name",
+              "version",
+              "denials"
+            ],
+            "title": "PolicyVerdict",
+            "type": "object"
+          },
           "Quote": {
             "additionalProperties": true,
             "properties": {
@@ -1514,6 +1672,16 @@
                 "title": "Per Page Micro",
                 "type": "integer"
               },
+              "pricing": {
+                "default": "per_page",
+                "description": "per_page: priced from the rate card, paid from the wallet and sent with POST /v1/faxes. one_time: the quote of a one-time order, priced at the card's price for the order. Only the order sends it, and POST /v1/faxes refuses it with quote_pricing_mismatch.",
+                "enum": [
+                  "per_page",
+                  "one_time"
+                ],
+                "title": "Pricing",
+                "type": "string"
+              },
               "route_label": {
                 "default": "",
                 "title": "Route Label",
@@ -1557,6 +1725,18 @@
                 "title": "Authorization Required",
                 "type": "boolean"
               },
+              "policy_evaluation": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/PolicyVerdict"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The dry run of the delegated policies that bind the caller, made with the quote. Null when no policy binds the caller. The send evaluates the policies again, with their counters locked."
+              },
               "route_paused": {
                 "default": false,
                 "description": "An operator has paused sends on this quote's route. A fax sent now is accepted and stays queued until the route is resumed. Read when the quote is answered, not stored.",
@@ -1593,20 +1773,6 @@
               "created_at": {
                 "title": "Created At",
                 "type": "string"
-              },
-              "policy_evaluation": {
-                "anyOf": [
-                  {
-                    "additionalProperties": true,
-                    "type": "object"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ],
-                "default": null,
-                "description": "The delegated policy's dry run when the key is under one, else null.",
-                "title": "Policy Evaluation"
               }
             },
             "required": [
@@ -1764,7 +1930,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -2060,6 +2226,32 @@
                 ],
                 "title": "Client Reference"
               },
+              "approval_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The approval request a person approved for this send. Null when another path authorized it: a delegated policy (policy_version_id), a test key no policy binds, or the payer's confirmation of a one-time order.",
+                "title": "Approval Id"
+              },
+              "policy_version_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The version of the delegated policy that allowed this send. A version never changes, so it shows the limits the send was allowed under. Null when no policy decided the send.",
+                "title": "Policy Version Id"
+              },
               "attempt_count": {
                 "title": "Attempt Count",
                 "type": "integer"
@@ -2131,6 +2323,12 @@
                   }
                 ],
                 "default": null
+              },
+              "route_paused": {
+                "default": false,
+                "description": "An operator has paused sends on this fax's route while the fax waits for a line (queued or between tries). It goes out when the route is resumed. Read when the fax is read, not stored.",
+                "title": "Route Paused",
+                "type": "boolean"
               }
             },
             "required": [
@@ -2198,7 +2396,7 @@
           },
           "OneTimeJob": {
             "additionalProperties": true,
-            "description": "The order behind a fax job that a one-time send made: what was authorized, what was charged.",
+            "description": "The order behind a fax job that a one-time send made: what was held on the card, what was charged.",
             "properties": {
               "order_id": {
                 "title": "Order Id",
@@ -2405,7 +2603,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -2757,6 +2955,32 @@
                 ],
                 "title": "Client Reference"
               },
+              "approval_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The approval request a person approved for this send. Null when another path authorized it: a delegated policy (policy_version_id), a test key no policy binds, or the payer's confirmation of a one-time order.",
+                "title": "Approval Id"
+              },
+              "policy_version_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The version of the delegated policy that allowed this send. A version never changes, so it shows the limits the send was allowed under. Null when no policy decided the send.",
+                "title": "Policy Version Id"
+              },
               "attempt_count": {
                 "title": "Attempt Count",
                 "type": "integer"
@@ -2828,6 +3052,12 @@
                   }
                 ],
                 "default": null
+              },
+              "route_paused": {
+                "default": false,
+                "description": "An operator has paused sends on this fax's route while the fax waits for a line (queued or between tries). It goes out when the route is resumed. Read when the fax is read, not stored.",
+                "title": "Route Paused",
+                "type": "boolean"
               }
             },
             "required": [
@@ -2895,7 +3125,7 @@
           },
           "OneTimeJob": {
             "additionalProperties": true,
-            "description": "The order behind a fax job that a one-time send made: what was authorized, what was charged.",
+            "description": "The order behind a fax job that a one-time send made: what was held on the card, what was charged.",
             "properties": {
               "order_id": {
                 "title": "Order Id",
@@ -3102,7 +3332,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -3399,6 +3629,32 @@
                 ],
                 "title": "Client Reference"
               },
+              "approval_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The approval request a person approved for this send. Null when another path authorized it: a delegated policy (policy_version_id), a test key no policy binds, or the payer's confirmation of a one-time order.",
+                "title": "Approval Id"
+              },
+              "policy_version_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The version of the delegated policy that allowed this send. A version never changes, so it shows the limits the send was allowed under. Null when no policy decided the send.",
+                "title": "Policy Version Id"
+              },
               "attempt_count": {
                 "title": "Attempt Count",
                 "type": "integer"
@@ -3470,6 +3726,12 @@
                   }
                 ],
                 "default": null
+              },
+              "route_paused": {
+                "default": false,
+                "description": "An operator has paused sends on this fax's route while the fax waits for a line (queued or between tries). It goes out when the route is resumed. Read when the fax is read, not stored.",
+                "title": "Route Paused",
+                "type": "boolean"
               }
             },
             "required": [
@@ -3537,7 +3799,7 @@
           },
           "OneTimeJob": {
             "additionalProperties": true,
-            "description": "The order behind a fax job that a one-time send made: what was authorized, what was charged.",
+            "description": "The order behind a fax job that a one-time send made: what was held on the card, what was charged.",
             "properties": {
               "order_id": {
                 "title": "Order Id",
@@ -3745,7 +4007,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -3897,7 +4159,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -4132,6 +4394,32 @@
                 ],
                 "title": "Client Reference"
               },
+              "approval_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The approval request a person approved for this send. Null when another path authorized it: a delegated policy (policy_version_id), a test key no policy binds, or the payer's confirmation of a one-time order.",
+                "title": "Approval Id"
+              },
+              "policy_version_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The version of the delegated policy that allowed this send. A version never changes, so it shows the limits the send was allowed under. Null when no policy decided the send.",
+                "title": "Policy Version Id"
+              },
               "attempt_count": {
                 "title": "Attempt Count",
                 "type": "integer"
@@ -4203,6 +4491,12 @@
                   }
                 ],
                 "default": null
+              },
+              "route_paused": {
+                "default": false,
+                "description": "An operator has paused sends on this fax's route while the fax waits for a line (queued or between tries). It goes out when the route is resumed. Read when the fax is read, not stored.",
+                "title": "Route Paused",
+                "type": "boolean"
               }
             },
             "required": [
@@ -4270,7 +4564,7 @@
           },
           "OneTimeJob": {
             "additionalProperties": true,
-            "description": "The order behind a fax job that a one-time send made: what was authorized, what was charged.",
+            "description": "The order behind a fax job that a one-time send made: what was held on the card, what was charged.",
             "properties": {
               "order_id": {
                 "title": "Order Id",
@@ -4477,7 +4771,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -4526,7 +4820,7 @@
     {
       "name": "request_card_payment",
       "title": "Request card payment",
-      "description": "Ask a person to pay for one quoted fax by card, with no wallet balance. Use after quote_fax when the wallet does not cover the send, or when the person wants to pay for one fax only. Use send_approved_fax for a wallet send. The same authorization as send_approved_fax applies: an approval_id from get_review_status, or a delegated policy that allows the send. Paying by card replaces neither, and without one the answer is approval_required. Creates a one-time order at the card price of the rate card, which differs from the quote's per-page amount. Adds a cover page with cover_from_name. Returns the order id, its status, the price and status_url. A person opens status_url, accepts the acceptable use policy and the terms there, and pays by card. You cannot pay it yourself, and nothing is sent until they pay. The card is authorized at payment and charged only for pages the carrier reports as arrived. The quote then belongs to the order. United States and Canada, live keys only, within the page limit get_fax_capabilities reports under one_time. Identical requests replay for 24 hours when the idempotency key matches. Poll get_card_payment_status. Scope: fax:send.",
+      "description": "Ask a person to pay for one quoted fax by card, with no wallet balance. Use after quote_fax when the wallet does not cover the send, or when the person wants to pay for one fax only. Use send_approved_fax for a wallet send. The same authorization as send_approved_fax applies: an approval_id from get_review_status, or a delegated policy that allows the send. Paying by card replaces neither, and without one the answer is approval_required. Creates a one-time order at the card price of the rate card, which differs from the quote's per-page amount. Adds a cover page with cover_from_name. Returns the order id, its status, the price and status_url. A person opens status_url, accepts the acceptable use policy and the terms there, and pays by card. You cannot pay it yourself, and nothing is sent until they pay. The card is held at payment and charged only for pages the carrier reports as arrived. The quote then belongs to the order. United States and Canada, live keys only, within the page limit get_fax_capabilities reports under one_time. Identical requests replay for 24 hours when the idempotency key matches. Poll get_card_payment_status. Scope: fax:send.",
       "inputSchema": {
         "properties": {
           "quote_id": {
@@ -4759,7 +5053,7 @@
                 "$ref": "#/$defs/OneTimePrice"
               },
               "amount_micro": {
-                "description": "The card price of the order, authorized at payment.",
+                "description": "The card price of the order, held on the card at payment.",
                 "title": "Amount Micro",
                 "type": "integer"
               },
@@ -4983,7 +5277,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -5321,7 +5615,7 @@
                 "$ref": "#/$defs/OneTimePrice"
               },
               "amount_micro": {
-                "description": "The card price of the order, authorized at payment.",
+                "description": "The card price of the order, held on the card at payment.",
                 "title": "Amount Micro",
                 "type": "integer"
               },
@@ -5644,6 +5938,32 @@
                 ],
                 "title": "Client Reference"
               },
+              "approval_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The approval request a person approved for this send. Null when another path authorized it: a delegated policy (policy_version_id), a test key no policy binds, or the payer's confirmation of a one-time order.",
+                "title": "Approval Id"
+              },
+              "policy_version_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The version of the delegated policy that allowed this send. A version never changes, so it shows the limits the send was allowed under. Null when no policy decided the send.",
+                "title": "Policy Version Id"
+              },
               "attempt_count": {
                 "title": "Attempt Count",
                 "type": "integer"
@@ -5715,6 +6035,12 @@
                   }
                 ],
                 "default": null
+              },
+              "route_paused": {
+                "default": false,
+                "description": "An operator has paused sends on this fax's route while the fax waits for a line (queued or between tries). It goes out when the route is resumed. Read when the fax is read, not stored.",
+                "title": "Route Paused",
+                "type": "boolean"
               }
             },
             "required": [
@@ -5782,7 +6108,7 @@
           },
           "OneTimeJob": {
             "additionalProperties": true,
-            "description": "The order behind a fax job that a one-time send made: what was authorized, what was charged.",
+            "description": "The order behind a fax job that a one-time send made: what was held on the card, what was charged.",
             "properties": {
               "order_id": {
                 "title": "Order Id",
@@ -6028,7 +6354,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -6192,6 +6518,7 @@
         "$defs": {
           "ApprovalDocument": {
             "additionalProperties": true,
+            "description": "The document a send request binds, as it is now: its name, its pages and whether a send can use it.",
             "properties": {
               "id": {
                 "title": "Id",
@@ -6466,7 +6793,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -6540,6 +6867,7 @@
         "$defs": {
           "ApprovalDocument": {
             "additionalProperties": true,
+            "description": "The document a send request binds, as it is now: its name, its pages and whether a send can use it.",
             "properties": {
               "id": {
                 "title": "Id",
@@ -6814,7 +7142,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -6960,6 +7288,7 @@
               },
               "amount_micro": {
                 "default": 0,
+                "description": "What the received pages were charged, in micro-USD. 0 on the sandbox.",
                 "title": "Amount Micro",
                 "type": "integer"
               },
@@ -7013,7 +7342,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -7206,6 +7535,7 @@
               },
               "amount_micro": {
                 "default": 0,
+                "description": "What the received pages were charged, in micro-USD. 0 on the sandbox.",
                 "title": "Amount Micro",
                 "type": "integer"
               },
@@ -7285,7 +7615,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -7639,7 +7969,7 @@
           },
           "details": {
             "default": null,
-            "description": "The API's error details, when a refusal carries any.",
+            "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
             "title": "Details"
           },
           "untrusted": {
@@ -7686,5 +8016,5 @@
       }
     }
   ],
-  "version": "0.5.4"
+  "version": "0.5.5"
 }

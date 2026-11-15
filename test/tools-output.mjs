@@ -82,7 +82,12 @@ const NOT_OURS = '+14155550199';
 const DENIED_QUOTE = {
   ...QUOTE,
   authorization_required: true,
-  policy_evaluation: { decision: 'deny', rule: 'destinations', reason: 'the number is not on the list', policy_id: 'pol_1', policy_version_id: 'polv_1', policy_name: 'Clinic sends', version: 2 },
+  // the shape of the server's Evaluation.as_json: managed and denials are always there (PolicyVerdict, 1.20.8)
+  policy_evaluation: {
+    decision: 'deny', rule: 'destinations', reason: 'the number is not on the list', policy_id: 'pol_1', policy_version_id: 'polv_1',
+    policy_name: 'Clinic sends', version: 2, managed: null,
+    denials: [{ policy_id: 'pol_1', policy_version_id: 'polv_1', decision: 'deny', rule: 'destinations', reason: 'the number is not on the list' }],
+  },
 };
 
 const api = createServer((req, res) => {
@@ -497,7 +502,7 @@ if (!/approval is required: a person must approve it/.test(sc(liveQuote).message
 const gd = sc(goneDoc, 'quote of a deleted document');
 if (gd.error_code !== 'not_found' || gd.message !== 'document_id is not a document of your organization, or it was deleted. Prepare the document again with prepare_fax.' || gd.details?.field !== 'document_id' || goneDoc.isError) fail(`quote not_found names document_id: ${JSON.stringify(gd)}`);
 const no = sc(notOurs, 'quote from a number of another organization');
-if (no.error_code !== 'not_found' || no.message !== 'from_number is not a fax number of your organization. Leave from_number out to send from the shared pool.' || no.details?.field !== 'from') fail(`quote not_found names from_number: ${JSON.stringify(no)}`);
+if (no.error_code !== 'not_found' || no.message !== 'from_number is not a fax number of your organization. Leave from_number out to send from the shared pool.' || no.details?.field !== 'from_number') fail(`quote not_found names from_number: ${JSON.stringify(no)}`);
 if (sc(goneFax, 'status of an unknown fax').message !== 'No such id in your organization, or it was deleted.') fail('a tool with one id keeps the short not_found answer');
 const rn = sc(restName, 'quote with the REST name of the sender');
 if (rn.error_code !== 'invalid_input' || restName.isError !== true || !rn.message.startsWith('This tool does not take the argument from (did you mean from_number?). It takes: cover, ') || rn.details?.unknown_arguments?.join() !== 'from' || !rn.details.accepted_arguments.includes('from_number')) fail(`from is refused by name: ${JSON.stringify(rn)}`);
