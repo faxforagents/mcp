@@ -281,7 +281,7 @@ Resource IDs require the correct prefix and exactly 32 lowercase hexadecimal cha
 Well-formed unknown IDs reach the REST API and return `not_found`.
 Protocol errors, such as a non-object arguments container, remain JSON-RPC errors.
 Tests use hosted responses recorded on 2026-11-02 and a local fake REST API. They need no hosted credentials.
-The tool snapshot is the hosted server's `tools/list` of 2026-11-14 at API 1.20.5. Normal tests never contact the hosted server.
+The tool snapshot is the hosted server's `tools/list` of 2026-11-15, with the tools of API 1.20.6. Normal tests never contact the hosted server.
 `test/hosted-unknown-arguments.json` holds what the hosted source answers for 20 calls with unknown arguments. `test/validation.mjs` compares each one.
 The server does not start when a handler's inputs differ from the tool list. `test/inputs.mjs` calls every listed input over stdio. A wrong type has to be refused and the listed example accepted. An argument a tool does not list has to be refused by name.
 To import definitions before deployment, run the following with the product checkout's Python environment.

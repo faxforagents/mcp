@@ -30,7 +30,7 @@ build`) runs with `command: node` and `args: ["<clone>/dist/index.js"]`.
 
 ### Hosted (primary)
 
-Streamable HTTP at `https://mcp.faxforagents.com/mcp/` (keep the trailing slash), authenticated with
+Streamable HTTP at `https://mcp.faxforagents.com/mcp/`, authenticated with
 `Authorization: Bearer ffa_test_...` or `X-API-Key: ffa_test_...` on every request.
 
 ```bash
