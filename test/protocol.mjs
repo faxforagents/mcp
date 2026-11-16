@@ -321,6 +321,11 @@ if (!/A fax that stops part way costs the\s+price of the pages that arrived\./.t
   fail("the guide's one_time section does not state the payment rule");
 if (!/The price of those\s+pages was charged, the rest released\./.test(whole.content[0].text))
   fail("the guide's states section does not say what a partial fax costs");
+// API 1.21.0: a test quote names its live price, and the free mode is called test, in the hosted words.
+if (!/amount_micro is 0 and\s+live_amount_micro says what the same fax would cost with a live key: tell the person both\./.test(whole.content[0].text))
+  fail("the guide does not name the live price of a test quote");
+if (!/From test to a real fax\./.test(whole.content[0].text) || /\bsandbox fax\b/i.test(whole.content[0].text))
+  fail("the guide does not call the free mode test");
 
 // Resources: the whole guide and one resource per section, all text/markdown, readable without a key.
 const resources = reply(5)?.result?.resources;

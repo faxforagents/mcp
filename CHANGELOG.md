@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.5.7 (2026-11-16)
+
+The stdio server follows the hosted server at API 1.21.0. Tool names, inputs, descriptions and annotations did not change.
+
+`quote_fax` on a test quote adds a sentence with the live price, in the hosted words.
+It reads "Live, this fax would cost 39000 micro ($0.039)." for a one-page quote, from the quote's `live_amount_micro`.
+A live quote, or a test quote whose live price the server does not know, gets no such sentence.
+
+`get_card_payment_status` knows the three statuses a person at Fax for Agents sets from the console.
+`refunding` says a refund to the card is on its way, and `refunded` says the whole charge went back.
+Both say what was charged, and `refunded` also says what was refunded. `canceled` says nothing was charged and the hold was released.
+
+The answers call the free mode test, as the hosted server does since 1.21.0. A test fax is "Test fax", where it was "Sandbox fax".
+The test wallet, the test-mode policy reason of `quote_fax`, the extraction price of `get_fax_capabilities` and the `sandbox_only` refusal say test.
+So do the guide and the two prompts. Sandbox stays where it names the simulated carrier.
+The guide's `send` section says that a test quote's `live_amount_micro` is the price with a live key.
+
+The output schemas follow the hosted ones. `quote_fax` declares `live_amount_micro`, the order statuses gain `refunding`, `refunded` and `canceled`, and `get_fax_capabilities` describes `limits`.
+
+The README's one-paste line says "Start in Test.", as the site and the dashboard do since 1.21.0.
+
+The tool list was taken from the hosted server's `tools/list` on 2026-11-16, when it reported version 1.21.0.
+The list equals the definitions `scripts/import-hosted.py` imported from the product source at v1.21.0.
+`STATE_MESSAGES` and `ORDER_MESSAGES` equal the hosted ones word for word. `test/protocol.mjs` checks the two new guide sentences.
+
 ## 0.5.6 (2026-11-15)
 
 The stdio server follows the hosted server at API 1.20.10. Tool names, inputs, descriptions and annotations did not change.
