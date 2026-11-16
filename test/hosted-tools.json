@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-11-15",
+  "captured_at": "2026-11-16",
   "source": "https://mcp.faxforagents.com/mcp/ tools/list",
   "tools": [
     {
@@ -300,7 +300,7 @@
               },
               "extraction_pricing": {
                 "additionalProperties": true,
-                "description": "What POST /v1/extractions charges, in micro-units. page_micro is for every page read. escalated_page_micro is added for a page the stronger model reads again. max_pages is the most pages one extraction reads. Sandbox extractions are free.",
+                "description": "What POST /v1/extractions charges, in micro-units. page_micro is for every page read. escalated_page_micro is added for a page the stronger model reads again. max_pages is the most pages one extraction reads. With a test key, extractions are free.",
                 "title": "Extraction Pricing",
                 "type": "object"
               },
@@ -308,6 +308,7 @@
                 "additionalProperties": {
                   "type": "integer"
                 },
+                "description": "requests_per_minute is the limit of the calling credential: 3000 while the organization's Agent workspace is active, 600 otherwise. The RateLimit-Limit header of every answer says the same. The other keys are the life of a quote and of a download link in seconds, and the largest HTML document in bytes.",
                 "title": "Limits",
                 "type": "object"
               },
@@ -1610,6 +1611,19 @@
                 "title": "Amount Micro",
                 "type": "integer"
               },
+              "live_amount_micro": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "What the same fax costs with a live key, in micro-units. It is the billable pages at the live rate of the destination, priced by the rule a live quote uses. A test quote is free (amount_micro 0), and this field says what the fax would cost live. On a live quote it equals amount_micro. Null when the rate card in force is not the one the quote was priced on (price_version) or no longer serves the destination.",
+                "title": "Live Amount Micro"
+              },
               "currency": {
                 "title": "Currency",
                 "type": "string"
@@ -1755,7 +1769,7 @@
             "description": "The policy verdict for one quote: the server's own evaluation of this exact send.",
             "properties": {
               "decision": {
-                "description": "allow: send_approved_fax takes this quote as it is. deny: no policy allows it, and approval_required says whether a person can still approve it. With a test key and no policy the decision is allow and policy_id is null: the sandbox needs no approval.",
+                "description": "allow: send_approved_fax takes this quote as it is. deny: no policy allows it, and approval_required says whether a person can still approve it. With a test key and no policy the decision is allow and policy_id is null: a test API key needs no approval.",
                 "enum": [
                   "allow",
                   "deny"
@@ -2368,7 +2382,10 @@
                       "released_hold",
                       "expired",
                       "refused",
-                      "settle_failed"
+                      "settle_failed",
+                      "refunding",
+                      "refunded",
+                      "canceled"
                     ],
                     "type": "string"
                   },
@@ -3101,7 +3118,10 @@
                       "released_hold",
                       "expired",
                       "refused",
-                      "settle_failed"
+                      "settle_failed",
+                      "refunding",
+                      "refunded",
+                      "canceled"
                     ],
                     "type": "string"
                   },
@@ -3775,7 +3795,10 @@
                       "released_hold",
                       "expired",
                       "refused",
-                      "settle_failed"
+                      "settle_failed",
+                      "refunding",
+                      "refunded",
+                      "canceled"
                     ],
                     "type": "string"
                   },
@@ -4524,7 +4547,10 @@
                       "released_hold",
                       "expired",
                       "refused",
-                      "settle_failed"
+                      "settle_failed",
+                      "refunding",
+                      "refunded",
+                      "canceled"
                     ],
                     "type": "string"
                   },
@@ -4903,7 +4929,10 @@
                   "released_hold",
                   "expired",
                   "refused",
-                  "settle_failed"
+                  "settle_failed",
+                  "refunding",
+                  "refunded",
+                  "canceled"
                 ],
                 "title": "Status",
                 "type": "string"
@@ -5480,7 +5509,10 @@
                   "released_hold",
                   "expired",
                   "refused",
-                  "settle_failed"
+                  "settle_failed",
+                  "refunding",
+                  "refunded",
+                  "canceled"
                 ],
                 "title": "Status",
                 "type": "string"
@@ -6109,7 +6141,10 @@
                       "released_hold",
                       "expired",
                       "refused",
-                      "settle_failed"
+                      "settle_failed",
+                      "refunding",
+                      "refunded",
+                      "canceled"
                     ],
                     "type": "string"
                   },
@@ -7243,7 +7278,7 @@
               },
               "amount_micro": {
                 "default": 0,
-                "description": "What the received pages were charged, in micro-USD. 0 on the sandbox.",
+                "description": "What the received pages were charged, in micro-USD. 0 in test.",
                 "title": "Amount Micro",
                 "type": "integer"
               },
@@ -7485,7 +7520,7 @@
               },
               "amount_micro": {
                 "default": 0,
-                "description": "What the received pages were charged, in micro-USD. 0 on the sandbox.",
+                "description": "What the received pages were charged, in micro-USD. 0 in test.",
                 "title": "Amount Micro",
                 "type": "integer"
               },

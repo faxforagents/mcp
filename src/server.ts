@@ -181,7 +181,7 @@ function refusal(exc: ApiRefusal, renamed: Renamed = {}): Payload {
       `${String(d.max_document_pages)}. Use the prepaid wallet for it.`,
     not_cancelable: `The fax is already ${String(d.state)}; it cannot be canceled.`,
     rate_limited: `Rate limit reached. Retry in about ${exc.retryAfter ?? "a few"} seconds with the same idempotency_key.`,
-    sandbox_only: "Sandbox tools take a test key (ffa_test_...).",
+    sandbox_only: "This works with a test key only (ffa_test_...).",
   };
   return {
     text: Object.hasOwn(remedies, exc.code)
@@ -216,6 +216,22 @@ function notFoundRemedy(field: unknown): string {
 /** Integer micro-USD as a dollar figure for prose. The data keeps the integer (the hosted `dollars`). */
 const usd = (micro: unknown) => `$${(Number(micro) / 1_000_000).toFixed(2)}`;
 
+/** Integer micro-USD as the price of one fax with three decimals, so 39000 reads $0.039. It rounds half up
+ * in integers only (the hosted `fax_price`). */
+export function faxPrice(micro: number): string {
+  const units = Math.floor((Math.abs(Math.trunc(micro)) + 500) / 1000);
+  const whole = String(Math.floor(units / 1000)).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${micro < 0 ? "-" : ""}$${whole}.${String(units % 1000).padStart(3, "0")}`;
+}
+
+/** What a test quote would cost with a live key (`live_amount_micro`). Nothing for a live quote, whose
+ * amount is the live price, or when the server does not know it (the hosted `live_price_note`). */
+export function livePriceNote(quote: Json): string {
+  const live = quote.live_amount_micro;
+  if (quote.environment !== "test" || typeof live !== "number" || !Number.isInteger(live)) return "";
+  return ` Live, this fax would cost ${live} micro (${faxPrice(live)}).`;
+}
+
 /** The sentence a wallet refusal gains when the server says this exact send can be paid by card instead
  * (`details.one_time_offer`). Nothing without the offer (the hosted `card_pointer`). */
 function cardPointer(offer: unknown): string {
@@ -242,7 +258,7 @@ function callerId(value: unknown): string {
   return typeof value === "string" && /^\+?[0-9]{3,15}$/.test(value) ? value : "unknown";
 }
 
-/** What a sandbox job is, said before anything else about it: a test key sends nothing, whatever the
+/** What a test job is, said before anything else about it. Nothing is sent with a test key, whatever the
  * number and whatever state the simulator scripts (the hosted `simulated`). */
 function simulated(job: Json): string {
   return (
@@ -270,7 +286,15 @@ const ORDER_MESSAGES: Record<string, string> = {
   settle_failed:
     "the card settlement did not complete and an operator is looking at it. Do not ask for another " +
     "payment. Tell the person.",
+  // a person at Fax for Agents acted on the order from the console (API 1.21.0)
+  refunding: "the card was charged and a refund to it is on its way, not confirmed yet.",
+  refunded: "the card was charged and the whole charge was refunded to it.",
+  canceled: "canceled by Fax for Agents. Nothing was charged. The hold on the card was released.",
 };
+
+/** The statuses of an order that ended with the capture it asked for, refunded since or not (the hosted
+ * `capture_rule.ORDER_REACHED_CAPTURE`). */
+const ORDER_REACHED_CAPTURE = new Set(["captured", "refunding", "refunded"]);
 
 /** What a tool returns of an order under `one_time_send`. Not the job (returned beside it), not the bare
  * status token (the link carries it), and not the payer's address or the card (the hosted `ORDER_KEYS`). */
@@ -304,7 +328,10 @@ export function describeOrder(order: Json, job: Json | null): string {
   const status = String(order.status);
   let text = `Card payment order ${String(order.id)} (${usd(order.amount_micro ?? 0)}): `;
   text += ORDER_MESSAGES[status] ?? status;
-  if (status === "captured") text += ` Charged: ${usd(order.captured_micro ?? 0)}.`;
+  if (ORDER_REACHED_CAPTURE.has(status)) {
+    text += ` Charged: ${usd(order.captured_micro ?? 0)}.`;
+    if (Number(order.refunded_micro ?? 0) > 0) text += ` Refunded: ${usd(order.refunded_micro)}.`;
+  }
   if (order.failure_code && ["released_hold", "expired", "refused", "settle_failed"].includes(status))
     text += ` Reason: ${String(order.failure_code)}.`;
   if (order.status_url) text += payLinkNote(order);
@@ -366,8 +393,8 @@ function withAgentEvidence(obj: Json): Json {
   return { ...obj, evidence: agentEvidence(obj.evidence) };
 }
 
-/** Which of the three paths a quote is on: a human approval, a delegated policy that allows it, or the
- * sandbox (a test key with no policy). Never "test key" for a live quote (the hosted `describe_quote_path`). */
+/** Which of the three paths a quote is on. It is a human approval, a delegated policy that allows it, or
+ * test mode, a test key with no policy. Never "test key" for a live quote (the hosted `describe_quote_path`). */
 export function describeQuotePath(quote: Json): string {
   if (quote.authorization_required) {
     return "approval is required: a person must approve it (request_human_review with the quote_id) before it is sent";
@@ -383,23 +410,23 @@ export function describeQuotePath(quote: Json): string {
     return `allowed by policy ${String(name)} v${String(ev.version)}: send_approved_fax sends it as is`;
   }
   if (quote.environment === "test")
-    return "sandbox, not charged: a test key sends it as is";
+    return "free in test: a test API key sends it as is";
   return "no approval needed: send_approved_fax sends it as is";
 }
 
 /** Why a quote under no policy is sent as it is (the hosted `no_approval_reason`). */
 function noApprovalReason(quote: Json): string {
   if (quote.environment === "test")
-    return "sandbox: a test API key sends without an approval, and no policy was evaluated";
+    return "test mode: a test API key sends without an approval, and no policy was evaluated";
   return "no approval is needed for this credential, and no policy was evaluated";
 }
 
 /** The delegated policy's verdict for one quote, as quote_fax reports it under `policy`: the server's own
- * evaluation stored on the quote (the hosted `quote_policy`). A key under no policy that still needs a
- * person gets the engine's no-policy denial. A quote that no policy evaluated and that needs no approval
- * is one the send accepts as it is, a test key in the sandbox: its verdict is `allow` with the reason,
- * never `deny` beside `approval_required: false`. `policy_id` stays null, which is how a reader tells it
- * from a policy's allow. */
+ * evaluation stored on the quote (the hosted `quote_policy`). When no policy binds the key and a person is
+ * still needed, the verdict is the engine's no-policy denial. A quote that no policy evaluated and that
+ * needs no approval is sent as it is, as with a test key in test mode. Its verdict is `allow` with the
+ * reason, never `deny` beside `approval_required: false`. `policy_id` stays null, which is how a reader
+ * tells it from a policy's allow. */
 export function quotePolicy(quote: Json): Json {
   const stored =
     quote.policy_evaluation && typeof quote.policy_evaluation === "object"
@@ -482,7 +509,7 @@ export function describeJob(job: Json): string {
   if (state === "partial")
     msg += ` Pages sent: ${String(job.pages_sent)} of ${String(job.billable_pages)}.`;
   if (job.environment === "test")
-    return `Sandbox fax ${String(job.id)}: ${simulated(job)} Simulated outcome: ${msg}`;
+    return `Test fax ${String(job.id)}: ${simulated(job)} Simulated outcome: ${msg}`;
   return `Fax ${String(job.id)} to ${String(job.to)}: ${msg}`;
 }
 
@@ -682,7 +709,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
           ocr.page_micro !== null && ocr.page_micro !== undefined
             ? ` extract_fax_data costs ${String(ocr.page_micro)} micro a page, plus ` +
               `${String(ocr.escalated_page_micro)} for a page read again, up to ${String(ocr.max_pages)} pages` +
-              (caps.environment === "test" ? " (free in the sandbox)." : ".")
+              (caps.environment === "test" ? " (free in test)." : ".")
             : "";
         return {
           text:
@@ -835,7 +862,8 @@ export function createServer(opts: ServerOptions = {}): McpServer {
           text:
             `Quote ${String(q.id)}: ${String(q.billable_pages)} billable page(s) (${String(q.cover_pages)} cover) ` +
             `to ${String(q.to)} for ${String(q.amount_micro)} micro (${dollars(Number(q.amount_micro))}), ` +
-            `${String(q.quality ?? "fine")} resolution, expires ${String(q.expires_at)}; ${describeQuotePath(q)}.${denied}`,
+            `${String(q.quality ?? "fine")} resolution, expires ${String(q.expires_at)}; ${describeQuotePath(q)}.` +
+            `${livePriceNote(q)}${denied}`,
           data: { quote: q, policy },
           untrusted: [
             ...(cover ? ["quote.cover"] : []),
@@ -872,7 +900,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
             : "";
         const lead =
           job.environment === "test"
-            ? `Sandbox fax ${String(job.id)} queued${how}: ${simulated(job)}`
+            ? `Test fax ${String(job.id)} queued${how}: ${simulated(job)}`
             : `Fax ${String(job.id)} queued to ${String(job.to)}${how}`;
         return {
           text:
@@ -961,14 +989,14 @@ export function createServer(opts: ServerOptions = {}): McpServer {
     async () =>
       run(async (api) => {
         const b = await api.request("GET", "/v1/balance");
-        const sandbox =
+        const testNote =
           b.environment === "test"
-            ? " This is the sandbox wallet: test credit, nothing real is sent or charged."
+            ? " This is the test wallet: test credit, nothing real is sent or charged."
             : "";
         return {
           text:
             `${String(b.environment)} wallet: ${String(b.available_micro)} micro available ` +
-            `(${usd(b.available_micro)}), ${String(b.held_micro)} micro held.${sandbox}` +
+            `(${usd(b.available_micro)}), ${String(b.held_micro)} micro held.${testNote}` +
             " You cannot add funds." +
             topUpPointer(b.top_up_url),
           data: { balance: b },
@@ -1418,10 +1446,10 @@ function registerPrompts(server: McpServer): void {
 Do it in this order and stop when a step refuses.
 1. prepare_fax: turn the content into a document (text, markdown, html or a completed upload_id). Nothing is sent.
 2. quote_fax(document_id, to="${to}"): the exact price and the policy verdict: policy.decision (allow or deny, with the first failing rule) and policy.approval_required.
-3. If approval is required, call request_human_review(message, quote_id), then poll get_review_status(review_request_id) until it is approved and carries an approval_id. You cannot approve it yourself. When policy.decision is allow, the send goes as it is. A delegated policy allows it, or the API key is a test key in the sandbox.
+3. If approval is required, call request_human_review(message, quote_id), then poll get_review_status(review_request_id) until it is approved and carries an approval_id. You cannot approve it yourself. When policy.decision is allow, the send goes as it is. A delegated policy allows it, or the API key is a test key.
 4. send_approved_fax(quote_id, approval_id?) with one idempotency_key. The answer is queued, never delivered.
 5. get_fax_status(fax_id) until the state is delivered, partial, failed or unknown. Only delivered with evidence counts as delivered. On partial or unknown do not send again: tell the person and let a human reconcile.
-In the sandbox all of this is a simulation. Nothing reaches the number, and the answers say so. Tell the person the same. If the wallet does not cover a live send, the refusal carries the link where a person adds funds. It names request_card_payment when one fax can be paid by card.`,
+With a test API key, all of this is a simulation. Nothing reaches the number, and the answers say so. Tell the person the same. If the wallet does not cover a live send, the refusal carries the link where a person adds funds. It names request_card_payment when one fax can be paid by card.`,
           },
         },
       ],

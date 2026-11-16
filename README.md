@@ -51,10 +51,10 @@ guide resources work. Other tools with valid arguments answer `ok=false, error_c
 ### One paste
 
 Paste this line into your assistant. It reads the setup page and does the rest, signed in through the
-browser, in the free sandbox. No key to copy.
+browser, in test mode, which is free. No key to copy.
 
 ```
-Read https://faxforagents.com/setup.md and set up Fax for Agents for me. Start in Sandbox.
+Read https://faxforagents.com/setup.md and set up Fax for Agents for me. Start in Test.
 ```
 
 A coding agent can also run `curl -fsSL https://faxforagents.com/install | sh`, which registers the
@@ -225,6 +225,9 @@ send_approved_fax(quote_id)      -> fax_..., state queued
 get_fax_status(fax_id)           -> delivered with evidence, or partial, failed, unknown
 ```
 
+With a test key a quote is free, and `quote_fax` also says what the same fax would cost with a live key
+(`live_amount_micro`).
+
 A live send needs a human approval bound to that exact quote, or a delegated policy that allows it.
 The approval path is `request_human_review` with the `quote_id`, then a person decides, then
 `send_approved_fax` with the `approval_id`. The policy is written by the account owner outside any prompt. An agent's API key can
@@ -249,12 +252,15 @@ or a delegated policy has to allow the send. `get_card_payment_status` reads the
 `checkout`, `confirm`, `wait` or `done`, and once the fax was released the answer carries the fax and
 the carrier's evidence. The card is held at payment. A failed fax costs nothing, and a fax that stops
 part way costs the price of the pages the carrier reports as arrived. Live keys only, United States and Canada. The guide section `one_time` has the
-steps, and `going_live` says how to get from the sandbox to a real fax.
+steps, and `going_live` says how to get from test to a real fax.
+
+A person at Fax for Agents can refund an order or release the hold on its card. `get_card_payment_status`
+then says the order is `refunding`, `refunded` or `canceled`, and what was charged and refunded.
 
 ## Prices
 
 Price card launch-v3 is effective from 2026-11-12. $0.039 per page sent, $0.019 per page received.
-$2 per number per month, $19 per month for the Agent workspace. Sandbox pages cost 0.
+$2 per number per month, $19 per month for the Agent workspace. With a test key, every page costs 0.
 `get_fax_capabilities` returns the card in force. One fax by card has its own price: the order names
 it in `amount_micro`, and the [pricing page](https://faxforagents.com/pricing/) lists it.
 
@@ -283,7 +289,7 @@ A refusal from the REST API names the tool's argument, as the hosted server's do
 This holds in `details.field`, `details.fields`, the `loc` of a validation error and a message that starts with the field. `test/argument-names.mjs` checks it.
 Protocol errors, such as a non-object arguments container, remain JSON-RPC errors.
 Tests use hosted responses recorded on 2026-11-02 and a local fake REST API. They need no hosted credentials.
-The tool snapshot is the hosted server's `tools/list` of 2026-11-15 at API 1.20.10. Normal tests never contact the hosted server.
+The tool snapshot is the hosted server's `tools/list` of 2026-11-16 at API 1.21.0. Normal tests never contact the hosted server.
 `test/hosted-unknown-arguments.json` holds what the hosted source answers for 20 calls with unknown arguments. `test/validation.mjs` compares each one.
 The server does not start when a handler's inputs differ from the tool list. `test/inputs.mjs` calls every listed input over stdio. A wrong type has to be refused and the listed example accepted. An argument a tool does not list has to be refused by name.
 To import definitions before deployment, run the following with the product checkout's Python environment.
