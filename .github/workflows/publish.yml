@@ -73,15 +73,27 @@ jobs:
 
       - name: Publish to the MCP Registry
         run: |
+          PKG=$(node -p "require('./package.json').version")
           curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/').tar.gz" \
             | tar xz mcp-publisher
-          ./mcp-publisher login github-oidc
-          # The registry checks that npm already serves this version. Right after the npm step npm's read
-          # path can lag by a minute or two (0.4.2 and 0.4.3 both failed once on 2026-11-09 with "version
-          # was not found"), so try up to six times, a minute apart, before giving up.
+          # The registry checks that npm already serves this version, at the same URL as below. Right after the
+          # npm step npm's read path can lag by minutes (0.4.2 and 0.4.3 on 2026-11-09, 0.5.6 on 2026-11-15), so
+          # wait for npm first, up to 20 minutes.
+          URL="https://registry.npmjs.org/faxforagents-mcp/$PKG"
+          for n in $(seq 1 40); do
+            if curl -fsS -o /dev/null "$URL"; then echo "npm serves faxforagents-mcp@$PKG"; break; fi
+            if [ "$n" = 40 ]; then
+              echo "::error::npm did not serve faxforagents-mcp@$PKG within 20 minutes"
+              exit 1
+            fi
+            echo "npm does not serve faxforagents-mcp@$PKG yet ($n/40), waiting 30 s"
+            sleep 30
+          done
+          # The registry sign-in lasts about five minutes (0.5.6 hit "token is expired" on its sixth attempt), so
+          # sign in again right before each attempt. npm edges can still disagree for a short while, hence the retries.
           for attempt in 1 2 3 4 5 6; do
-            if ./mcp-publisher publish; then exit 0; fi
-            echo "registry publish attempt $attempt failed, waiting 60 s for npm to propagate"
+            if ./mcp-publisher login github-oidc && ./mcp-publisher publish; then exit 0; fi
+            echo "registry attempt $attempt failed, waiting 60 s"
             sleep 60
           done
           echo "::error::the MCP Registry refused the publish six times"
