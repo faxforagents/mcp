@@ -298,7 +298,7 @@ A refusal from the REST API names the tool's argument, as the hosted server's do
 This holds in `details.field`, `details.fields`, the `loc` of a validation error and a message that starts with the field. `test/argument-names.mjs` checks it.
 Protocol errors, such as a non-object arguments container, remain JSON-RPC errors.
 Tests use hosted responses recorded on 2026-11-02 and a local fake REST API. They need no hosted credentials.
-The tool snapshot is the hosted server's `tools/list` of 2026-11-16 at API 1.21.0. Normal tests never contact the hosted server.
+The tool snapshot is the hosted server's `tools/list` of 2026-11-18 at API 1.21.12. Normal tests never contact the hosted server.
 `test/hosted-unknown-arguments.json` holds what the hosted source answers for 20 calls with unknown arguments. `test/validation.mjs` compares each one.
 The server does not start when a handler's inputs differ from the tool list. `test/inputs.mjs` calls every listed input over stdio. A wrong type has to be refused and the listed example accepted. An argument a tool does not list has to be refused by name.
 To import definitions before deployment, run the following with the product checkout's Python environment.
@@ -309,6 +309,18 @@ python -B scripts/import-hosted.py /path/to/product-checkout
 
 This copies tool definitions, output schemas, the snapshot, plugin tools and guide without writing to the product checkout.
 The guide keeps this package's version and `FAXFORAGENTS_API_KEY` environment name.
+
+### Releasing
+
+1. Set the new version in `package.json` and its lock, `server.json`, `manifest.json`, `lhm.plugin.json`,
+   `.claude-plugin/plugin.json`, the tool-store manifest and `src/version.ts`, and add a `CHANGELOG.md` entry.
+2. Merge, tag `vX.Y.Z` on `main` and publish a GitHub release for the tag. `publish.yml` then publishes to npm
+   and the MCP Registry. It refuses a tag that differs from `package.json` or `server.json`.
+3. Refresh the LobeHub listing from the repository root. No workflow does this step.
+
+```bash
+npx -y @lobehub/market-cli plugin update     # reads lhm.plugin.json; the owner signs in once with `lhm login`
+```
 
 ## Licence
 
