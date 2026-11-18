@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.9 (2026-11-18)
 
 The server drops the trailing slashes of the API base URL and of the dashboard URL with a scan instead of the regex `/\/+$/`.
 The regex took quadratic time when a long run of slashes did not end the URL: 24 s for 100,000 slashes on Node 22.
