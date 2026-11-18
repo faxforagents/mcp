@@ -10,6 +10,14 @@ import { VERSION } from './version.js';
 
 export const DEFAULT_BASE_URL = 'https://api.faxforagents.com';
 
+/** The URL without its trailing slashes. A scan, not `/\/+$/`: that regex took 16 s on 100,000 slashes followed
+ * by another character, as it retries from every slash (CodeQL js/polynomial-redos, 2026-11-18). */
+export function trimTrailingSlashes(url: string): string {
+  let end = url.length;
+  while (end > 0 && url.charCodeAt(end - 1) === 47) end -= 1;
+  return url.slice(0, end);
+}
+
 export class ApiRefusal extends Error {
   constructor(
     readonly status: number,
