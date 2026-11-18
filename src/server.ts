@@ -1,6 +1,7 @@
 /**
  * Local implementations of the hosted server's tools over the REST API.
  * Tool argument validation returns the hosted invalid_input envelope before dispatch.
+ * Every tool's data is cut to its output schema before the result is built (output-shape.ts).
  * Output schemas are checked without rebuilding the tool response.
  * Guide resources and prompts work without credentials.
  */
@@ -23,6 +24,7 @@ import {
 } from "./api.js";
 import { GUIDE_TEXT, SECTIONS, section } from "./guide.js";
 import { outputSchema } from "./output-schema.js";
+import { shapeAs, shapeData, shapeDetails } from "./output-shape.js";
 import { VERSION } from "./version.js";
 import { toolDispatch } from "./tool-dispatch.js";
 
@@ -52,6 +54,12 @@ interface Payload {
   details?: unknown;
   untrusted?: string[];
   isError?: boolean;
+}
+
+/** The result of one tool: its data cut to the tool's output schema and its details to `DETAIL_KEYS`, then
+ * built. The text block carries the same cut data. */
+export function answer(tool: string, p: Payload): ToolResult {
+  return result({ ...p, data: shapeData(tool, p.data), details: shapeDetails(p.details) });
 }
 
 export function result(p: Payload): ToolResult {
@@ -125,7 +133,8 @@ export function argumentMessage(message: string, details: unknown, renamed: Rena
 }
 
 function refusal(exc: ApiRefusal, renamed: Renamed = {}): Payload {
-  const details = argumentDetails(exc.details, renamed);
+  // the remedies read the details a client gets, cut to the hosted DETAIL_KEYS
+  const details = shapeDetails(argumentDetails(exc.details, renamed));
   const d = (details && typeof details === "object" ? details : {}) as Json;
   const policy =
     d.policy && typeof d.policy === "object" ? (d.policy as Json) : null;
@@ -296,19 +305,13 @@ const ORDER_MESSAGES: Record<string, string> = {
  * `capture_rule.ORDER_REACHED_CAPTURE`). */
 const ORDER_REACHED_CAPTURE = new Set(["captured", "refunding", "refunded"]);
 
-/** What a tool returns of an order under `one_time_send`. Not the job (returned beside it), not the bare
- * status token (the link carries it), and not the payer's address or the card (the hosted `ORDER_KEYS`). */
-const ORDER_KEYS = [
-  "id", "status", "next", "environment", "source", "email_verified", "aup_accepted", "sender_name", "to",
-  "route", "cover", "document_pages", "document_sha256", "document_id", "delete_after_send",
-  "document_deleted", "price", "amount_micro", "captured_micro", "refunded_micro", "checkout_expires_at",
-  "authorized_at", "confirm_deadline_at", "capture_deadline_at", "released_at", "settled_at", "quote_id",
-  "fax_job_id", "failure_code", "created_at", "updated_at",
-] as const;
+/** What a tool returns of an order under `one_time_send` is the output model `CardPaymentOrder` (the
+ * hosted `order_only`). The job comes beside it, cut as every job is. The bare status token stays out,
+ * since the link carries it. So do the payer's address and the card's brand and last four. */
 const ORDER_UNTRUSTED = ["one_time_send.sender_name", "one_time_send.cover"];
 
 function orderOnly(order: Json): Json {
-  return Object.fromEntries(ORDER_KEYS.map((k) => [k, order[k] ?? null]));
+  return shapeAs("CardPaymentOrder", order);
 }
 
 /** What the person does at `status_url`, by where the order stands (the hosted `pay_link_note`). */
@@ -335,7 +338,7 @@ export function describeOrder(order: Json, job: Json | null): string {
   if (order.failure_code && ["released_hold", "expired", "refused", "settle_failed"].includes(status))
     text += ` Reason: ${String(order.failure_code)}.`;
   if (order.status_url) text += payLinkNote(order);
-  if (job) text += " " + describeJob(job) + describeEvidence(job);
+  if (job) text += " " + describeJob(job);
   return text;
 }
 
@@ -347,15 +350,14 @@ function jobPaths(job: Json, reference = true): string[] {
   ];
 }
 
-/** The carrier's side of a job and its attempts: the evidence, string by string, and the error text a
- * provider or the system wrote on a failed attempt (the hosted `attempt_paths`). */
+/** The carrier's side of a job and its attempts, as cut for the agent: the evidence, string by string.
+ * The hosted `attempt_paths`. */
 function attemptPaths(job: Json, attempts: Json[]): string[] {
   const out = [...evidencePaths("fax.evidence", job.evidence)];
   for (const a of attempts) {
     for (const p of evidencePaths("attempts[].evidence", a.evidence))
       if (!out.includes(p)) out.push(p);
   }
-  if (attempts.some((a) => a.error)) out.push("attempts[].error");
   return out;
 }
 
@@ -375,22 +377,28 @@ const STATE_MESSAGES: Record<string, string> = {
     "human reconciles.",
 };
 
-/** Keys of a provider evidence object that are the carrier's raw payload (the signed webhook body and its
- * headers): they stay on the REST receipt and never reach an agent's context (the hosted server's
- * `agent_evidence`). */
-const RAW_EVIDENCE_KEYS = new Set(["body", "headers"]);
+/** Where a person signs in to the dashboard (the hosted `APP_URL`). A fax that ended links its receipt
+ * there. */
+export const APP_URL = "https://app.faxforagents.com";
 
-function agentEvidence(evidence: unknown): unknown {
-  if (!evidence || typeof evidence !== "object" || Array.isArray(evidence))
-    return evidence;
-  return Object.fromEntries(
-    Object.entries(evidence as Json).filter(([k]) => !RAW_EVIDENCE_KEYS.has(k)),
-  );
+/** The states after which a fax has a receipt in the dashboard (the hosted `ENDED`). */
+const ENDED = new Set(["delivered", "partial", "failed", "unknown"]);
+
+/** A fax job as an agent sees it, the output model `FaxJob` (the hosted `fax_out`). The evidence comes
+ * without the carrier's raw payload, call ids or signature material. A one-time order's card and payer
+ * stay out. Once the fax ended, `receipt_url` is the dashboard page of its receipt. */
+export function faxOut(job: Json, appUrl: string = APP_URL): Json {
+  const shaped = shapeAs("FaxJob", job);
+  if (ENDED.has(String(job.state)) && job.id)
+    shaped.receipt_url = `${appUrl.replace(/\/+$/, "")}/app/faxes/${String(job.id)}#receipt`;
+  return shaped;
 }
 
-function withAgentEvidence(obj: Json): Json {
-  if (obj.evidence === null || obj.evidence === undefined) return obj;
-  return { ...obj, evidence: agentEvidence(obj.evidence) };
+/** One delivery attempt as an agent sees it, the output model `Attempt`: its number, status, pages, reason
+ * and evidence. The row id, the carrier's call id, the raw error text and the timings stay on REST (the
+ * hosted `attempt_out`). */
+function attemptOut(attempt: Json): Json {
+  return shapeAs("Attempt", attempt);
 }
 
 /** Which of the three paths a quote is on. It is a human approval, a delegated policy that allows it, or
@@ -446,11 +454,25 @@ export function quotePolicy(quote: Json): Json {
     rule: ev.rule ?? null,
     reason: ev.reason ?? null,
     policy_id: ev.policy_id ?? null,
-    policy_version_id: ev.policy_version_id ?? null,
     policy_name: ev.policy_name ?? null,
     version: ev.version ?? null,
     managed: ev.managed ?? null,
     approval_required: Boolean(quote.authorization_required),
+  };
+}
+
+/** The REST approval request as request_human_review and get_review_status return it (the hosted
+ * `review_request`). fax_job_id is lifted from `bound`, so a help request names its fax.
+ * `decided_by_person` replaces the decider. It is true for a person (`user:`) and false for an API
+ * key, and never says who. */
+function reviewRequest(req: Json): Json {
+  const bound =
+    req.bound && typeof req.bound === "object" && !Array.isArray(req.bound) ? (req.bound as Json) : {};
+  const decider = req.decided_by;
+  return {
+    ...req,
+    fax_job_id: bound.fax_job_id ?? null,
+    decided_by_person: decider ? String(decider).startsWith("user:") : null,
   };
 }
 
@@ -508,21 +530,25 @@ export function describeJob(job: Json): string {
     msg += ` Reason: ${String(job.failure_code)}.`;
   if (state === "partial")
     msg += ` Pages sent: ${String(job.pages_sent)} of ${String(job.billable_pages)}.`;
+  if ((state === "delivered" || state === "partial") && job.evidence)
+    msg += ` ${describeEvidence(job)}`;
   if (job.environment === "test")
     return `Test fax ${String(job.id)}: ${simulated(job)} Simulated outcome: ${msg}`;
   return `Fax ${String(job.id)} to ${String(job.to)}: ${msg}`;
 }
 
-/** The sentence about the carrier's evidence that get_fax_status appends once a fax is delivered or
- * partial: counts and the provider reference only, never the carrier's free text. */
+/** One sentence about the carrier's evidence once a fax is delivered or partial: the counts and who
+ * reported them. Never a string the carrier wrote (station id, status text), which stays in the data under
+ * untrusted, and never the carrier's call id (the hosted `describe_evidence`). */
 export function describeEvidence(job: Json): string {
-  if (!job.evidence || typeof job.evidence !== "object") return "";
-  const ref = job.provider_ref
-    ? `, provider reference ${String(job.provider_ref)}`
-    : "";
+  const evidence =
+    job.evidence && typeof job.evidence === "object" && !Array.isArray(job.evidence)
+      ? (job.evidence as Json)
+      : null;
+  const by = evidence?.provider ? ` reported by ${String(evidence.provider)}` : " reported by the carrier";
   return (
-    ` Evidence from ${String(job.provider)}: ${String(job.pages_sent)} of ${String(job.billable_pages)} page(s)` +
-    `${ref}. It is what the carrier reported, not legal proof the recipient accepted it.`
+    `Evidence: ${String(job.pages_sent)} of ${String(job.billable_pages)} page(s)${by}. ` +
+    "It is what the carrier reported, not legal proof the recipient accepted it."
   );
 }
 
@@ -612,11 +638,15 @@ export interface ServerOptions {
   apiKey?: string;
   baseUrl?: string;
   fetch?: typeof fetch;
+  /** The dashboard a fax's receipt_url points into. The package has no setting for it: the default is
+   * the one dashboard there is. */
+  appUrl?: string;
 }
 
 export function createServer(opts: ServerOptions = {}): McpServer {
   const key = (opts.apiKey ?? "").trim();
   const baseUrl = (opts.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
+  const appUrl = opts.appUrl ?? APP_URL;
   const server = new McpServer(
     {
       name: "faxforagents",
@@ -635,9 +665,11 @@ export function createServer(opts: ServerOptions = {}): McpServer {
   registerGuideResources(server);
   registerPrompts(server);
 
-  /** `renamed` is the tool's row of `REST_FIELDS`: a refusal names the tool's arguments, not the REST
-   * fields they were sent as. */
+  /** `tool` names the output schema the data is cut to (`shapeData`), whatever the body put there.
+   * So nothing the REST API adds reaches the client. `renamed` is the tool's row of `REST_FIELDS`: a
+   * refusal names the tool's arguments, not the REST fields they were sent as. */
   const run = async (
+    tool: string,
     body: (api: Api) => Promise<Payload>,
     renamed: Renamed = {},
   ): Promise<ToolResult> => {
@@ -650,7 +682,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       });
     const api = new Api(baseUrl, key, opts.fetch);
     try {
-      return result(await body(api));
+      return answer(tool, await body(api));
     } catch (err) {
       if (err instanceof ApiRefusal) return result(refusal(err, renamed));
       if (err instanceof ApiUnreachable) {
@@ -680,9 +712,9 @@ export function createServer(opts: ServerOptions = {}): McpServer {
             errorCode: "invalid_input",
           });
         }
-        return result({ text, data: { section: name } });
+        return answer("get_guide", { text, data: { section: name } });
       }
-      return result({
+      return answer("get_guide", {
         text: GUIDE_TEXT,
         data: { sections: Object.keys(SECTIONS) },
       });
@@ -696,7 +728,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       inputSchema: {},
     },
     async () =>
-      run(async (api) => {
+      run("get_fax_capabilities", async (api) => {
         const caps = await api.request("GET", "/v1/capabilities");
         const me = await api.request("GET", "/v1/me");
         const routes = (caps.routes as string[]).join(", ");
@@ -711,9 +743,10 @@ export function createServer(opts: ServerOptions = {}): McpServer {
               `${String(ocr.escalated_page_micro)} for a page read again, up to ${String(ocr.max_pages)} pages` +
               (caps.environment === "test" ? " (free in test)." : ".")
             : "";
+        const environment = String(caps.environment);
         return {
           text:
-            `${String(caps.provider)} provider, ${String(caps.environment)} environment, routes ${routes}, ` +
+            `${environment.charAt(0).toUpperCase()}${environment.slice(1).toLowerCase()} environment, routes ${routes}, ` +
             `up to ${String(caps.max_pages)} pages. This key's scopes (me.scopes): ${scopes}. ` +
             `capabilities.scopes lists every scope that exists, not this key's.${extraction}`,
           data: { capabilities: caps, me },
@@ -735,7 +768,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       },
     },
     async ({ text, markdown, html, upload_id, filename, idempotency_key }) =>
-      run(async (api) => {
+      run("prepare_fax", async (api) => {
         const given = Object.fromEntries(
           Object.entries({ text, markdown, html, upload_id }).filter(
             ([, v]) => v,
@@ -769,7 +802,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       inputSchema: { document_id: z.string() },
     },
     async ({ document_id }) =>
-      run(async (api) => {
+      run("get_fax_document", async (api) => {
         const doc = await api.request("GET", `/v1/documents/${document_id}`);
         const pages = await api.request(
           "GET",
@@ -780,7 +813,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
             unknown[] | undefined) ?? [];
         return {
           text:
-            `Document ${String(doc.id)} (${String(doc.source)}, created ${String(doc.created_at)}): ` +
+            `Document ${String(doc.id)} (${String(doc.source)}): ` +
             `${String(doc.page_count)} page(s), sha256 ${String(doc.sha256).slice(0, 12)}..., ${warnings.length} ` +
             `warning(s), previews ${String(pages.render_status)}` +
             (pages.render_reason ? ` (${String(pages.render_reason)})` : "") +
@@ -831,7 +864,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       sender_name,
       delete_after_send,
     }) =>
-      run(async (api) => {
+      run("quote_fax", async (api) => {
         // The API client leaves a null or omitted field out of the body, so the API applies its own default.
         // from_number is the API's from field: a sender number the organization owns.
         const body: Json = {
@@ -885,7 +918,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       },
     },
     async ({ quote_id, approval_id, idempotency_key, client_reference }) =>
-      run(async (api) => {
+      run("send_approved_fax", async (api) => {
         const idem = idempotency_key || `mcp:${quote_id}`;
         const payload: Json = { quote_id, client_reference };
         if (approval_id) payload.approval_id = approval_id;
@@ -896,7 +929,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
         const how = job.approval_id
           ? ` under approval ${String(job.approval_id)}`
           : job.policy_version_id
-            ? ` under policy version ${String(job.policy_version_id)}`
+            ? " under your delegated policy"
             : "";
         const lead =
           job.environment === "test"
@@ -906,7 +939,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
           text:
             `${lead} (${String(job.billable_pages)} page(s), ` +
             `${String(job.amount_micro)} micro held). Not delivered yet: poll get_fax_status.`,
-          data: { fax: job, idempotency_key: idem },
+          data: { fax: faxOut(job, appUrl), idempotency_key: idem },
           untrusted: jobPaths(job, Boolean(client_reference)),
         };
       }),
@@ -919,22 +952,23 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       inputSchema: { fax_id: z.string() },
     },
     async ({ fax_id }) =>
-      run(async (api) => {
-        const job = withAgentEvidence(
+      run("get_fax_status", async (api) => {
+        const job = faxOut(
           await api.request("GET", `/v1/faxes/${fax_id}`),
+          appUrl,
         );
         const attempts = await api.request(
           "GET",
           `/v1/faxes/${fax_id}/attempts`,
         );
         const items = ((attempts.items as Json[] | undefined) ?? []).map(
-          withAgentEvidence,
+          attemptOut,
         );
         // the evidence is what the carrier reported (station ids, numbers, status text): data, and every
         // string in it is named so a client can mask each one
         const untrusted = [...jobPaths(job), ...attemptPaths(job, items)];
         return {
-          text: describeJob(job) + describeEvidence(job),
+          text: describeJob(job),
           data: { fax: job, attempts: items },
           untrusted,
         };
@@ -954,7 +988,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       },
     },
     async ({ state, limit, cursor, idempotency_key }) =>
-      run(async (api) => {
+      run("list_faxes", async (api) => {
         // The API finds the job a send created under that key.
         const page = await api.request("GET", "/v1/faxes", {
           params: {
@@ -964,7 +998,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
             idempotency_key,
           },
         });
-        const items = ((page.items as Json[]) ?? []).map(withAgentEvidence);
+        const items = ((page.items as Json[]) ?? []).map((j) => faxOut(j, appUrl));
         const head =
           `${items.length} fax(es)` +
           (page.next_cursor ? " (more: pass next_cursor as cursor)" : "");
@@ -987,7 +1021,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       inputSchema: {},
     },
     async () =>
-      run(async (api) => {
+      run("get_fax_balance", async (api) => {
         const b = await api.request("GET", "/v1/balance");
         const testNote =
           b.environment === "test"
@@ -1011,7 +1045,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       inputSchema: { fax_id: z.string() },
     },
     async ({ fax_id }) =>
-      run(async (api) => {
+      run("cancel_fax", async (api) => {
         const job = await api.request("POST", `/v1/faxes/${fax_id}/cancel`, {
           json: {},
         });
@@ -1019,7 +1053,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
           job.state === "failed" && job.failure_code === "canceled"
             ? `Fax ${String(job.id)} canceled before sending; the hold was released.`
             : `Cancel requested for fax ${String(job.id)} (state ${String(job.state)}); pages already sent cannot be recalled.`;
-        return { text, data: { fax: job }, untrusted: jobPaths(job) };
+        return { text, data: { fax: faxOut(job, appUrl) }, untrusted: jobPaths(job) };
       }),
   );
 
@@ -1037,7 +1071,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       },
     },
     async ({ quote_id, cover_from_name, approval_id, email, delete_after_send, idempotency_key }) =>
-      run(async (api) => {
+      run("request_card_payment", async (api) => {
         const idem = idempotency_key || `mcp:card:${quote_id}`;
         // no accept_aup: the person who pays accepts the policy on the order's page, never the agent
         const payload: Json = { quote_id, sender_name: cover_from_name };
@@ -1075,17 +1109,17 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       inputSchema: { order_id: z.string() },
     },
     async ({ order_id }) =>
-      run(async (api) => {
+      run("get_card_payment_status", async (api) => {
         const order = await api.request("GET", `/v1/one-time-sends/${order_id}`);
         const untrusted = [...ORDER_UNTRUSTED];
         const job =
           order.fax && typeof order.fax === "object" && !Array.isArray(order.fax)
-            ? withAgentEvidence(order.fax as Json)
+            ? faxOut(order.fax as Json, appUrl)
             : null;
         let items: Json[] = [];
         if (job) {
           const attempts = await api.request("GET", `/v1/faxes/${String(job.id)}/attempts`);
-          items = ((attempts.items as Json[] | undefined) ?? []).map(withAgentEvidence);
+          items = ((attempts.items as Json[] | undefined) ?? []).map(attemptOut);
           untrusted.push(...jobPaths(job), ...attemptPaths(job, items));
         }
         // the link only while a person still has something to do there
@@ -1111,7 +1145,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       },
     },
     async ({ message, quote_id, fax_id, idempotency_key }) =>
-      run(async (api) => {
+      run("request_human_review", async (api) => {
         const note = message.slice(0, 2000);
         if (quote_id) {
           if (fax_id) {
@@ -1135,7 +1169,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
               (req.notified === false
                 ? " No mail went out this time (the same ask is already pending, or the daily mail cap is reached); it is in the dashboard."
                 : ""),
-            data: { review_request: req },
+            data: { review_request: reviewRequest(req) },
             untrusted: ["review_request.message"],
           };
         }
@@ -1156,7 +1190,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
             : "a person was asked";
         return {
           text: `Help request ${String(req.id)} is open; ${asked}. It grants nothing by itself.`,
-          data: { review_request: req },
+          data: { review_request: reviewRequest(req) },
           untrusted: ["review_request.message"],
         };
       }, REST_FIELDS.request_human_review),
@@ -1169,7 +1203,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       inputSchema: { review_request_id: z.string() },
     },
     async ({ review_request_id }) =>
-      run(async (api) => {
+      run("get_review_status", async (api) => {
         const req = await api.request(
           "GET",
           `/v1/approval-requests/${review_request_id}`,
@@ -1180,7 +1214,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
           .map((k) => `review_request.${k}`);
         return {
           text,
-          data: { review_request: req, approval_id: approvalId },
+          data: { review_request: reviewRequest(req), approval_id: approvalId },
           untrusted,
         };
       }),
@@ -1193,7 +1227,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       inputSchema: { limit: z.number().int().default(20), cursor: opt() },
     },
     async ({ limit, cursor }) =>
-      run(async (api) => {
+      run("list_inbox", async (api) => {
         const page = await api.request("GET", "/v1/inbox", {
           params: { limit: Math.max(1, Math.min(limit ?? 20, 100)), cursor },
         });
@@ -1215,7 +1249,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       inputSchema: { inbox_id: z.string() },
     },
     async ({ inbox_id }) =>
-      run(async (api) => {
+      run("read_inbound_fax", async (api) => {
         const item = await api.request("GET", `/v1/inbox/${inbox_id}`);
         const hasText = item.text !== null && item.text !== undefined;
         // M13: the latest extraction, so the caller knows whether to wait, read or ask for one.
@@ -1271,7 +1305,7 @@ export function createServer(opts: ServerOptions = {}): McpServer {
       },
     },
     async ({ inbox_item_id, document_id, schema, strong_model_if_below }) =>
-      run(async (api) => {
+      run("extract_fax_data", async (api) => {
         if (Boolean(inbox_item_id) === Boolean(document_id)) {
           return {
             text: "Pass exactly one of inbox_item_id or document_id.",

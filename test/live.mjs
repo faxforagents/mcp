@@ -42,7 +42,9 @@ await send('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clie
 child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
 
 const caps = await call('get_fax_capabilities', {});
-if (caps.ok !== true || caps.capabilities.provider !== 'sandbox') fail('capabilities');
+// Since 0.5.8 the answer names the environment, not the provider, and me carries no account or key id.
+if (caps.ok !== true || caps.capabilities.environment !== 'test' || 'provider' in caps.capabilities) fail('capabilities');
+if (Object.keys(caps.me).sort().join() !== 'environment,scopes') fail(`me: ${Object.keys(caps.me).join(', ')}`);
 const prep = await call('prepare_fax', { text: 'Live test from faxforagents-mcp.', filename: 'mcp-live' });
 if (prep.ok !== true) fail('prepare_fax');
 const quote = await call('quote_fax', { document_id: prep.document.id, to: '+15550000001' });
@@ -60,6 +62,7 @@ for (let i = 0; i < 60; i++) {
 }
 if (status.fax.state !== 'delivered' || !status.fax.evidence) fail(`final state ${status.fax.state}, evidence ${JSON.stringify(status.fax.evidence)}`);
 if (!status.untrusted?.includes('fax.evidence') || !/not legal proof/.test(status.message)) fail('get_fax_status does not present the evidence as the carrier\'s report');
+if (status.fax.receipt_url !== `https://app.faxforagents.com/app/faxes/${sent.fax.id}#receipt` || 'provider_ref' in status.fax) fail(`receipt_url ${status.fax.receipt_url}`);
 const bal = await call('get_fax_balance', {});
 if (bal.ok !== true) fail('get_fax_balance');
 const list = await call('list_faxes', { limit: 1 });

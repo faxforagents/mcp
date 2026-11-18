@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.5.8 (2026-11-18)
+
+The stdio server follows the hosted server at API 1.21.12. Every tool returns only the fields its output schema declares, as the hosted server does since 1.21.11.
+
+Each tool's data is cut to its output schema at every level before the result is built. The text block carries the same cut data.
+`me` keeps the environment and the scopes. The ids of the organization, project and API key, the key's prefix and the actor are gone.
+A fax and its attempts leave out the carrier's call id, its raw report, the raw error text, the row ids and the timings.
+A fax no longer carries the card or the payer of a one-time order. The policy verdict of `quote_fax` leaves out the policy version id.
+A review request no longer says who asked or who decided. `decided_by_person` says whether a person or an API key decided, never who.
+A card payment order leaves out its source and its bookkeeping times.
+A refusal keeps the `details` keys that say what to fix, the hosted `DETAIL_KEYS`. A validation error keeps `loc` and `msg`.
+The privacy policy lists what each tool returns, at <https://faxforagents.com/privacy/#mcp-server>.
+
+A fax that ended carries `receipt_url`, the page of its receipt in the dashboard at <https://app.faxforagents.com>.
+A help request names its fax at `review_request.fax_job_id`.
+
+The prose follows the hosted words. `get_fax_capabilities` names the environment, not the provider. `get_fax_document` leaves out when the document was made.
+The evidence sentence names the pages and who reported them, without the call id. It is part of the fax's state, as on the hosted server.
+A send under a delegated policy says "under your delegated policy", where it named the policy version's id.
+
+`request_card_payment` is marked destructive. Once a person pays, the fax goes out and cannot be taken back, so a client asks its person first.
+The description of `get_fax_capabilities` says it returns the credential's environment and scopes, where it said account identity.
+
+The output schemas follow the hosted ones, and every object in them forbids other keys.
+The schema converter reads maps of objects, such as the routes of the price card, and holds every entry to its schema.
+The guide's `send` section says what the evidence holds and names `fax.receipt_url`.
+
+`test/output-allowlist.mjs` holds a copy of the hosted allow-list. It feeds every tool REST answers with internal keys and a canary at every level.
+It fails on any path that is not on the list, and on a listed path no call reached. Against 0.5.7 it fails.
+There, five tools return paths that are not on the list, and eleven answer with an output schema error.
+`test/output-schema.mjs` checks the converter on maps of objects.
+
+The tool list was taken from the hosted server's `tools/list` on 2026-11-18, when it reported version 1.21.12.
+The list equals the definitions `scripts/import-hosted.py` imported from the product source at v1.21.12.
+
 ## 0.5.7 (2026-11-16)
 
 The stdio server follows the hosted server at API 1.21.0. Tool names, inputs, descriptions and annotations did not change.

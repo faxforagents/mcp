@@ -1,11 +1,12 @@
 /**
- * The output schema of every tool, mirrored from the hosted server (fax-for-agents
- * `scripts/export-mcp-output-schemas.py` writes `output-schemas.json`; copied here, never imported across
- * repos). The SDK wants zod, so the small JSON Schema subset pydantic emits for those models is turned
- * into zod here: objects with properties and required, `$defs` references, anyOf-with-null (nullable),
- * arrays, strings, numbers, integers, booleans, enums, consts and free-form objects. Anything else
- * throws at registration, so a schema the converter does not understand fails `npm test`, never a
- * client at call time.
+ * The output schema of every tool, mirrored from the hosted server. In fax-for-agents,
+ * `scripts/export-mcp-output-schemas.py` writes `output-schemas.json`. It is copied here, never imported
+ * across repos. The SDK wants zod, so the small JSON Schema subset pydantic emits is turned into zod here.
+ * That subset is objects with properties and required, `$defs` references and anyOf-with-null (nullable).
+ * It also has maps: an object whose additionalProperties is a schema, such as the routes of the price card.
+ * Then arrays, strings, numbers, integers, booleans, enums, consts and free-form objects.
+ * Anything else throws at registration. So a schema the converter does not understand fails `npm test`,
+ * never a client at call time.
  */
 
 import { z } from 'zod';
@@ -16,7 +17,7 @@ type JsonSchema = Record<string, unknown>;
 
 const DEFS = '$defs';
 
-function resolve(node: JsonSchema, root: JsonSchema): JsonSchema {
+export function resolve(node: JsonSchema, root: JsonSchema): JsonSchema {
   const ref = node.$ref;
   if (typeof ref !== 'string') return node;
   const m = /^#\/\$defs\/(.+)$/.exec(ref);
@@ -70,7 +71,11 @@ export function toZod(schema: JsonSchema, root: JsonSchema = schema): z.ZodTypeA
       return z.array(node.items ? toZod(node.items as JsonSchema, root) : z.unknown());
     case 'object': {
       const props = (node.properties as Record<string, JsonSchema> | undefined) ?? {};
-      if (Object.keys(props).length === 0) return z.record(z.string(), z.unknown());
+      const extra = node.additionalProperties;
+      // pydantic writes dict[str, Model] as an object whose additionalProperties is the entry's schema
+      const entry =
+        extra && typeof extra === 'object' && !Array.isArray(extra) ? toZod(extra as JsonSchema, root) : null;
+      if (Object.keys(props).length === 0) return z.record(z.string(), entry ?? z.unknown());
       const required = new Set((node.required as string[] | undefined) ?? []);
       const shape: Record<string, z.ZodTypeAny> = {};
       for (const [name, prop] of Object.entries(props)) {
@@ -78,7 +83,8 @@ export function toZod(schema: JsonSchema, root: JsonSchema = schema): z.ZodTypeA
         shape[name] = required.has(name) ? field : field.optional();
       }
       const obj = z.object(shape);
-      return node.additionalProperties === false ? obj.strict() : obj.passthrough();
+      if (entry) return obj.catchall(entry);
+      return extra === false ? obj.strict() : obj.passthrough();
     }
     case undefined:
       return z.unknown();
