@@ -46,7 +46,7 @@
     "pack:mcpb": "npm run build:mcpb && npx @anthropic-ai/mcpb pack . faxforagents-mcp.mcpb",
     "pack:tool-store": "node scripts/pack-tool-store.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "node test/inputs.mjs && node test/protocol.mjs && node test/tools-output.mjs && node test/parity.mjs && node test/validation.mjs && node test/argument-names.mjs && node test/output-schema.mjs && node test/output-allowlist.mjs",
+    "test": "node test/inputs.mjs && node test/protocol.mjs && node test/tools-output.mjs && node test/parity.mjs && node test/validation.mjs && node test/argument-names.mjs && node test/output-schema.mjs && node test/output-allowlist.mjs && node test/base-url.mjs",
     "test:live": "node test/live.mjs",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build"

@@ -21,6 +21,7 @@ import {
   ApiUnreachable,
   DEFAULT_BASE_URL,
   type Json,
+  trimTrailingSlashes,
 } from "./api.js";
 import { GUIDE_TEXT, SECTIONS, section } from "./guide.js";
 import { outputSchema } from "./output-schema.js";
@@ -390,7 +391,7 @@ const ENDED = new Set(["delivered", "partial", "failed", "unknown"]);
 export function faxOut(job: Json, appUrl: string = APP_URL): Json {
   const shaped = shapeAs("FaxJob", job);
   if (ENDED.has(String(job.state)) && job.id)
-    shaped.receipt_url = `${appUrl.replace(/\/+$/, "")}/app/faxes/${String(job.id)}#receipt`;
+    shaped.receipt_url = `${trimTrailingSlashes(appUrl)}/app/faxes/${String(job.id)}#receipt`;
   return shaped;
 }
 
@@ -645,7 +646,7 @@ export interface ServerOptions {
 
 export function createServer(opts: ServerOptions = {}): McpServer {
   const key = (opts.apiKey ?? "").trim();
-  const baseUrl = (opts.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
+  const baseUrl = trimTrailingSlashes(opts.baseUrl ?? DEFAULT_BASE_URL);
   const appUrl = opts.appUrl ?? APP_URL;
   const server = new McpServer(
     {

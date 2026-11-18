@@ -579,6 +579,10 @@ const [rejected] = await session('ffa_test_wrong', [['get_fax_balance', {}]]);
 const rj = sc(rejected, 'rejected');
 if (rj.error_code !== 'invalid_token' || rejected.isError !== true) fail('invalid_token is a hard refusal');
 
+// A base URL that ends in slashes reaches the same routes: the slashes are trimmed, not sent as //v1/balance.
+const [slashes] = await session('ffa_test_ok', [['get_fax_balance', {}]], `${base}//`);
+if (sc(slashes, 'base URL with trailing slashes').ok !== true) fail('a base URL ending in // must reach /v1/balance');
+
 const [down] = await session('ffa_test_ok', [['get_fax_balance', {}]], 'http://127.0.0.1:9');
 if (sc(down, 'down').error_code !== 'temporarily_unavailable' || down.isError) fail('unreachable API');
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+The server drops the trailing slashes of the API base URL and of the dashboard URL with a scan instead of the regex `/\/+$/`.
+The regex took quadratic time when a long run of slashes did not end the URL: 24 s for 100,000 slashes on Node 22.
+The base URL comes from `FAXFORAGENTS_API_URL`, so only the person who sets it could reach that path.
+The tools, their schemas, the resources and the prompts did not change. `test/base-url.mjs` checks the trim and its time.
+
 ## 0.5.8 (2026-11-18)
 
 The stdio server follows the hosted server at API 1.21.12. Every tool returns only the fields its output schema declares, as the hosted server does since 1.21.11.
