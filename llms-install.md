@@ -91,7 +91,7 @@ client's MCP configuration file.
 2. Confirm the `faxforagents` server shows as connected and lists 17 tools. Clients that show resources
    and prompts list the guide (`faxforagents://guide` and one resource per section) and the prompts
    `send_a_fax` and `handle_received_fax`.
-3. Call `get_fax_capabilities`. It reports the provider (`sandbox` for a test key), the routes and the
+3. Call `get_fax_capabilities`. It reports the environment (`test` for a test key), the routes and the
    scopes of the key.
 4. Ask something like "Send a one page test fax to +15550000001". The agent should call
    `prepare_fax`, `quote_fax`, `send_approved_fax` and then `get_fax_status` until the state is

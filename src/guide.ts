@@ -62,9 +62,10 @@ An empty result cannot prove no fax was sent. Never replace an uncertain send wi
    same idempotency_key to repeat safely: the same job comes back instead of a second fax.
 5. get_fax_status(fax_id): outbound delivery only. For human approval decisions use
    get_review_status(review_request_id). Poll until the state is delivered, partial, failed or unknown.
-   Once the fax is delivered or partial the same answer carries the carrier's delivery evidence (remote
-   station id, pages, timestamps, provider reference) on fax.evidence and on each attempt. It is
-   what the carrier reported, not legal proof the recipient accepted it.
+   Once the fax is delivered or partial, fax.evidence and each attempt carry the carrier's evidence.
+   It holds the status, the pages, the times and the receiving station's id.
+   Once it has ended, fax.receipt_url is its receipt in the dashboard. The evidence is what the
+   carrier reported, not legal proof the recipient accepted it.
    Sandbox destinations: +15550000001 delivered, ...02 busy then delivered, ...03 partial,
    ...04 no answer, ...05 outcome unknown, ...06 provider timeout, ...07 invalid number. A
    one-page fax to ...03 fails with partial_delivery.

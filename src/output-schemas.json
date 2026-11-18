@@ -3,8 +3,150 @@
   "tools": {
     "cancel_fax": {
       "$defs": {
+        "Evidence": {
+          "additionalProperties": false,
+          "description": "What the carrier reported about a delivered or partial fax, without its raw payload, its call ids\nand its signature material. The keys differ by carrier: each one keeps what it reports.",
+          "properties": {
+            "completed_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Completed At"
+            },
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "From"
+            },
+            "occurred_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Occurred At"
+            },
+            "page_count": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Page Count"
+            },
+            "pages_sent": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Pages Sent"
+            },
+            "pages_total": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Pages Total"
+            },
+            "provider": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "The carrier that reported it.",
+              "title": "Provider"
+            },
+            "quality": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Quality"
+            },
+            "remote_station_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "The receiving machine's station id, as it gave it. Listed under untrusted.",
+              "title": "Remote Station Id"
+            },
+            "status": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Status"
+            },
+            "to": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "To"
+            }
+          },
+          "title": "Evidence",
+          "type": "object"
+        },
         "FaxJob": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "amount_micro": {
               "title": "Amount Micro",
@@ -20,7 +162,6 @@
                 }
               ],
               "default": null,
-              "description": "The approval request a person approved for this send. Null when another path authorized it: a delegated policy (policy_version_id), a test key no policy binds, or the payer's confirmation of a one-time order.",
               "title": "Approval Id"
             },
             "attempt_count": {
@@ -30,17 +171,6 @@
             "billable_pages": {
               "title": "Billable Pages",
               "type": "integer"
-            },
-            "cancel_requested_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Cancel Requested At"
             },
             "captured_micro": {
               "title": "Captured Micro",
@@ -55,6 +185,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Client Reference"
             },
             "completed_at": {
@@ -66,6 +197,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Completed At"
             },
             "cover_pages": {
@@ -85,16 +217,8 @@
               "title": "Delete After Send",
               "type": "boolean"
             },
-            "direction": {
-              "title": "Direction",
-              "type": "string"
-            },
             "document_id": {
               "title": "Document Id",
-              "type": "string"
-            },
-            "document_sha256": {
-              "title": "Document Sha256",
               "type": "string"
             },
             "environment": {
@@ -108,16 +232,13 @@
             "evidence": {
               "anyOf": [
                 {
-                  "additionalProperties": true,
-                  "type": "object"
+                  "$ref": "#/$defs/Evidence"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "default": null,
-              "description": "The carrier's evidence once delivered or partial; null before.",
-              "title": "Evidence"
+              "default": null
             },
             "failure_code": {
               "anyOf": [
@@ -128,6 +249,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Failure Code"
             },
             "from": {
@@ -146,17 +268,6 @@
               "title": "Id",
               "type": "string"
             },
-            "one_time": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/OneTimeJob"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null
-            },
             "one_time_order_id": {
               "anyOf": [
                 {
@@ -167,40 +278,11 @@
                 }
               ],
               "default": null,
-              "description": "The one-time order this fax was paid by; null for a wallet fax.",
               "title": "One Time Order Id"
             },
             "pages_sent": {
               "title": "Pages Sent",
               "type": "integer"
-            },
-            "policy_version_id": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The version of the delegated policy that allowed this send. A version never changes, so it shows the limits the send was allowed under. Null when no policy decided the send.",
-              "title": "Policy Version Id"
-            },
-            "provider": {
-              "title": "Provider",
-              "type": "string"
-            },
-            "provider_ref": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Provider Ref"
             },
             "quality": {
               "default": "fine",
@@ -216,7 +298,21 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Quote Id"
+            },
+            "receipt_url": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "Once the fax has ended: the dashboard page with its receipt, for a signed-in person.",
+              "title": "Receipt Url"
             },
             "route": {
               "title": "Route",
@@ -224,7 +320,6 @@
             },
             "route_paused": {
               "default": false,
-              "description": "An operator has paused sends on this fax's route while the fax waits for a line (queued or between tries). It goes out when the route is resumed. Read when the fax is read, not stored.",
               "title": "Route Paused",
               "type": "boolean"
             },
@@ -255,270 +350,25 @@
             "to": {
               "title": "To",
               "type": "string"
-            },
-            "transmitted_sha256": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Transmitted Sha256"
-            },
-            "updated_at": {
-              "title": "Updated At",
-              "type": "string"
             }
           },
           "required": [
             "id",
             "environment",
-            "direction",
             "state",
-            "failure_code",
             "to",
             "route",
             "document_id",
-            "document_sha256",
-            "transmitted_sha256",
-            "quote_id",
             "billable_pages",
             "cover_pages",
             "pages_sent",
             "amount_micro",
             "captured_micro",
             "currency",
-            "provider",
-            "provider_ref",
-            "client_reference",
             "attempt_count",
-            "created_at",
-            "updated_at",
-            "completed_at",
-            "cancel_requested_at"
+            "created_at"
           ],
           "title": "FaxJob",
-          "type": "object"
-        },
-        "OneTimeCard": {
-          "additionalProperties": true,
-          "properties": {
-            "brand": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Brand"
-            },
-            "last4": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Last4"
-            }
-          },
-          "required": [
-            "last4",
-            "brand"
-          ],
-          "title": "OneTimeCard",
-          "type": "object"
-        },
-        "OneTimeJob": {
-          "additionalProperties": true,
-          "description": "The order behind a fax job that a one-time send made: what was held on the card, what was charged.",
-          "properties": {
-            "amount_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Amount Micro"
-            },
-            "authorized_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: when the card was held.",
-              "title": "Authorized At"
-            },
-            "captured_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Captured Micro"
-            },
-            "card": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/OneTimeCard"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null
-            },
-            "document_pages": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The pages of the order's document. The cover sheet is not counted.",
-              "title": "Document Pages"
-            },
-            "email": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: the address the order was made with.",
-              "title": "Email"
-            },
-            "failure_code": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: why the order ended unpaid.",
-              "title": "Failure Code"
-            },
-            "order_id": {
-              "title": "Order Id",
-              "type": "string"
-            },
-            "price": {
-              "anyOf": [
-                {
-                  "additionalProperties": {
-                    "type": "integer"
-                  },
-                  "type": "object"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: flat_micro, included_pages and extra_page_micro the amount follows from.",
-              "title": "Price"
-            },
-            "refunded_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "What was refunded to the card after the charge, in micro-units.",
-              "title": "Refunded Micro"
-            },
-            "sender_name": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: the sender's name.",
-              "title": "Sender Name"
-            },
-            "settled_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: when the payment provider confirmed the charge, or the release.",
-              "title": "Settled At"
-            },
-            "status": {
-              "anyOf": [
-                {
-                  "enum": [
-                    "draft",
-                    "checkout_open",
-                    "authorized",
-                    "awaiting_confirmation",
-                    "released",
-                    "capturing",
-                    "canceling",
-                    "captured",
-                    "released_hold",
-                    "expired",
-                    "refused",
-                    "settle_failed",
-                    "refunding",
-                    "refunded",
-                    "canceled"
-                  ],
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Status"
-            }
-          },
-          "required": [
-            "order_id"
-          ],
-          "title": "OneTimeJob",
           "type": "object"
         }
       },
@@ -526,7 +376,7 @@
       "properties": {
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -779,7 +629,7 @@
       "properties": {
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -841,34 +691,22 @@
     "get_card_payment_status": {
       "$defs": {
         "Attempt": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "attempt_number": {
               "title": "Attempt Number",
               "type": "integer"
             },
-            "error": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Error"
-            },
             "evidence": {
               "anyOf": [
                 {
-                  "additionalProperties": true,
-                  "type": "object"
+                  "$ref": "#/$defs/Evidence"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "title": "Evidence"
+              "default": null
             },
             "failure_code": {
               "anyOf": [
@@ -879,49 +717,12 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Failure Code"
-            },
-            "fax_job_id": {
-              "title": "Fax Job Id",
-              "type": "string"
-            },
-            "finished_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Finished At"
-            },
-            "id": {
-              "title": "Id",
-              "type": "string"
             },
             "pages_sent": {
               "title": "Pages Sent",
               "type": "integer"
-            },
-            "provider": {
-              "title": "Provider",
-              "type": "string"
-            },
-            "provider_ref": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Provider Ref"
-            },
-            "started_at": {
-              "title": "Started At",
-              "type": "string"
             },
             "status": {
               "title": "Status",
@@ -929,25 +730,16 @@
             }
           },
           "required": [
-            "id",
-            "fax_job_id",
             "attempt_number",
-            "provider",
-            "provider_ref",
             "status",
-            "pages_sent",
-            "failure_code",
-            "evidence",
-            "error",
-            "started_at",
-            "finished_at"
+            "pages_sent"
           ],
           "title": "Attempt",
           "type": "object"
         },
         "CardPaymentOrder": {
           "additionalProperties": false,
-          "description": "A one-time order as an agent sees it: where it stands and what it costs. The payer's address and\nthe card's brand and last four digits are left out, and so are the status token and the job.",
+          "description": "A one-time order as an agent sees it: where it stands and what it costs. The payer's address, the\ncard's brand and last four digits, the bare status token and the order's bookkeeping times are left\nout (PR-03, 2026-11-18).",
           "properties": {
             "amount_micro": {
               "description": "The card price of the order, held on the card at payment.",
@@ -967,30 +759,6 @@
               "description": "Whether a person accepted the policy and the terms. They do on status_url.",
               "title": "Aup Accepted"
             },
-            "authorized_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Authorized At"
-            },
-            "capture_deadline_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Capture Deadline At"
-            },
             "captured_micro": {
               "description": "What the card was charged, once the payment provider confirmed it.",
               "title": "Captured Micro",
@@ -1006,6 +774,7 @@
                 }
               ],
               "default": null,
+              "description": "The person pays before this.",
               "title": "Checkout Expires At"
             },
             "confirm_deadline_at": {
@@ -1018,24 +787,19 @@
                 }
               ],
               "default": null,
+              "description": "The person clicks the mailed link before this.",
               "title": "Confirm Deadline At"
             },
             "cover": {
               "anyOf": [
                 {
-                  "additionalProperties": true,
-                  "type": "object"
+                  "$ref": "#/$defs/Cover"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "default": null,
-              "title": "Cover"
-            },
-            "created_at": {
-              "title": "Created At",
-              "type": "string"
+              "default": null
             },
             "delete_after_send": {
               "anyOf": [
@@ -1076,10 +840,6 @@
             "document_pages": {
               "title": "Document Pages",
               "type": "integer"
-            },
-            "document_sha256": {
-              "title": "Document Sha256",
-              "type": "string"
             },
             "email_verified": {
               "description": "false: the payer also clicks a mailed link before the send.",
@@ -1129,7 +889,7 @@
               "type": "string"
             },
             "price": {
-              "$ref": "#/$defs/OneTimePrice"
+              "$ref": "#/$defs/CardPrice"
             },
             "quote_id": {
               "anyOf": [
@@ -1155,18 +915,6 @@
               "default": null,
               "title": "Refunded Micro"
             },
-            "released_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Released At"
-            },
             "route": {
               "title": "Route",
               "type": "string"
@@ -1174,22 +922,6 @@
             "sender_name": {
               "description": "The name on the cover page. Listed under untrusted.",
               "title": "Sender Name",
-              "type": "string"
-            },
-            "settled_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Settled At"
-            },
-            "source": {
-              "title": "Source",
               "type": "string"
             },
             "status": {
@@ -1216,10 +948,6 @@
             "to": {
               "title": "To",
               "type": "string"
-            },
-            "updated_at": {
-              "title": "Updated At",
-              "type": "string"
             }
           },
           "required": [
@@ -1227,542 +955,20 @@
             "status",
             "next",
             "environment",
-            "source",
             "email_verified",
             "sender_name",
             "to",
             "route",
             "document_pages",
-            "document_sha256",
             "price",
             "amount_micro",
-            "captured_micro",
-            "created_at",
-            "updated_at"
+            "captured_micro"
           ],
           "title": "CardPaymentOrder",
           "type": "object"
         },
-        "FaxJob": {
-          "additionalProperties": true,
-          "properties": {
-            "amount_micro": {
-              "title": "Amount Micro",
-              "type": "integer"
-            },
-            "approval_id": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The approval request a person approved for this send. Null when another path authorized it: a delegated policy (policy_version_id), a test key no policy binds, or the payer's confirmation of a one-time order.",
-              "title": "Approval Id"
-            },
-            "attempt_count": {
-              "title": "Attempt Count",
-              "type": "integer"
-            },
-            "billable_pages": {
-              "title": "Billable Pages",
-              "type": "integer"
-            },
-            "cancel_requested_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Cancel Requested At"
-            },
-            "captured_micro": {
-              "title": "Captured Micro",
-              "type": "integer"
-            },
-            "client_reference": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Client Reference"
-            },
-            "completed_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Completed At"
-            },
-            "cover_pages": {
-              "title": "Cover Pages",
-              "type": "integer"
-            },
-            "created_at": {
-              "title": "Created At",
-              "type": "string"
-            },
-            "currency": {
-              "title": "Currency",
-              "type": "string"
-            },
-            "delete_after_send": {
-              "default": false,
-              "title": "Delete After Send",
-              "type": "boolean"
-            },
-            "direction": {
-              "title": "Direction",
-              "type": "string"
-            },
-            "document_id": {
-              "title": "Document Id",
-              "type": "string"
-            },
-            "document_sha256": {
-              "title": "Document Sha256",
-              "type": "string"
-            },
-            "environment": {
-              "enum": [
-                "live",
-                "test"
-              ],
-              "title": "Environment",
-              "type": "string"
-            },
-            "evidence": {
-              "anyOf": [
-                {
-                  "additionalProperties": true,
-                  "type": "object"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The carrier's evidence once delivered or partial; null before.",
-              "title": "Evidence"
-            },
-            "failure_code": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Failure Code"
-            },
-            "from": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "From"
-            },
-            "id": {
-              "title": "Id",
-              "type": "string"
-            },
-            "one_time": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/OneTimeJob"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null
-            },
-            "one_time_order_id": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The one-time order this fax was paid by; null for a wallet fax.",
-              "title": "One Time Order Id"
-            },
-            "pages_sent": {
-              "title": "Pages Sent",
-              "type": "integer"
-            },
-            "policy_version_id": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The version of the delegated policy that allowed this send. A version never changes, so it shows the limits the send was allowed under. Null when no policy decided the send.",
-              "title": "Policy Version Id"
-            },
-            "provider": {
-              "title": "Provider",
-              "type": "string"
-            },
-            "provider_ref": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Provider Ref"
-            },
-            "quality": {
-              "default": "fine",
-              "title": "Quality",
-              "type": "string"
-            },
-            "quote_id": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Quote Id"
-            },
-            "route": {
-              "title": "Route",
-              "type": "string"
-            },
-            "route_paused": {
-              "default": false,
-              "description": "An operator has paused sends on this fax's route while the fax waits for a line (queued or between tries). It goes out when the route is resumed. Read when the fax is read, not stored.",
-              "title": "Route Paused",
-              "type": "boolean"
-            },
-            "sender_name": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Sender Name"
-            },
-            "state": {
-              "enum": [
-                "queued",
-                "active",
-                "partial",
-                "failed",
-                "unknown",
-                "delivered"
-              ],
-              "title": "State",
-              "type": "string"
-            },
-            "to": {
-              "title": "To",
-              "type": "string"
-            },
-            "transmitted_sha256": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Transmitted Sha256"
-            },
-            "updated_at": {
-              "title": "Updated At",
-              "type": "string"
-            }
-          },
-          "required": [
-            "id",
-            "environment",
-            "direction",
-            "state",
-            "failure_code",
-            "to",
-            "route",
-            "document_id",
-            "document_sha256",
-            "transmitted_sha256",
-            "quote_id",
-            "billable_pages",
-            "cover_pages",
-            "pages_sent",
-            "amount_micro",
-            "captured_micro",
-            "currency",
-            "provider",
-            "provider_ref",
-            "client_reference",
-            "attempt_count",
-            "created_at",
-            "updated_at",
-            "completed_at",
-            "cancel_requested_at"
-          ],
-          "title": "FaxJob",
-          "type": "object"
-        },
-        "OneTimeCard": {
-          "additionalProperties": true,
-          "properties": {
-            "brand": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Brand"
-            },
-            "last4": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Last4"
-            }
-          },
-          "required": [
-            "last4",
-            "brand"
-          ],
-          "title": "OneTimeCard",
-          "type": "object"
-        },
-        "OneTimeJob": {
-          "additionalProperties": true,
-          "description": "The order behind a fax job that a one-time send made: what was held on the card, what was charged.",
-          "properties": {
-            "amount_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Amount Micro"
-            },
-            "authorized_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: when the card was held.",
-              "title": "Authorized At"
-            },
-            "captured_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Captured Micro"
-            },
-            "card": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/OneTimeCard"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null
-            },
-            "document_pages": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The pages of the order's document. The cover sheet is not counted.",
-              "title": "Document Pages"
-            },
-            "email": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: the address the order was made with.",
-              "title": "Email"
-            },
-            "failure_code": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: why the order ended unpaid.",
-              "title": "Failure Code"
-            },
-            "order_id": {
-              "title": "Order Id",
-              "type": "string"
-            },
-            "price": {
-              "anyOf": [
-                {
-                  "additionalProperties": {
-                    "type": "integer"
-                  },
-                  "type": "object"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: flat_micro, included_pages and extra_page_micro the amount follows from.",
-              "title": "Price"
-            },
-            "refunded_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "What was refunded to the card after the charge, in micro-units.",
-              "title": "Refunded Micro"
-            },
-            "sender_name": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: the sender's name.",
-              "title": "Sender Name"
-            },
-            "settled_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: when the payment provider confirmed the charge, or the release.",
-              "title": "Settled At"
-            },
-            "status": {
-              "anyOf": [
-                {
-                  "enum": [
-                    "draft",
-                    "checkout_open",
-                    "authorized",
-                    "awaiting_confirmation",
-                    "released",
-                    "capturing",
-                    "canceling",
-                    "captured",
-                    "released_hold",
-                    "expired",
-                    "refused",
-                    "settle_failed",
-                    "refunding",
-                    "refunded",
-                    "canceled"
-                  ],
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Status"
-            }
-          },
-          "required": [
-            "order_id"
-          ],
-          "title": "OneTimeJob",
-          "type": "object"
-        },
-        "OneTimePrice": {
-          "additionalProperties": true,
+        "CardPrice": {
+          "additionalProperties": false,
           "properties": {
             "cover_included": {
               "title": "Cover Included",
@@ -1797,7 +1003,443 @@
             "extra_page_micro",
             "cover_included"
           ],
-          "title": "OneTimePrice",
+          "title": "CardPrice",
+          "type": "object"
+        },
+        "Cover": {
+          "additionalProperties": false,
+          "description": "The cover sheet as the customer typed it. Listed under untrusted.",
+          "properties": {
+            "from_email": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "From Email"
+            },
+            "from_name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "From Name"
+            },
+            "message": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Message"
+            },
+            "subject": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Subject"
+            },
+            "to_name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "To Name"
+            }
+          },
+          "title": "Cover",
+          "type": "object"
+        },
+        "Evidence": {
+          "additionalProperties": false,
+          "description": "What the carrier reported about a delivered or partial fax, without its raw payload, its call ids\nand its signature material. The keys differ by carrier: each one keeps what it reports.",
+          "properties": {
+            "completed_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Completed At"
+            },
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "From"
+            },
+            "occurred_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Occurred At"
+            },
+            "page_count": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Page Count"
+            },
+            "pages_sent": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Pages Sent"
+            },
+            "pages_total": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Pages Total"
+            },
+            "provider": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "The carrier that reported it.",
+              "title": "Provider"
+            },
+            "quality": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Quality"
+            },
+            "remote_station_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "The receiving machine's station id, as it gave it. Listed under untrusted.",
+              "title": "Remote Station Id"
+            },
+            "status": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Status"
+            },
+            "to": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "To"
+            }
+          },
+          "title": "Evidence",
+          "type": "object"
+        },
+        "FaxJob": {
+          "additionalProperties": false,
+          "properties": {
+            "amount_micro": {
+              "title": "Amount Micro",
+              "type": "integer"
+            },
+            "approval_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Approval Id"
+            },
+            "attempt_count": {
+              "title": "Attempt Count",
+              "type": "integer"
+            },
+            "billable_pages": {
+              "title": "Billable Pages",
+              "type": "integer"
+            },
+            "captured_micro": {
+              "title": "Captured Micro",
+              "type": "integer"
+            },
+            "client_reference": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Client Reference"
+            },
+            "completed_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Completed At"
+            },
+            "cover_pages": {
+              "title": "Cover Pages",
+              "type": "integer"
+            },
+            "created_at": {
+              "title": "Created At",
+              "type": "string"
+            },
+            "currency": {
+              "title": "Currency",
+              "type": "string"
+            },
+            "delete_after_send": {
+              "default": false,
+              "title": "Delete After Send",
+              "type": "boolean"
+            },
+            "document_id": {
+              "title": "Document Id",
+              "type": "string"
+            },
+            "environment": {
+              "enum": [
+                "live",
+                "test"
+              ],
+              "title": "Environment",
+              "type": "string"
+            },
+            "evidence": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Evidence"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "failure_code": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Failure Code"
+            },
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "From"
+            },
+            "id": {
+              "title": "Id",
+              "type": "string"
+            },
+            "one_time_order_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "One Time Order Id"
+            },
+            "pages_sent": {
+              "title": "Pages Sent",
+              "type": "integer"
+            },
+            "quality": {
+              "default": "fine",
+              "title": "Quality",
+              "type": "string"
+            },
+            "quote_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Quote Id"
+            },
+            "receipt_url": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "Once the fax has ended: the dashboard page with its receipt, for a signed-in person.",
+              "title": "Receipt Url"
+            },
+            "route": {
+              "title": "Route",
+              "type": "string"
+            },
+            "route_paused": {
+              "default": false,
+              "title": "Route Paused",
+              "type": "boolean"
+            },
+            "sender_name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Sender Name"
+            },
+            "state": {
+              "enum": [
+                "queued",
+                "active",
+                "partial",
+                "failed",
+                "unknown",
+                "delivered"
+              ],
+              "title": "State",
+              "type": "string"
+            },
+            "to": {
+              "title": "To",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "environment",
+            "state",
+            "to",
+            "route",
+            "document_id",
+            "billable_pages",
+            "cover_pages",
+            "pages_sent",
+            "amount_micro",
+            "captured_micro",
+            "currency",
+            "attempt_count",
+            "created_at"
+          ],
+          "title": "FaxJob",
           "type": "object"
         }
       },
@@ -1820,7 +1462,7 @@
         },
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -1908,7 +1550,7 @@
     "get_fax_balance": {
       "$defs": {
         "Balance": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "available_micro": {
               "title": "Available Micro",
@@ -1928,7 +1570,6 @@
             },
             "held_jobs": {
               "default": 0,
-              "description": "How many fax jobs still have their hold in place: queued, sending, or ended unknown and waiting for a reconcile. Their holds add up to held_micro.",
               "title": "Held Jobs",
               "type": "integer"
             },
@@ -1946,7 +1587,6 @@
                 }
               ],
               "default": null,
-              "description": "The dashboard page where a person adds funds to the wallet. A key cannot top up.",
               "title": "Top Up Url"
             }
           },
@@ -1975,7 +1615,7 @@
         },
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -2026,10 +1666,10 @@
     "get_fax_capabilities": {
       "$defs": {
         "Capabilities": {
-          "additionalProperties": true,
+          "additionalProperties": false,
+          "description": "What the server offers this credential. Public facts of the service: no account data.",
           "properties": {
             "admin_scopes": {
-              "description": "The scopes that administer the organization: keys, webhooks, billing, members, policies, agents, approval decisions and number purchases. An agent's own key never carries one.",
               "items": {
                 "type": "string"
               },
@@ -2041,7 +1681,6 @@
               "type": "boolean"
             },
             "default_scopes": {
-              "description": "The scopes a key gets when POST /v1/api-keys names none.",
               "items": {
                 "type": "string"
               },
@@ -2061,10 +1700,15 @@
               "type": "boolean"
             },
             "extraction_pricing": {
-              "additionalProperties": true,
-              "description": "What POST /v1/extractions charges, in micro-units. page_micro is for every page read. escalated_page_micro is added for a page the stronger model reads again. max_pages is the most pages one extraction reads. With a test key, extractions are free.",
-              "title": "Extraction Pricing",
-              "type": "object"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ExtractionPricing"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
             },
             "formats": {
               "items": {
@@ -2074,12 +1718,7 @@
               "type": "array"
             },
             "limits": {
-              "additionalProperties": {
-                "type": "integer"
-              },
-              "description": "requests_per_minute is the limit of the calling credential: 3000 while the organization's Agent workspace is active, 600 otherwise. The RateLimit-Limit header of every answer says the same. The other keys are the life of a quote and of a download link in seconds, and the largest HTML document in bytes.",
-              "title": "Limits",
-              "type": "object"
+              "$ref": "#/$defs/Limits"
             },
             "max_pages": {
               "title": "Max Pages",
@@ -2094,23 +1733,15 @@
               "type": "boolean"
             },
             "one_time": {
-              "additionalProperties": true,
-              "description": "One fax paid by card on this server. enabled: orders are taken here. published: the price card offers the product. routes: the routes sold one fax at a time, empty while not enabled. max_document_pages: the most document pages one order takes. Prices are in GET /v1/one-time-sends/config.",
-              "title": "One Time",
-              "type": "object"
+              "$ref": "#/$defs/OneTimeOffer"
             },
             "price_version": {
               "title": "Price Version",
               "type": "string"
             },
-            "provider": {
-              "title": "Provider",
-              "type": "string"
-            },
             "rates": {
-              "additionalProperties": true,
-              "title": "Rates",
-              "type": "object"
+              "$ref": "#/$defs/Rates",
+              "description": "The public price card, the one the site's pricing page shows."
             },
             "receive": {
               "title": "Receive",
@@ -2124,7 +1755,7 @@
               "type": "array"
             },
             "scopes": {
-              "description": "Every scope the platform defines, the list a new key is made from. It is not what the calling credential holds: GET /v1/me returns that under scopes.",
+              "description": "Every scope the platform defines, not what the calling credential holds (me.scopes).",
               "items": {
                 "type": "string"
               },
@@ -2138,7 +1769,6 @@
           },
           "required": [
             "environment",
-            "provider",
             "send",
             "receive",
             "numbers",
@@ -2157,13 +1787,273 @@
           "title": "Capabilities",
           "type": "object"
         },
-        "Me": {
-          "additionalProperties": true,
+        "CardRates": {
+          "additionalProperties": false,
           "properties": {
-            "actor": {
-              "title": "Actor",
+            "max_document_pages": {
+              "title": "Max Document Pages",
+              "type": "integer"
+            },
+            "routes": {
+              "additionalProperties": {
+                "$ref": "#/$defs/CardRoutePrice"
+              },
+              "title": "Routes",
+              "type": "object"
+            }
+          },
+          "required": [
+            "max_document_pages",
+            "routes"
+          ],
+          "title": "CardRates",
+          "type": "object"
+        },
+        "CardRoutePrice": {
+          "additionalProperties": false,
+          "properties": {
+            "cover_included": {
+              "title": "Cover Included",
+              "type": "boolean"
+            },
+            "extra_page_micro": {
+              "title": "Extra Page Micro",
+              "type": "integer"
+            },
+            "flat_micro": {
+              "title": "Flat Micro",
+              "type": "integer"
+            },
+            "included_pages": {
+              "title": "Included Pages",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "flat_micro",
+            "included_pages",
+            "extra_page_micro",
+            "cover_included"
+          ],
+          "title": "CardRoutePrice",
+          "type": "object"
+        },
+        "ChangedRoute": {
+          "additionalProperties": false,
+          "properties": {
+            "label": {
+              "title": "Label",
               "type": "string"
             },
+            "now_micro": {
+              "title": "Now Micro",
+              "type": "integer"
+            },
+            "was_micro": {
+              "title": "Was Micro",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "label",
+            "was_micro",
+            "now_micro"
+          ],
+          "title": "ChangedRoute",
+          "type": "object"
+        },
+        "ExcludedDestination": {
+          "additionalProperties": false,
+          "properties": {
+            "prefixes": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Prefixes",
+              "type": "array"
+            },
+            "reason": {
+              "title": "Reason",
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "title": "ExcludedDestination",
+          "type": "object"
+        },
+        "ExtractionPricing": {
+          "additionalProperties": false,
+          "properties": {
+            "currency": {
+              "title": "Currency",
+              "type": "string"
+            },
+            "escalated_page_micro": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Escalated Page Micro"
+            },
+            "max_pages": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Max Pages"
+            },
+            "page_micro": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Page Micro"
+            }
+          },
+          "required": [
+            "currency"
+          ],
+          "title": "ExtractionPricing",
+          "type": "object"
+        },
+        "InternationalRate": {
+          "additionalProperties": false,
+          "properties": {
+            "country": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Country"
+            },
+            "label": {
+              "title": "Label",
+              "type": "string"
+            },
+            "number_monthly_micro": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Number Monthly Micro"
+            },
+            "prefixes": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Prefixes",
+              "type": "array"
+            },
+            "receive_per_page_micro": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Receive Per Page Micro"
+            },
+            "send_per_page_micro": {
+              "title": "Send Per Page Micro",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "label",
+            "send_per_page_micro"
+          ],
+          "title": "InternationalRate",
+          "type": "object"
+        },
+        "Limits": {
+          "additionalProperties": false,
+          "properties": {
+            "download_url_ttl_s": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Download Url Ttl S"
+            },
+            "max_html_bytes": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Max Html Bytes"
+            },
+            "quote_ttl_s": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Quote Ttl S"
+            },
+            "requests_per_minute": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Requests Per Minute"
+            }
+          },
+          "title": "Limits",
+          "type": "object"
+        },
+        "Me": {
+          "additionalProperties": false,
+          "description": "The calling credential: its environment and what it may do. No account or key identifier.",
+          "properties": {
             "environment": {
               "enum": [
                 "live",
@@ -2172,23 +2062,8 @@
               "title": "Environment",
               "type": "string"
             },
-            "key_id": {
-              "title": "Key Id",
-              "type": "string"
-            },
-            "key_prefix": {
-              "title": "Key Prefix",
-              "type": "string"
-            },
-            "org_id": {
-              "title": "Org Id",
-              "type": "string"
-            },
-            "project_id": {
-              "title": "Project Id",
-              "type": "string"
-            },
             "scopes": {
+              "description": "What this credential may do.",
               "items": {
                 "type": "string"
               },
@@ -2197,15 +2072,267 @@
             }
           },
           "required": [
-            "org_id",
-            "project_id",
-            "key_id",
-            "key_prefix",
             "environment",
-            "scopes",
-            "actor"
+            "scopes"
           ],
           "title": "Me",
+          "type": "object"
+        },
+        "OneTimeOffer": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "title": "Enabled",
+              "type": "boolean"
+            },
+            "max_document_pages": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Max Document Pages"
+            },
+            "published": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Published"
+            },
+            "routes": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Routes",
+              "type": "array"
+            }
+          },
+          "required": [
+            "enabled"
+          ],
+          "title": "OneTimeOffer",
+          "type": "object"
+        },
+        "PriceChanges": {
+          "additionalProperties": false,
+          "properties": {
+            "effective_from": {
+              "title": "Effective From",
+              "type": "string"
+            },
+            "from_version": {
+              "title": "From Version",
+              "type": "string"
+            },
+            "price_version": {
+              "title": "Price Version",
+              "type": "string"
+            },
+            "routes": {
+              "additionalProperties": {
+                "$ref": "#/$defs/ChangedRoute"
+              },
+              "title": "Routes",
+              "type": "object"
+            }
+          },
+          "required": [
+            "price_version",
+            "from_version",
+            "effective_from",
+            "routes"
+          ],
+          "title": "PriceChanges",
+          "type": "object"
+        },
+        "Rates": {
+          "additionalProperties": false,
+          "description": "The public price card (``billing.rates.RateCard.as_public``), the one the site's pricing page and\n``/pricing.json`` show. No account data.",
+          "properties": {
+            "changes": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/PriceChanges"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "currency": {
+              "title": "Currency",
+              "type": "string"
+            },
+            "effective_from": {
+              "title": "Effective From",
+              "type": "string"
+            },
+            "excluded": {
+              "additionalProperties": {
+                "$ref": "#/$defs/ExcludedDestination"
+              },
+              "title": "Excluded",
+              "type": "object"
+            },
+            "international": {
+              "additionalProperties": {
+                "$ref": "#/$defs/InternationalRate"
+              },
+              "title": "International",
+              "type": "object"
+            },
+            "one_time": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/CardRates"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "price_version": {
+              "title": "Price Version",
+              "type": "string"
+            },
+            "rates_version": {
+              "title": "Rates Version",
+              "type": "string"
+            },
+            "routes": {
+              "additionalProperties": {
+                "$ref": "#/$defs/RouteRate"
+              },
+              "title": "Routes",
+              "type": "object"
+            },
+            "sandbox": {
+              "$ref": "#/$defs/SandboxRate"
+            },
+            "unit": {
+              "title": "Unit",
+              "type": "string"
+            }
+          },
+          "required": [
+            "price_version",
+            "rates_version",
+            "effective_from",
+            "currency",
+            "unit",
+            "routes",
+            "international",
+            "excluded",
+            "sandbox"
+          ],
+          "title": "Rates",
+          "type": "object"
+        },
+        "RouteRate": {
+          "additionalProperties": false,
+          "properties": {
+            "countries": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Countries",
+              "type": "array"
+            },
+            "label": {
+              "title": "Label",
+              "type": "string"
+            },
+            "number_monthly_micro": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Number Monthly Micro"
+            },
+            "prefixes": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Prefixes",
+              "type": "array"
+            },
+            "receive_per_page_micro": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Receive Per Page Micro"
+            },
+            "send_per_page_micro": {
+              "title": "Send Per Page Micro",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "label",
+            "send_per_page_micro"
+          ],
+          "title": "RouteRate",
+          "type": "object"
+        },
+        "SandboxRate": {
+          "additionalProperties": false,
+          "properties": {
+            "number_monthly_micro": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Number Monthly Micro"
+            },
+            "receive_per_page_micro": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Receive Per Page Micro"
+            },
+            "send_per_page_micro": {
+              "title": "Send Per Page Micro",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "send_per_page_micro"
+          ],
+          "title": "SandboxRate",
           "type": "object"
         }
       },
@@ -2225,7 +2352,7 @@
         },
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -2250,7 +2377,7 @@
             }
           ],
           "default": null,
-          "description": "The calling credential. me.scopes is what it may do."
+          "description": "The calling credential: its environment and me.scopes, what it may do."
         },
         "message": {
           "title": "Message",
@@ -2288,39 +2415,11 @@
     "get_fax_document": {
       "$defs": {
         "Document": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "content_type": {
               "title": "Content Type",
               "type": "string"
-            },
-            "converted_from": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The name of the image this PDF was converted from, as the person gave it. filename is the PDF's own name. Null for a document that was not an image.",
-              "title": "Converted From"
-            },
-            "created_at": {
-              "title": "Created At",
-              "type": "string"
-            },
-            "deleted_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Deleted At"
             },
             "environment": {
               "enum": [
@@ -2330,18 +2429,8 @@
               "title": "Environment",
               "type": "string"
             },
-            "expires_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Expires At"
-            },
             "filename": {
+              "description": "The document's name as the customer gave it. Listed under untrusted.",
               "title": "Filename",
               "type": "string"
             },
@@ -2353,18 +2442,6 @@
               "title": "Page Count",
               "type": "integer"
             },
-            "received": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/DocumentReceived"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "Set in the list (GET /v1/documents) on the file of a received fax, source inbound. It names the inbox item, the sender as the sending machine gave it, and the time. Null everywhere else."
-            },
             "render_reason": {
               "anyOf": [
                 {
@@ -2374,6 +2451,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Render Reason"
             },
             "render_status": {
@@ -2396,21 +2474,8 @@
               "title": "Status",
               "type": "string"
             },
-            "upload_id": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Upload Id"
-            },
             "validation": {
-              "additionalProperties": true,
-              "title": "Validation",
-              "type": "object"
+              "$ref": "#/$defs/DocumentValidation"
             }
           },
           "required": [
@@ -2424,18 +2489,13 @@
             "sha256",
             "page_count",
             "render_status",
-            "render_reason",
-            "validation",
-            "upload_id",
-            "created_at",
-            "expires_at",
-            "deleted_at"
+            "validation"
           ],
           "title": "Document",
           "type": "object"
         },
         "DocumentPages": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "document_id": {
               "title": "Document Id",
@@ -2461,6 +2521,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Render Reason"
             },
             "render_status": {
@@ -2472,46 +2533,58 @@
             "document_id",
             "page_count",
             "render_status",
-            "render_reason",
             "items"
           ],
           "title": "DocumentPages",
           "type": "object"
         },
-        "DocumentReceived": {
-          "additionalProperties": true,
-          "description": "The received fax a document is the file of.",
+        "DocumentValidation": {
+          "additionalProperties": false,
           "properties": {
-            "from": {
+            "warnings": {
+              "items": {
+                "$ref": "#/$defs/DocumentWarning"
+              },
+              "title": "Warnings",
+              "type": "array"
+            }
+          },
+          "title": "DocumentValidation",
+          "type": "object"
+        },
+        "DocumentWarning": {
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "title": "Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "page": {
               "anyOf": [
                 {
-                  "type": "string"
+                  "type": "integer"
                 },
                 {
                   "type": "null"
                 }
               ],
               "default": null,
-              "title": "From"
-            },
-            "inbox_item_id": {
-              "title": "Inbox Item Id",
-              "type": "string"
-            },
-            "received_at": {
-              "title": "Received At",
-              "type": "string"
+              "title": "Page"
             }
           },
           "required": [
-            "inbox_item_id",
-            "received_at"
+            "code",
+            "message"
           ],
-          "title": "DocumentReceived",
+          "title": "DocumentWarning",
           "type": "object"
         },
         "PagePreview": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "height_px": {
               "anyOf": [
@@ -2522,6 +2595,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Height Px"
             },
             "page_number": {
@@ -2529,6 +2603,7 @@
               "type": "integer"
             },
             "url": {
+              "description": "A signed, short-lived link to the page image.",
               "title": "Url",
               "type": "string"
             },
@@ -2541,13 +2616,12 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Width Px"
             }
           },
           "required": [
             "page_number",
-            "width_px",
-            "height_px",
             "url"
           ],
           "title": "PagePreview",
@@ -2558,7 +2632,7 @@
       "properties": {
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "document": {
@@ -2571,7 +2645,7 @@
             }
           ],
           "default": null,
-          "description": "The document: id, sha256, page_count, filename, source, validation, created_at."
+          "description": "The document: id, sha256, page_count, filename, source, validation."
         },
         "error_code": {
           "anyOf": [
@@ -2633,34 +2707,22 @@
     "get_fax_status": {
       "$defs": {
         "Attempt": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "attempt_number": {
               "title": "Attempt Number",
               "type": "integer"
             },
-            "error": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Error"
-            },
             "evidence": {
               "anyOf": [
                 {
-                  "additionalProperties": true,
-                  "type": "object"
+                  "$ref": "#/$defs/Evidence"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "title": "Evidence"
+              "default": null
             },
             "failure_code": {
               "anyOf": [
@@ -2671,49 +2733,12 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Failure Code"
-            },
-            "fax_job_id": {
-              "title": "Fax Job Id",
-              "type": "string"
-            },
-            "finished_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Finished At"
-            },
-            "id": {
-              "title": "Id",
-              "type": "string"
             },
             "pages_sent": {
               "title": "Pages Sent",
               "type": "integer"
-            },
-            "provider": {
-              "title": "Provider",
-              "type": "string"
-            },
-            "provider_ref": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Provider Ref"
-            },
-            "started_at": {
-              "title": "Started At",
-              "type": "string"
             },
             "status": {
               "title": "Status",
@@ -2721,24 +2746,157 @@
             }
           },
           "required": [
-            "id",
-            "fax_job_id",
             "attempt_number",
-            "provider",
-            "provider_ref",
             "status",
-            "pages_sent",
-            "failure_code",
-            "evidence",
-            "error",
-            "started_at",
-            "finished_at"
+            "pages_sent"
           ],
           "title": "Attempt",
           "type": "object"
         },
+        "Evidence": {
+          "additionalProperties": false,
+          "description": "What the carrier reported about a delivered or partial fax, without its raw payload, its call ids\nand its signature material. The keys differ by carrier: each one keeps what it reports.",
+          "properties": {
+            "completed_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Completed At"
+            },
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "From"
+            },
+            "occurred_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Occurred At"
+            },
+            "page_count": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Page Count"
+            },
+            "pages_sent": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Pages Sent"
+            },
+            "pages_total": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Pages Total"
+            },
+            "provider": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "The carrier that reported it.",
+              "title": "Provider"
+            },
+            "quality": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Quality"
+            },
+            "remote_station_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "The receiving machine's station id, as it gave it. Listed under untrusted.",
+              "title": "Remote Station Id"
+            },
+            "status": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Status"
+            },
+            "to": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "To"
+            }
+          },
+          "title": "Evidence",
+          "type": "object"
+        },
         "FaxJob": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "amount_micro": {
               "title": "Amount Micro",
@@ -2754,7 +2912,6 @@
                 }
               ],
               "default": null,
-              "description": "The approval request a person approved for this send. Null when another path authorized it: a delegated policy (policy_version_id), a test key no policy binds, or the payer's confirmation of a one-time order.",
               "title": "Approval Id"
             },
             "attempt_count": {
@@ -2764,17 +2921,6 @@
             "billable_pages": {
               "title": "Billable Pages",
               "type": "integer"
-            },
-            "cancel_requested_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Cancel Requested At"
             },
             "captured_micro": {
               "title": "Captured Micro",
@@ -2789,6 +2935,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Client Reference"
             },
             "completed_at": {
@@ -2800,6 +2947,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Completed At"
             },
             "cover_pages": {
@@ -2819,16 +2967,8 @@
               "title": "Delete After Send",
               "type": "boolean"
             },
-            "direction": {
-              "title": "Direction",
-              "type": "string"
-            },
             "document_id": {
               "title": "Document Id",
-              "type": "string"
-            },
-            "document_sha256": {
-              "title": "Document Sha256",
               "type": "string"
             },
             "environment": {
@@ -2842,16 +2982,13 @@
             "evidence": {
               "anyOf": [
                 {
-                  "additionalProperties": true,
-                  "type": "object"
+                  "$ref": "#/$defs/Evidence"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "default": null,
-              "description": "The carrier's evidence once delivered or partial; null before.",
-              "title": "Evidence"
+              "default": null
             },
             "failure_code": {
               "anyOf": [
@@ -2862,6 +2999,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Failure Code"
             },
             "from": {
@@ -2880,17 +3018,6 @@
               "title": "Id",
               "type": "string"
             },
-            "one_time": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/OneTimeJob"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null
-            },
             "one_time_order_id": {
               "anyOf": [
                 {
@@ -2901,40 +3028,11 @@
                 }
               ],
               "default": null,
-              "description": "The one-time order this fax was paid by; null for a wallet fax.",
               "title": "One Time Order Id"
             },
             "pages_sent": {
               "title": "Pages Sent",
               "type": "integer"
-            },
-            "policy_version_id": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The version of the delegated policy that allowed this send. A version never changes, so it shows the limits the send was allowed under. Null when no policy decided the send.",
-              "title": "Policy Version Id"
-            },
-            "provider": {
-              "title": "Provider",
-              "type": "string"
-            },
-            "provider_ref": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Provider Ref"
             },
             "quality": {
               "default": "fine",
@@ -2950,7 +3048,21 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Quote Id"
+            },
+            "receipt_url": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "Once the fax has ended: the dashboard page with its receipt, for a signed-in person.",
+              "title": "Receipt Url"
             },
             "route": {
               "title": "Route",
@@ -2958,7 +3070,6 @@
             },
             "route_paused": {
               "default": false,
-              "description": "An operator has paused sends on this fax's route while the fax waits for a line (queued or between tries). It goes out when the route is resumed. Read when the fax is read, not stored.",
               "title": "Route Paused",
               "type": "boolean"
             },
@@ -2989,270 +3100,25 @@
             "to": {
               "title": "To",
               "type": "string"
-            },
-            "transmitted_sha256": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Transmitted Sha256"
-            },
-            "updated_at": {
-              "title": "Updated At",
-              "type": "string"
             }
           },
           "required": [
             "id",
             "environment",
-            "direction",
             "state",
-            "failure_code",
             "to",
             "route",
             "document_id",
-            "document_sha256",
-            "transmitted_sha256",
-            "quote_id",
             "billable_pages",
             "cover_pages",
             "pages_sent",
             "amount_micro",
             "captured_micro",
             "currency",
-            "provider",
-            "provider_ref",
-            "client_reference",
             "attempt_count",
-            "created_at",
-            "updated_at",
-            "completed_at",
-            "cancel_requested_at"
+            "created_at"
           ],
           "title": "FaxJob",
-          "type": "object"
-        },
-        "OneTimeCard": {
-          "additionalProperties": true,
-          "properties": {
-            "brand": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Brand"
-            },
-            "last4": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Last4"
-            }
-          },
-          "required": [
-            "last4",
-            "brand"
-          ],
-          "title": "OneTimeCard",
-          "type": "object"
-        },
-        "OneTimeJob": {
-          "additionalProperties": true,
-          "description": "The order behind a fax job that a one-time send made: what was held on the card, what was charged.",
-          "properties": {
-            "amount_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Amount Micro"
-            },
-            "authorized_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: when the card was held.",
-              "title": "Authorized At"
-            },
-            "captured_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Captured Micro"
-            },
-            "card": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/OneTimeCard"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null
-            },
-            "document_pages": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The pages of the order's document. The cover sheet is not counted.",
-              "title": "Document Pages"
-            },
-            "email": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: the address the order was made with.",
-              "title": "Email"
-            },
-            "failure_code": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: why the order ended unpaid.",
-              "title": "Failure Code"
-            },
-            "order_id": {
-              "title": "Order Id",
-              "type": "string"
-            },
-            "price": {
-              "anyOf": [
-                {
-                  "additionalProperties": {
-                    "type": "integer"
-                  },
-                  "type": "object"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: flat_micro, included_pages and extra_page_micro the amount follows from.",
-              "title": "Price"
-            },
-            "refunded_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "What was refunded to the card after the charge, in micro-units.",
-              "title": "Refunded Micro"
-            },
-            "sender_name": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: the sender's name.",
-              "title": "Sender Name"
-            },
-            "settled_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: when the payment provider confirmed the charge, or the release.",
-              "title": "Settled At"
-            },
-            "status": {
-              "anyOf": [
-                {
-                  "enum": [
-                    "draft",
-                    "checkout_open",
-                    "authorized",
-                    "awaiting_confirmation",
-                    "released",
-                    "capturing",
-                    "canceling",
-                    "captured",
-                    "released_hold",
-                    "expired",
-                    "refused",
-                    "settle_failed",
-                    "refunding",
-                    "refunded",
-                    "canceled"
-                  ],
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Status"
-            }
-          },
-          "required": [
-            "order_id"
-          ],
-          "title": "OneTimeJob",
           "type": "object"
         }
       },
@@ -3275,7 +3141,7 @@
         },
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -3340,7 +3206,7 @@
       "properties": {
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -3417,9 +3283,124 @@
     },
     "get_review_status": {
       "$defs": {
-        "ApprovalDocument": {
-          "additionalProperties": true,
-          "description": "The document a send request binds, as it is now: its name, its pages and whether a send can use it.",
+        "ReviewBound": {
+          "additionalProperties": false,
+          "description": "What an approval binds: the exact send. Empty for a help request.",
+          "properties": {
+            "amount_micro": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Amount Micro"
+            },
+            "billable_pages": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Billable Pages"
+            },
+            "currency": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Currency"
+            },
+            "document_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Document Id"
+            },
+            "document_sha256": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Document Sha256"
+            },
+            "expires_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Expires At"
+            },
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "From"
+            },
+            "quote_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Quote Id"
+            },
+            "to": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "To"
+            }
+          },
+          "title": "ReviewBound",
+          "type": "object"
+        },
+        "ReviewDocument": {
+          "additionalProperties": false,
           "properties": {
             "filename": {
               "anyOf": [
@@ -3430,7 +3411,7 @@
                   "type": "null"
                 }
               ],
-              "description": "The file's name; null when the document row is gone.",
+              "default": null,
               "title": "Filename"
             },
             "id": {
@@ -3446,10 +3427,10 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Page Count"
             },
             "state": {
-              "description": "available: the document is the one the request binds. deleted: it was deleted. changed: its sha256 is no longer the bound one. A send with this approval is refused in the last two.",
               "enum": [
                 "available",
                 "deleted",
@@ -3461,21 +3442,17 @@
           },
           "required": [
             "id",
-            "filename",
-            "page_count",
             "state"
           ],
-          "title": "ApprovalDocument",
+          "title": "ReviewDocument",
           "type": "object"
         },
         "ReviewRequest": {
-          "additionalProperties": true,
-          "description": "The approval request row as request_human_review returns it: kind send (bound to a quote) or help.",
+          "additionalProperties": false,
+          "description": "An approval or help request as the agent that asked follows it: its state, what it binds and the\nmessage. Who asked and who decided are left out: ``decided_by_person`` says only whether a person or a\nkey decided.",
           "properties": {
             "bound": {
-              "additionalProperties": true,
-              "title": "Bound",
-              "type": "object"
+              "$ref": "#/$defs/ReviewBound"
             },
             "consumed_by_job_id": {
               "anyOf": [
@@ -3486,58 +3463,32 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Consumed By Job Id"
             },
-            "created_at": {
-              "title": "Created At",
-              "type": "string"
-            },
-            "decided_at": {
+            "decided_by_person": {
               "anyOf": [
                 {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Decided At"
-            },
-            "decided_by": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Decided By"
-            },
-            "decided_by_name": {
-              "anyOf": [
-                {
-                  "type": "string"
+                  "type": "boolean"
                 },
                 {
                   "type": "null"
                 }
               ],
               "default": null,
-              "description": "The decider, named the same way.",
-              "title": "Decided By Name"
+              "description": "true when a signed-in person decided, false when an API key did, null while pending. Who it was is not returned.",
+              "title": "Decided By Person"
             },
             "document": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/ApprovalDocument"
+                  "$ref": "#/$defs/ReviewDocument"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "default": null,
-              "description": "The document a send request binds (bound.document_id). null for a help request."
+              "default": null
             },
             "expires_at": {
               "anyOf": [
@@ -3548,6 +3499,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Expires At"
             },
             "fax_job_id": {
@@ -3584,6 +3536,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Message"
             },
             "notified": {
@@ -3596,7 +3549,6 @@
                 }
               ],
               "default": null,
-              "description": "On creation: whether the organization was mailed. false when the request repeats a pending one or the organization's daily cap of request mails is reached; the request is still shown in the dashboard.",
               "title": "Notified"
             },
             "quote_id": {
@@ -3608,6 +3560,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Quote Id"
             },
             "reason": {
@@ -3619,24 +3572,9 @@
                   "type": "null"
                 }
               ],
-              "title": "Reason"
-            },
-            "requested_by": {
-              "title": "Requested By",
-              "type": "string"
-            },
-            "requested_by_name": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
               "default": null,
-              "description": "The requester as people read it: the key's label, the agent's name, the connected app's name or the person's address. null when the actor has no row in the organization any more.",
-              "title": "Requested By Name"
+              "description": "A person's reason for a rejection. Untrusted.",
+              "title": "Reason"
             },
             "status": {
               "enum": [
@@ -3654,16 +3592,7 @@
             "id",
             "kind",
             "status",
-            "quote_id",
-            "bound",
-            "message",
-            "requested_by",
-            "decided_by",
-            "reason",
-            "consumed_by_job_id",
-            "created_at",
-            "expires_at",
-            "decided_at"
+            "bound"
           ],
           "title": "ReviewRequest",
           "type": "object"
@@ -3686,7 +3615,7 @@
         },
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -3748,8 +3677,150 @@
     },
     "list_faxes": {
       "$defs": {
+        "Evidence": {
+          "additionalProperties": false,
+          "description": "What the carrier reported about a delivered or partial fax, without its raw payload, its call ids\nand its signature material. The keys differ by carrier: each one keeps what it reports.",
+          "properties": {
+            "completed_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Completed At"
+            },
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "From"
+            },
+            "occurred_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Occurred At"
+            },
+            "page_count": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Page Count"
+            },
+            "pages_sent": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Pages Sent"
+            },
+            "pages_total": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Pages Total"
+            },
+            "provider": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "The carrier that reported it.",
+              "title": "Provider"
+            },
+            "quality": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Quality"
+            },
+            "remote_station_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "The receiving machine's station id, as it gave it. Listed under untrusted.",
+              "title": "Remote Station Id"
+            },
+            "status": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Status"
+            },
+            "to": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "To"
+            }
+          },
+          "title": "Evidence",
+          "type": "object"
+        },
         "FaxJob": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "amount_micro": {
               "title": "Amount Micro",
@@ -3765,7 +3836,6 @@
                 }
               ],
               "default": null,
-              "description": "The approval request a person approved for this send. Null when another path authorized it: a delegated policy (policy_version_id), a test key no policy binds, or the payer's confirmation of a one-time order.",
               "title": "Approval Id"
             },
             "attempt_count": {
@@ -3775,17 +3845,6 @@
             "billable_pages": {
               "title": "Billable Pages",
               "type": "integer"
-            },
-            "cancel_requested_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Cancel Requested At"
             },
             "captured_micro": {
               "title": "Captured Micro",
@@ -3800,6 +3859,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Client Reference"
             },
             "completed_at": {
@@ -3811,6 +3871,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Completed At"
             },
             "cover_pages": {
@@ -3830,16 +3891,8 @@
               "title": "Delete After Send",
               "type": "boolean"
             },
-            "direction": {
-              "title": "Direction",
-              "type": "string"
-            },
             "document_id": {
               "title": "Document Id",
-              "type": "string"
-            },
-            "document_sha256": {
-              "title": "Document Sha256",
               "type": "string"
             },
             "environment": {
@@ -3853,16 +3906,13 @@
             "evidence": {
               "anyOf": [
                 {
-                  "additionalProperties": true,
-                  "type": "object"
+                  "$ref": "#/$defs/Evidence"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "default": null,
-              "description": "The carrier's evidence once delivered or partial; null before.",
-              "title": "Evidence"
+              "default": null
             },
             "failure_code": {
               "anyOf": [
@@ -3873,6 +3923,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Failure Code"
             },
             "from": {
@@ -3891,17 +3942,6 @@
               "title": "Id",
               "type": "string"
             },
-            "one_time": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/OneTimeJob"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null
-            },
             "one_time_order_id": {
               "anyOf": [
                 {
@@ -3912,40 +3952,11 @@
                 }
               ],
               "default": null,
-              "description": "The one-time order this fax was paid by; null for a wallet fax.",
               "title": "One Time Order Id"
             },
             "pages_sent": {
               "title": "Pages Sent",
               "type": "integer"
-            },
-            "policy_version_id": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The version of the delegated policy that allowed this send. A version never changes, so it shows the limits the send was allowed under. Null when no policy decided the send.",
-              "title": "Policy Version Id"
-            },
-            "provider": {
-              "title": "Provider",
-              "type": "string"
-            },
-            "provider_ref": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Provider Ref"
             },
             "quality": {
               "default": "fine",
@@ -3961,7 +3972,21 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Quote Id"
+            },
+            "receipt_url": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "Once the fax has ended: the dashboard page with its receipt, for a signed-in person.",
+              "title": "Receipt Url"
             },
             "route": {
               "title": "Route",
@@ -3969,7 +3994,6 @@
             },
             "route_paused": {
               "default": false,
-              "description": "An operator has paused sends on this fax's route while the fax waits for a line (queued or between tries). It goes out when the route is resumed. Read when the fax is read, not stored.",
               "title": "Route Paused",
               "type": "boolean"
             },
@@ -4000,270 +4024,25 @@
             "to": {
               "title": "To",
               "type": "string"
-            },
-            "transmitted_sha256": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Transmitted Sha256"
-            },
-            "updated_at": {
-              "title": "Updated At",
-              "type": "string"
             }
           },
           "required": [
             "id",
             "environment",
-            "direction",
             "state",
-            "failure_code",
             "to",
             "route",
             "document_id",
-            "document_sha256",
-            "transmitted_sha256",
-            "quote_id",
             "billable_pages",
             "cover_pages",
             "pages_sent",
             "amount_micro",
             "captured_micro",
             "currency",
-            "provider",
-            "provider_ref",
-            "client_reference",
             "attempt_count",
-            "created_at",
-            "updated_at",
-            "completed_at",
-            "cancel_requested_at"
+            "created_at"
           ],
           "title": "FaxJob",
-          "type": "object"
-        },
-        "OneTimeCard": {
-          "additionalProperties": true,
-          "properties": {
-            "brand": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Brand"
-            },
-            "last4": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Last4"
-            }
-          },
-          "required": [
-            "last4",
-            "brand"
-          ],
-          "title": "OneTimeCard",
-          "type": "object"
-        },
-        "OneTimeJob": {
-          "additionalProperties": true,
-          "description": "The order behind a fax job that a one-time send made: what was held on the card, what was charged.",
-          "properties": {
-            "amount_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Amount Micro"
-            },
-            "authorized_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: when the card was held.",
-              "title": "Authorized At"
-            },
-            "captured_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Captured Micro"
-            },
-            "card": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/OneTimeCard"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null
-            },
-            "document_pages": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The pages of the order's document. The cover sheet is not counted.",
-              "title": "Document Pages"
-            },
-            "email": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: the address the order was made with.",
-              "title": "Email"
-            },
-            "failure_code": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: why the order ended unpaid.",
-              "title": "Failure Code"
-            },
-            "order_id": {
-              "title": "Order Id",
-              "type": "string"
-            },
-            "price": {
-              "anyOf": [
-                {
-                  "additionalProperties": {
-                    "type": "integer"
-                  },
-                  "type": "object"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: flat_micro, included_pages and extra_page_micro the amount follows from.",
-              "title": "Price"
-            },
-            "refunded_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "What was refunded to the card after the charge, in micro-units.",
-              "title": "Refunded Micro"
-            },
-            "sender_name": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: the sender's name.",
-              "title": "Sender Name"
-            },
-            "settled_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: when the payment provider confirmed the charge, or the release.",
-              "title": "Settled At"
-            },
-            "status": {
-              "anyOf": [
-                {
-                  "enum": [
-                    "draft",
-                    "checkout_open",
-                    "authorized",
-                    "awaiting_confirmation",
-                    "released",
-                    "capturing",
-                    "canceling",
-                    "captured",
-                    "released_hold",
-                    "expired",
-                    "refused",
-                    "settle_failed",
-                    "refunding",
-                    "refunded",
-                    "canceled"
-                  ],
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Status"
-            }
-          },
-          "required": [
-            "order_id"
-          ],
-          "title": "OneTimeJob",
           "type": "object"
         }
       },
@@ -4272,7 +4051,7 @@
       "properties": {
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -4350,11 +4129,10 @@
     "list_inbox": {
       "$defs": {
         "InboxItem": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "amount_micro": {
               "default": 0,
-              "description": "What the received pages were charged, in micro-USD. 0 in test.",
               "title": "Amount Micro",
               "type": "integer"
             },
@@ -4367,7 +4145,24 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Document Id"
+            },
+            "environment": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "live",
+                    "test"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Environment"
             },
             "from": {
               "anyOf": [
@@ -4379,13 +4174,14 @@
                 }
               ],
               "default": null,
+              "description": "The sender as the sending machine gave it. Untrusted.",
               "title": "From"
             },
             "id": {
               "title": "Id",
               "type": "string"
             },
-            "note": {
+            "media_status": {
               "anyOf": [
                 {
                   "type": "string"
@@ -4395,11 +4191,23 @@
                 }
               ],
               "default": null,
-              "title": "Note"
+              "title": "Media Status"
             },
             "pages": {
               "title": "Pages",
               "type": "integer"
+            },
+            "partial_content": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Partial Content"
             },
             "received_at": {
               "title": "Received At",
@@ -4419,7 +4227,6 @@
             "to",
             "pages",
             "status",
-            "document_id",
             "received_at"
           ],
           "title": "InboxItem",
@@ -4430,7 +4237,7 @@
       "properties": {
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -4508,39 +4315,11 @@
     "prepare_fax": {
       "$defs": {
         "Document": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "content_type": {
               "title": "Content Type",
               "type": "string"
-            },
-            "converted_from": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The name of the image this PDF was converted from, as the person gave it. filename is the PDF's own name. Null for a document that was not an image.",
-              "title": "Converted From"
-            },
-            "created_at": {
-              "title": "Created At",
-              "type": "string"
-            },
-            "deleted_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Deleted At"
             },
             "environment": {
               "enum": [
@@ -4550,18 +4329,8 @@
               "title": "Environment",
               "type": "string"
             },
-            "expires_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Expires At"
-            },
             "filename": {
+              "description": "The document's name as the customer gave it. Listed under untrusted.",
               "title": "Filename",
               "type": "string"
             },
@@ -4573,18 +4342,6 @@
               "title": "Page Count",
               "type": "integer"
             },
-            "received": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/DocumentReceived"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "Set in the list (GET /v1/documents) on the file of a received fax, source inbound. It names the inbox item, the sender as the sending machine gave it, and the time. Null everywhere else."
-            },
             "render_reason": {
               "anyOf": [
                 {
@@ -4594,6 +4351,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Render Reason"
             },
             "render_status": {
@@ -4616,21 +4374,8 @@
               "title": "Status",
               "type": "string"
             },
-            "upload_id": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Upload Id"
-            },
             "validation": {
-              "additionalProperties": true,
-              "title": "Validation",
-              "type": "object"
+              "$ref": "#/$defs/DocumentValidation"
             }
           },
           "required": [
@@ -4644,46 +4389,54 @@
             "sha256",
             "page_count",
             "render_status",
-            "render_reason",
-            "validation",
-            "upload_id",
-            "created_at",
-            "expires_at",
-            "deleted_at"
+            "validation"
           ],
           "title": "Document",
           "type": "object"
         },
-        "DocumentReceived": {
-          "additionalProperties": true,
-          "description": "The received fax a document is the file of.",
+        "DocumentValidation": {
+          "additionalProperties": false,
           "properties": {
-            "from": {
+            "warnings": {
+              "items": {
+                "$ref": "#/$defs/DocumentWarning"
+              },
+              "title": "Warnings",
+              "type": "array"
+            }
+          },
+          "title": "DocumentValidation",
+          "type": "object"
+        },
+        "DocumentWarning": {
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "title": "Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "page": {
               "anyOf": [
                 {
-                  "type": "string"
+                  "type": "integer"
                 },
                 {
                   "type": "null"
                 }
               ],
               "default": null,
-              "title": "From"
-            },
-            "inbox_item_id": {
-              "title": "Inbox Item Id",
-              "type": "string"
-            },
-            "received_at": {
-              "title": "Received At",
-              "type": "string"
+              "title": "Page"
             }
           },
           "required": [
-            "inbox_item_id",
-            "received_at"
+            "code",
+            "message"
           ],
-          "title": "DocumentReceived",
+          "title": "DocumentWarning",
           "type": "object"
         }
       },
@@ -4691,7 +4444,7 @@
       "properties": {
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "document": {
@@ -4752,62 +4505,11 @@
     },
     "quote_fax": {
       "$defs": {
-        "PolicyUsage": {
-          "additionalProperties": true,
-          "description": "What the deciding policy had counted before the send it was asked about, in UTC periods.",
+        "Cover": {
+          "additionalProperties": false,
+          "description": "The cover sheet as the customer typed it. Listed under untrusted.",
           "properties": {
-            "day_amount_micro": {
-              "description": "The amount of those sends in micro-USD, as priced when the policy allowed each one. A fax that fails later still counts.",
-              "title": "Day Amount Micro",
-              "type": "integer"
-            },
-            "day_jobs": {
-              "description": "Sends this policy allowed so far in the current UTC day.",
-              "title": "Day Jobs",
-              "type": "integer"
-            },
-            "month_amount_micro": {
-              "description": "The amount of this month's sends in micro-USD, counted the same way as the day's.",
-              "title": "Month Amount Micro",
-              "type": "integer"
-            },
-            "month_jobs": {
-              "description": "Sends this policy allowed so far in the current UTC month.",
-              "title": "Month Jobs",
-              "type": "integer"
-            }
-          },
-          "required": [
-            "day_jobs",
-            "day_amount_micro",
-            "month_jobs",
-            "month_amount_micro"
-          ],
-          "title": "PolicyUsage",
-          "type": "object"
-        },
-        "PolicyVerdict": {
-          "additionalProperties": true,
-          "description": "One evaluation of the delegated policies that bind a caller: the first policy that allows the plan,\nor every policy that denies it.",
-          "properties": {
-            "decision": {
-              "enum": [
-                "allow",
-                "deny"
-              ],
-              "title": "Decision",
-              "type": "string"
-            },
-            "denials": {
-              "description": "Every policy that denied the plan, each with its policy_id, policy_version_id, decision, rule and reason. Empty on allow.",
-              "items": {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              "title": "Denials",
-              "type": "array"
-            },
-            "managed": {
+            "from_email": {
               "anyOf": [
                 {
                   "type": "string"
@@ -4817,102 +4519,62 @@
                 }
               ],
               "default": null,
-              "description": "connected_apps when the organization's auto-send setting decided, else null.",
-              "title": "Managed"
+              "title": "From Email"
             },
-            "policy_id": {
+            "from_name": {
               "anyOf": [
                 {
                   "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "The policy that allowed the plan, or the first one that denied it. Null when none binds.",
-              "title": "Policy Id"
-            },
-            "policy_name": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "The name of that policy. Null when none binds.",
-              "title": "Policy Name"
-            },
-            "policy_version_id": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "The version of that policy that decided.",
-              "title": "Policy Version Id"
-            },
-            "reason": {
-              "description": "Why, in one sentence.",
-              "title": "Reason",
-              "type": "string"
-            },
-            "rule": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "The rule that failed first when a policy denied the plan. Null on allow, and when no policy binds the caller.",
-              "title": "Rule"
-            },
-            "usage": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/PolicyUsage"
                 },
                 {
                   "type": "null"
                 }
               ],
               "default": null,
-              "description": "On allow: the deciding policy's counters for the day and the month before this send."
+              "title": "From Name"
             },
-            "version": {
+            "message": {
               "anyOf": [
                 {
-                  "type": "integer"
+                  "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "description": "The number of that version: 1 for the policy's first rules, one more for each change. Null when none binds.",
-              "title": "Version"
+              "default": null,
+              "title": "Message"
+            },
+            "subject": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Subject"
+            },
+            "to_name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "To Name"
             }
           },
-          "required": [
-            "decision",
-            "rule",
-            "reason",
-            "policy_id",
-            "policy_version_id",
-            "policy_name",
-            "version",
-            "denials"
-          ],
-          "title": "PolicyVerdict",
+          "title": "Cover",
           "type": "object"
         },
         "Quote": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "amount_micro": {
               "title": "Amount Micro",
@@ -4926,36 +4588,20 @@
               "title": "Billable Pages",
               "type": "integer"
             },
-            "consumed_by_job_id": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Consumed By Job Id"
-            },
             "cover": {
               "anyOf": [
                 {
-                  "additionalProperties": true,
-                  "type": "object"
+                  "$ref": "#/$defs/Cover"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "title": "Cover"
+              "default": null
             },
             "cover_pages": {
               "title": "Cover Pages",
               "type": "integer"
-            },
-            "created_at": {
-              "title": "Created At",
-              "type": "string"
             },
             "currency": {
               "title": "Currency",
@@ -5020,7 +4666,6 @@
                 }
               ],
               "default": null,
-              "description": "What the same fax costs with a live key, in micro-units. It is the billable pages at the live rate of the destination, priced by the rule a live quote uses. A test quote is free (amount_micro 0), and this field says what the fax would cost live. On a live quote it equals amount_micro. Null when the rate card in force is not the one the quote was priced on (price_version) or no longer serves the destination.",
               "title": "Live Amount Micro"
             },
             "per_page_micro": {
@@ -5028,25 +4673,12 @@
               "title": "Per Page Micro",
               "type": "integer"
             },
-            "policy_evaluation": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/PolicyVerdict"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The dry run of the delegated policies that bind the caller, made with the quote. Null when no policy binds the caller. The send evaluates the policies again, with their counters locked."
-            },
             "price_version": {
               "title": "Price Version",
               "type": "string"
             },
             "pricing": {
               "default": "per_page",
-              "description": "per_page: priced from the rate card, paid from the wallet and sent with POST /v1/faxes. one_time: the quote of a one-time order, priced at the card's price for the order. Only the order sends it, and POST /v1/faxes refuses it with quote_pricing_mismatch.",
               "enum": [
                 "per_page",
                 "one_time"
@@ -5070,7 +4702,6 @@
             },
             "route_paused": {
               "default": false,
-              "description": "An operator has paused sends on this quote's route. A fax sent now is accepted and stays queued until the route is resumed. Read when the quote is answered, not stored.",
               "title": "Route Paused",
               "type": "boolean"
             },
@@ -5092,8 +4723,7 @@
             },
             "warnings": {
               "items": {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/$defs/QuoteWarning"
               },
               "title": "Warnings",
               "type": "array"
@@ -5104,21 +4734,17 @@
             "environment",
             "document_id",
             "document_sha256",
+            "document_pages",
             "to",
             "route",
-            "document_pages",
             "cover_pages",
             "billable_pages",
             "amount_micro",
             "currency",
             "price_version",
-            "cover",
             "authorization_required",
-            "warnings",
             "expires_at",
-            "expired",
-            "consumed_by_job_id",
-            "created_at"
+            "expired"
           ],
           "title": "Quote",
           "type": "object"
@@ -5178,18 +4804,6 @@
               "default": null,
               "title": "Policy Name"
             },
-            "policy_version_id": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Policy Version Id"
-            },
             "reason": {
               "title": "Reason",
               "type": "string"
@@ -5227,13 +4841,32 @@
           ],
           "title": "QuotePolicy",
           "type": "object"
+        },
+        "QuoteWarning": {
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "title": "Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "title": "QuoteWarning",
+          "type": "object"
         }
       },
       "additionalProperties": false,
       "properties": {
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -5306,6 +4939,68 @@
     },
     "read_inbound_fax": {
       "$defs": {
+        "ExtractedField": {
+          "additionalProperties": false,
+          "properties": {
+            "abstained": {
+              "title": "Abstained",
+              "type": "boolean"
+            },
+            "confidence": {
+              "title": "Confidence",
+              "type": "number"
+            },
+            "name": {
+              "title": "Name",
+              "type": "string"
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Note"
+            },
+            "pages": {
+              "items": {
+                "type": "integer"
+              },
+              "title": "Pages",
+              "type": "array"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Value"
+            }
+          },
+          "required": [
+            "name",
+            "confidence",
+            "pages",
+            "abstained"
+          ],
+          "title": "ExtractedField",
+          "type": "object"
+        },
         "ExtractionBrief": {
           "additionalProperties": false,
           "description": "The latest extraction of an inbox item, as read_inbound_fax reports it.",
@@ -5325,8 +5020,7 @@
               "anyOf": [
                 {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/$defs/ExtractedField"
                   },
                   "type": "array"
                 },
@@ -5364,27 +5058,74 @@
           "title": "ExtractionBrief",
           "type": "object"
         },
-        "InboxItemDetail": {
-          "additionalProperties": true,
+        "InboxDocument": {
+          "additionalProperties": false,
           "properties": {
-            "amount_micro": {
-              "default": 0,
-              "description": "What the received pages were charged, in micro-USD. 0 in test.",
-              "title": "Amount Micro",
-              "type": "integer"
+            "id": {
+              "title": "Id",
+              "type": "string"
             },
-            "document": {
+            "page_count": {
               "anyOf": [
                 {
-                  "additionalProperties": true,
-                  "type": "object"
+                  "type": "integer"
                 },
                 {
                   "type": "null"
                 }
               ],
               "default": null,
-              "title": "Document"
+              "title": "Page Count"
+            },
+            "sha256": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Sha256"
+            },
+            "status": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Status"
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "title": "InboxDocument",
+          "type": "object"
+        },
+        "InboxItemDetail": {
+          "additionalProperties": false,
+          "properties": {
+            "amount_micro": {
+              "default": 0,
+              "title": "Amount Micro",
+              "type": "integer"
+            },
+            "document": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/InboxDocument"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
             },
             "document_id": {
               "anyOf": [
@@ -5395,7 +5136,36 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Document Id"
+            },
+            "environment": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "live",
+                    "test"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Environment"
+            },
+            "extraction_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Extraction Id"
             },
             "from": {
               "anyOf": [
@@ -5407,13 +5177,14 @@
                 }
               ],
               "default": null,
+              "description": "The sender as the sending machine gave it. Untrusted.",
               "title": "From"
             },
             "id": {
               "title": "Id",
               "type": "string"
             },
-            "note": {
+            "media_status": {
               "anyOf": [
                 {
                   "type": "string"
@@ -5423,11 +5194,23 @@
                 }
               ],
               "default": null,
-              "title": "Note"
+              "title": "Media Status"
             },
             "pages": {
               "title": "Pages",
               "type": "integer"
+            },
+            "partial_content": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Partial Content"
             },
             "received_at": {
               "title": "Received At",
@@ -5460,7 +5243,6 @@
             "to",
             "pages",
             "status",
-            "document_id",
             "received_at"
           ],
           "title": "InboxItemDetail",
@@ -5471,7 +5253,7 @@
       "properties": {
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -5545,7 +5327,7 @@
       "$defs": {
         "CardPaymentOrder": {
           "additionalProperties": false,
-          "description": "A one-time order as an agent sees it: where it stands and what it costs. The payer's address and\nthe card's brand and last four digits are left out, and so are the status token and the job.",
+          "description": "A one-time order as an agent sees it: where it stands and what it costs. The payer's address, the\ncard's brand and last four digits, the bare status token and the order's bookkeeping times are left\nout (PR-03, 2026-11-18).",
           "properties": {
             "amount_micro": {
               "description": "The card price of the order, held on the card at payment.",
@@ -5565,30 +5347,6 @@
               "description": "Whether a person accepted the policy and the terms. They do on status_url.",
               "title": "Aup Accepted"
             },
-            "authorized_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Authorized At"
-            },
-            "capture_deadline_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Capture Deadline At"
-            },
             "captured_micro": {
               "description": "What the card was charged, once the payment provider confirmed it.",
               "title": "Captured Micro",
@@ -5604,6 +5362,7 @@
                 }
               ],
               "default": null,
+              "description": "The person pays before this.",
               "title": "Checkout Expires At"
             },
             "confirm_deadline_at": {
@@ -5616,24 +5375,19 @@
                 }
               ],
               "default": null,
+              "description": "The person clicks the mailed link before this.",
               "title": "Confirm Deadline At"
             },
             "cover": {
               "anyOf": [
                 {
-                  "additionalProperties": true,
-                  "type": "object"
+                  "$ref": "#/$defs/Cover"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "default": null,
-              "title": "Cover"
-            },
-            "created_at": {
-              "title": "Created At",
-              "type": "string"
+              "default": null
             },
             "delete_after_send": {
               "anyOf": [
@@ -5674,10 +5428,6 @@
             "document_pages": {
               "title": "Document Pages",
               "type": "integer"
-            },
-            "document_sha256": {
-              "title": "Document Sha256",
-              "type": "string"
             },
             "email_verified": {
               "description": "false: the payer also clicks a mailed link before the send.",
@@ -5727,7 +5477,7 @@
               "type": "string"
             },
             "price": {
-              "$ref": "#/$defs/OneTimePrice"
+              "$ref": "#/$defs/CardPrice"
             },
             "quote_id": {
               "anyOf": [
@@ -5753,18 +5503,6 @@
               "default": null,
               "title": "Refunded Micro"
             },
-            "released_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Released At"
-            },
             "route": {
               "title": "Route",
               "type": "string"
@@ -5772,22 +5510,6 @@
             "sender_name": {
               "description": "The name on the cover page. Listed under untrusted.",
               "title": "Sender Name",
-              "type": "string"
-            },
-            "settled_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Settled At"
-            },
-            "source": {
-              "title": "Source",
               "type": "string"
             },
             "status": {
@@ -5814,10 +5536,6 @@
             "to": {
               "title": "To",
               "type": "string"
-            },
-            "updated_at": {
-              "title": "Updated At",
-              "type": "string"
             }
           },
           "required": [
@@ -5825,24 +5543,20 @@
             "status",
             "next",
             "environment",
-            "source",
             "email_verified",
             "sender_name",
             "to",
             "route",
             "document_pages",
-            "document_sha256",
             "price",
             "amount_micro",
-            "captured_micro",
-            "created_at",
-            "updated_at"
+            "captured_micro"
           ],
           "title": "CardPaymentOrder",
           "type": "object"
         },
-        "OneTimePrice": {
-          "additionalProperties": true,
+        "CardPrice": {
+          "additionalProperties": false,
           "properties": {
             "cover_included": {
               "title": "Cover Included",
@@ -5877,7 +5591,75 @@
             "extra_page_micro",
             "cover_included"
           ],
-          "title": "OneTimePrice",
+          "title": "CardPrice",
+          "type": "object"
+        },
+        "Cover": {
+          "additionalProperties": false,
+          "description": "The cover sheet as the customer typed it. Listed under untrusted.",
+          "properties": {
+            "from_email": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "From Email"
+            },
+            "from_name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "From Name"
+            },
+            "message": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Message"
+            },
+            "subject": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Subject"
+            },
+            "to_name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "To Name"
+            }
+          },
+          "title": "Cover",
           "type": "object"
         }
       },
@@ -5885,7 +5667,7 @@
       "properties": {
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -5972,9 +5754,124 @@
     },
     "request_human_review": {
       "$defs": {
-        "ApprovalDocument": {
-          "additionalProperties": true,
-          "description": "The document a send request binds, as it is now: its name, its pages and whether a send can use it.",
+        "ReviewBound": {
+          "additionalProperties": false,
+          "description": "What an approval binds: the exact send. Empty for a help request.",
+          "properties": {
+            "amount_micro": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Amount Micro"
+            },
+            "billable_pages": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Billable Pages"
+            },
+            "currency": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Currency"
+            },
+            "document_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Document Id"
+            },
+            "document_sha256": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Document Sha256"
+            },
+            "expires_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Expires At"
+            },
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "From"
+            },
+            "quote_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Quote Id"
+            },
+            "to": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "To"
+            }
+          },
+          "title": "ReviewBound",
+          "type": "object"
+        },
+        "ReviewDocument": {
+          "additionalProperties": false,
           "properties": {
             "filename": {
               "anyOf": [
@@ -5985,7 +5882,7 @@
                   "type": "null"
                 }
               ],
-              "description": "The file's name; null when the document row is gone.",
+              "default": null,
               "title": "Filename"
             },
             "id": {
@@ -6001,10 +5898,10 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Page Count"
             },
             "state": {
-              "description": "available: the document is the one the request binds. deleted: it was deleted. changed: its sha256 is no longer the bound one. A send with this approval is refused in the last two.",
               "enum": [
                 "available",
                 "deleted",
@@ -6016,21 +5913,17 @@
           },
           "required": [
             "id",
-            "filename",
-            "page_count",
             "state"
           ],
-          "title": "ApprovalDocument",
+          "title": "ReviewDocument",
           "type": "object"
         },
         "ReviewRequest": {
-          "additionalProperties": true,
-          "description": "The approval request row as request_human_review returns it: kind send (bound to a quote) or help.",
+          "additionalProperties": false,
+          "description": "An approval or help request as the agent that asked follows it: its state, what it binds and the\nmessage. Who asked and who decided are left out: ``decided_by_person`` says only whether a person or a\nkey decided.",
           "properties": {
             "bound": {
-              "additionalProperties": true,
-              "title": "Bound",
-              "type": "object"
+              "$ref": "#/$defs/ReviewBound"
             },
             "consumed_by_job_id": {
               "anyOf": [
@@ -6041,58 +5934,32 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Consumed By Job Id"
             },
-            "created_at": {
-              "title": "Created At",
-              "type": "string"
-            },
-            "decided_at": {
+            "decided_by_person": {
               "anyOf": [
                 {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Decided At"
-            },
-            "decided_by": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Decided By"
-            },
-            "decided_by_name": {
-              "anyOf": [
-                {
-                  "type": "string"
+                  "type": "boolean"
                 },
                 {
                   "type": "null"
                 }
               ],
               "default": null,
-              "description": "The decider, named the same way.",
-              "title": "Decided By Name"
+              "description": "true when a signed-in person decided, false when an API key did, null while pending. Who it was is not returned.",
+              "title": "Decided By Person"
             },
             "document": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/ApprovalDocument"
+                  "$ref": "#/$defs/ReviewDocument"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "default": null,
-              "description": "The document a send request binds (bound.document_id). null for a help request."
+              "default": null
             },
             "expires_at": {
               "anyOf": [
@@ -6103,6 +5970,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Expires At"
             },
             "fax_job_id": {
@@ -6139,6 +6007,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Message"
             },
             "notified": {
@@ -6151,7 +6020,6 @@
                 }
               ],
               "default": null,
-              "description": "On creation: whether the organization was mailed. false when the request repeats a pending one or the organization's daily cap of request mails is reached; the request is still shown in the dashboard.",
               "title": "Notified"
             },
             "quote_id": {
@@ -6163,6 +6031,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Quote Id"
             },
             "reason": {
@@ -6174,24 +6043,9 @@
                   "type": "null"
                 }
               ],
-              "title": "Reason"
-            },
-            "requested_by": {
-              "title": "Requested By",
-              "type": "string"
-            },
-            "requested_by_name": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
               "default": null,
-              "description": "The requester as people read it: the key's label, the agent's name, the connected app's name or the person's address. null when the actor has no row in the organization any more.",
-              "title": "Requested By Name"
+              "description": "A person's reason for a rejection. Untrusted.",
+              "title": "Reason"
             },
             "status": {
               "enum": [
@@ -6209,16 +6063,7 @@
             "id",
             "kind",
             "status",
-            "quote_id",
-            "bound",
-            "message",
-            "requested_by",
-            "decided_by",
-            "reason",
-            "consumed_by_job_id",
-            "created_at",
-            "expires_at",
-            "decided_at"
+            "bound"
           ],
           "title": "ReviewRequest",
           "type": "object"
@@ -6228,7 +6073,7 @@
       "properties": {
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -6290,8 +6135,150 @@
     },
     "send_approved_fax": {
       "$defs": {
+        "Evidence": {
+          "additionalProperties": false,
+          "description": "What the carrier reported about a delivered or partial fax, without its raw payload, its call ids\nand its signature material. The keys differ by carrier: each one keeps what it reports.",
+          "properties": {
+            "completed_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Completed At"
+            },
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "From"
+            },
+            "occurred_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Occurred At"
+            },
+            "page_count": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Page Count"
+            },
+            "pages_sent": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Pages Sent"
+            },
+            "pages_total": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Pages Total"
+            },
+            "provider": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "The carrier that reported it.",
+              "title": "Provider"
+            },
+            "quality": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Quality"
+            },
+            "remote_station_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "The receiving machine's station id, as it gave it. Listed under untrusted.",
+              "title": "Remote Station Id"
+            },
+            "status": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Status"
+            },
+            "to": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "To"
+            }
+          },
+          "title": "Evidence",
+          "type": "object"
+        },
         "FaxJob": {
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "amount_micro": {
               "title": "Amount Micro",
@@ -6307,7 +6294,6 @@
                 }
               ],
               "default": null,
-              "description": "The approval request a person approved for this send. Null when another path authorized it: a delegated policy (policy_version_id), a test key no policy binds, or the payer's confirmation of a one-time order.",
               "title": "Approval Id"
             },
             "attempt_count": {
@@ -6317,17 +6303,6 @@
             "billable_pages": {
               "title": "Billable Pages",
               "type": "integer"
-            },
-            "cancel_requested_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Cancel Requested At"
             },
             "captured_micro": {
               "title": "Captured Micro",
@@ -6342,6 +6317,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Client Reference"
             },
             "completed_at": {
@@ -6353,6 +6329,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Completed At"
             },
             "cover_pages": {
@@ -6372,16 +6349,8 @@
               "title": "Delete After Send",
               "type": "boolean"
             },
-            "direction": {
-              "title": "Direction",
-              "type": "string"
-            },
             "document_id": {
               "title": "Document Id",
-              "type": "string"
-            },
-            "document_sha256": {
-              "title": "Document Sha256",
               "type": "string"
             },
             "environment": {
@@ -6395,16 +6364,13 @@
             "evidence": {
               "anyOf": [
                 {
-                  "additionalProperties": true,
-                  "type": "object"
+                  "$ref": "#/$defs/Evidence"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "default": null,
-              "description": "The carrier's evidence once delivered or partial; null before.",
-              "title": "Evidence"
+              "default": null
             },
             "failure_code": {
               "anyOf": [
@@ -6415,6 +6381,7 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Failure Code"
             },
             "from": {
@@ -6433,17 +6400,6 @@
               "title": "Id",
               "type": "string"
             },
-            "one_time": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/OneTimeJob"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null
-            },
             "one_time_order_id": {
               "anyOf": [
                 {
@@ -6454,40 +6410,11 @@
                 }
               ],
               "default": null,
-              "description": "The one-time order this fax was paid by; null for a wallet fax.",
               "title": "One Time Order Id"
             },
             "pages_sent": {
               "title": "Pages Sent",
               "type": "integer"
-            },
-            "policy_version_id": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The version of the delegated policy that allowed this send. A version never changes, so it shows the limits the send was allowed under. Null when no policy decided the send.",
-              "title": "Policy Version Id"
-            },
-            "provider": {
-              "title": "Provider",
-              "type": "string"
-            },
-            "provider_ref": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Provider Ref"
             },
             "quality": {
               "default": "fine",
@@ -6503,7 +6430,21 @@
                   "type": "null"
                 }
               ],
+              "default": null,
               "title": "Quote Id"
+            },
+            "receipt_url": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "Once the fax has ended: the dashboard page with its receipt, for a signed-in person.",
+              "title": "Receipt Url"
             },
             "route": {
               "title": "Route",
@@ -6511,7 +6452,6 @@
             },
             "route_paused": {
               "default": false,
-              "description": "An operator has paused sends on this fax's route while the fax waits for a line (queued or between tries). It goes out when the route is resumed. Read when the fax is read, not stored.",
               "title": "Route Paused",
               "type": "boolean"
             },
@@ -6542,270 +6482,25 @@
             "to": {
               "title": "To",
               "type": "string"
-            },
-            "transmitted_sha256": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Transmitted Sha256"
-            },
-            "updated_at": {
-              "title": "Updated At",
-              "type": "string"
             }
           },
           "required": [
             "id",
             "environment",
-            "direction",
             "state",
-            "failure_code",
             "to",
             "route",
             "document_id",
-            "document_sha256",
-            "transmitted_sha256",
-            "quote_id",
             "billable_pages",
             "cover_pages",
             "pages_sent",
             "amount_micro",
             "captured_micro",
             "currency",
-            "provider",
-            "provider_ref",
-            "client_reference",
             "attempt_count",
-            "created_at",
-            "updated_at",
-            "completed_at",
-            "cancel_requested_at"
+            "created_at"
           ],
           "title": "FaxJob",
-          "type": "object"
-        },
-        "OneTimeCard": {
-          "additionalProperties": true,
-          "properties": {
-            "brand": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Brand"
-            },
-            "last4": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Last4"
-            }
-          },
-          "required": [
-            "last4",
-            "brand"
-          ],
-          "title": "OneTimeCard",
-          "type": "object"
-        },
-        "OneTimeJob": {
-          "additionalProperties": true,
-          "description": "The order behind a fax job that a one-time send made: what was held on the card, what was charged.",
-          "properties": {
-            "amount_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Amount Micro"
-            },
-            "authorized_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: when the card was held.",
-              "title": "Authorized At"
-            },
-            "captured_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Captured Micro"
-            },
-            "card": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/OneTimeCard"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null
-            },
-            "document_pages": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "The pages of the order's document. The cover sheet is not counted.",
-              "title": "Document Pages"
-            },
-            "email": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: the address the order was made with.",
-              "title": "Email"
-            },
-            "failure_code": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: why the order ended unpaid.",
-              "title": "Failure Code"
-            },
-            "order_id": {
-              "title": "Order Id",
-              "type": "string"
-            },
-            "price": {
-              "anyOf": [
-                {
-                  "additionalProperties": {
-                    "type": "integer"
-                  },
-                  "type": "object"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: flat_micro, included_pages and extra_page_micro the amount follows from.",
-              "title": "Price"
-            },
-            "refunded_micro": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "What was refunded to the card after the charge, in micro-units.",
-              "title": "Refunded Micro"
-            },
-            "sender_name": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: the sender's name.",
-              "title": "Sender Name"
-            },
-            "settled_at": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "description": "On a receipt: when the payment provider confirmed the charge, or the release.",
-              "title": "Settled At"
-            },
-            "status": {
-              "anyOf": [
-                {
-                  "enum": [
-                    "draft",
-                    "checkout_open",
-                    "authorized",
-                    "awaiting_confirmation",
-                    "released",
-                    "capturing",
-                    "canceling",
-                    "captured",
-                    "released_hold",
-                    "expired",
-                    "refused",
-                    "settle_failed",
-                    "refunding",
-                    "refunded",
-                    "canceled"
-                  ],
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": null,
-              "title": "Status"
-            }
-          },
-          "required": [
-            "order_id"
-          ],
-          "title": "OneTimeJob",
           "type": "object"
         }
       },
@@ -6813,7 +6508,7 @@
       "properties": {
         "details": {
           "default": null,
-          "description": "The API's error details, when a refusal carries any. A field it names (details.field) is this tool's argument.",
+          "description": "The API's error details, when a refusal carries any, cut to the keys in DETAIL_KEYS. A field it names (details.field) is this tool's argument.",
           "title": "Details"
         },
         "error_code": {
@@ -6849,6 +6544,7 @@
             }
           ],
           "default": null,
+          "description": "The replay token of this send: the one passed, or mcp:{quote_id}.",
           "title": "Idempotency Key"
         },
         "message": {

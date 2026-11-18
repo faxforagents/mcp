@@ -39,7 +39,7 @@
     "get_fax_capabilities": {
       "name": "get_fax_capabilities",
       "title": "Get fax capabilities",
-      "description": "Read account limits, routes, formats, prices and credential scopes. Use before preparing a fax. Use quote_fax for one send's price and policy verdict, or get_fax_balance for available funds. Returns capabilities and account identity without changes or charges. me.scopes is what this credential may do. capabilities.scopes is every scope the platform defines, not what this credential holds. extraction_pricing holds the per-page price of extract_fax_data. Repeated reads are safe. Scope: account:read.",
+      "description": "Read account limits, routes, formats, prices and credential scopes. Use before preparing a fax. Use quote_fax for one send's price and policy verdict, or get_fax_balance for available funds. Returns capabilities and this credential's environment and scopes, without changes or charges. me.scopes is what this credential may do. capabilities.scopes is every scope the platform defines, not what this credential holds. extraction_pricing holds the per-page price of extract_fax_data. Repeated reads are safe. Scope: account:read.",
       "inputSchema": {
         "properties": {},
         "title": "get_fax_capabilitiesArguments",
@@ -726,7 +726,7 @@
       "annotations": {
         "title": "Request card payment",
         "readOnlyHint": false,
-        "destructiveHint": false,
+        "destructiveHint": true,
         "idempotentHint": true,
         "openWorldHint": true
       }

@@ -81,8 +81,10 @@ if (!same(later?.details, { field: 'from_number' }) || later.message !== 'the fr
 if (!same(card?.details, { field: 'cover_from_name' }) || card.message !== 'cover_from_name is 2 to 120 characters; it goes on the cover sheet') fail(`card sender: ${JSON.stringify(card)}`);
 // a tool with no row says what the API said, word for word
 if (!same(plain?.details, { field: 'from' }) || plain.message !== 'from must be E.164') fail(`a tool without renamed arguments: ${JSON.stringify(plain)}`);
-if (!same(fields?.details, { fields: ['fax_id', 'message'], limit: 2 }) || fields.error_code !== 'invalid_request') fail(`details.fields: ${JSON.stringify(fields)}`);
-if (!same(validation?.details, [{ loc: ['body', 'fax_id'], msg: 'String should match pattern' }, 'text'])) fail(`validation loc: ${JSON.stringify(validation)}`);
+// API 1.21.11: the details keep only the hosted DETAIL_KEYS, and limit is not one. A validation error keeps the
+// items with a loc, each with its loc and msg only.
+if (!same(fields?.details, { fields: ['fax_id', 'message'] }) || fields.error_code !== 'invalid_request') fail(`details.fields: ${JSON.stringify(fields)}`);
+if (!same(validation?.details, [{ loc: ['body', 'fax_id'], msg: 'String should match pattern' }])) fail(`validation loc: ${JSON.stringify(validation)}`);
 
 api.close();
 console.log('argument-names OK: 8 refusals name the tool arguments from_number, cover_from_name and fax_id, and a tool without renamed arguments keeps the API wording');
