@@ -322,6 +322,14 @@ The guide keeps this package's version and `FAXFORAGENTS_API_KEY` environment na
 npx -y @lobehub/market-cli plugin update     # reads lhm.plugin.json; the owner signs in once with `lhm login`
 ```
 
+4. Bump the pinned `faxforagents-mcp@X.Y.Z` in the repos that pin it, each through its own PR:
+   - claude-code-plugin: `plugin/alternatives/stdio.mcp.json` and `README.md`.
+   - cursor-plugin: `alternatives/stdio.mcp.json` and `README.md`.
+   - hermes-integration: `mcp.json`, `README.md` and `tests/installation.md`.
+
+   GitHub code search misses these pins, so look for new ones with
+   `grep -rlE 'faxforagents-mcp@[0-9]'` over fresh clones of the organization's repositories.
+
 ## Licence
 
 MIT. See [LICENSE](LICENSE). Security reports go to hello@faxforagents.com, see [SECURITY.md](SECURITY.md).
